@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Sidebar from "../components/sidebar.js";
+import Link from "next/link";
 
 export default function Forum() {
   const router = useRouter();
+  const { category } = router.query; // Read category from URL query
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("/default.png");
   const [newPost, setNewPost] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("loggedIn");
@@ -21,6 +24,12 @@ export default function Forum() {
     }
   }, []);
 
+  useEffect(() => {
+    if (category) {
+      setSelectedCategory(category); // Set category from query
+    }
+  }, [category]);
+
   const [posts, setPosts] = useState([
     {
       id: 1,
@@ -29,7 +38,6 @@ export default function Forum() {
       avatar: "/default.png",
       message: "Reminder: Open Enrollment for health benefits starts next Monday. Check your emails for details.",
       timestamp: "3 days ago",
-    //   image: "/hr-announcement.jpg",
       replies: [
         { user: "John", avatar: "/default.png", message: "Thanks for the reminder! Will there be an info session?" },
         { user: "HR Department", avatar: "/default.png", message: "Yes, a Zoom Q&A session is scheduled for Friday at 2 PM." },
@@ -42,7 +50,6 @@ export default function Forum() {
       avatar: "/default.png",
       message: "Anyone else having issues with the VPN? It keeps disconnecting randomly.",
       timestamp: "2 hours ago",
-    //   image: "/vpn-error.png",
       replies: [
         { user: "David (IT)", avatar: "/default.png", message: "Try switching to the backup server. We're investigating the issue." },
         { user: "Michael", avatar: "/default.png", message: "Yep, same issue here. Hope IT finds a fix soon!" },
@@ -55,14 +62,12 @@ export default function Forum() {
       avatar: "/default.png",
       message: "Who’s joining the company holiday party? The invite says free drinks! 🍻",
       timestamp: "30 minutes ago",
-      image: "/placeholder.png",
       replies: [
         { user: "Mike", avatar: "/default.png", message: "Count me in! Do we need to RSVP?" },
       ],
     },
   ]);
 
-  
   const [replyText, setReplyText] = useState({});
 
   const handleReplyChange = (postId, text) => {
@@ -94,35 +99,19 @@ export default function Forum() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-800">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-4">
-        <h2 className="text-xl font-bold text-gray-700 mb-4">Forum Sections</h2>
-        <ul className="space-y-3">
-          {["all", "HR Announcements", "IT Support", "General Chat"].map((category) => (
-            <li key={category}>
-              <button
-                className={`w-full text-left p-2 rounded-md font-medium ${
-                  selectedCategory === category ? "bg-blue-600 text-white" : "hover:bg-gray-200 text-gray-700"
-                }`}
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category === "IT Support" ? "💻" : category === "General Chat" ? "👥" : "📌"} {category}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
+      <Sidebar selectedCategory={selectedCategory} />
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
-          {/* Company Logo */}
+        <div className="max-w-3xl mx-auto bg-gray-700 shadow-md rounded-lg p-6">
+          {/* Company Branding */}
           <div className="text-center mb-4">
-            <img src="/company-logo.png" alt="Company Logo" className="w-24 mx-auto" />
+            <img src="/opossumdynamics.jpg" alt="Company Logo" className="w-24 mx-auto" />
+            <p className="text-gray-400 italic mt-2">"Innovation, Distraction, Opossum Action™"</p>
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Employee Forum - Welcome {username}! 👋</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">Opossum Forum - Welcome {username}! 👋</h1>
 
           {/* Profile & Logout */}
           <div className="flex items-center justify-between mb-6">
@@ -133,7 +122,7 @@ export default function Forum() {
                 className="w-12 h-12 rounded-full border" 
                 onError={(e) => e.target.src = "/default.png"}
               />
-              <p className="text-lg font-semibold text-gray-800">{username}</p>
+              <p className="text-lg font-semibold text-white">{username}</p>
             </div>
             <button
               onClick={() => {
@@ -149,7 +138,7 @@ export default function Forum() {
           {/* Forum Posts */}
           <div className="space-y-6">
             {posts
-              .filter((post) => selectedCategory === "all" || post.category === selectedCategory)
+              .filter((post) => selectedCategory === "All" || post.category === selectedCategory)
               .map((post) => (
                 <div key={post.id} className="p-4 border border-gray-300 rounded-lg bg-gray-50">
                   <div className="flex items-center space-x-3">
@@ -159,10 +148,9 @@ export default function Forum() {
                     <p className="text-xs text-gray-600">{post.timestamp}</p>
                   </div>
                   <p className="text-gray-900 mt-2">{post.message}</p>
-                  {post.image && <img src={post.image} alt="Post Attachment" className="w-full mt-2 rounded-lg" />}
 
-                  {/* Replies Section */}
-                  {post.replies.length > 0 && (
+                  {/* Replies */}
+                  {post.replies && post.replies.length > 0 && (
                     <div className="mt-3 pl-6 border-l border-gray-300 space-y-2">
                       {post.replies.map((reply, index) => (
                         <div key={index} className="flex items-start space-x-3">
@@ -175,23 +163,6 @@ export default function Forum() {
                       ))}
                     </div>
                   )}
-
-                  {/* Reply Input */}
-                  <div className="mt-3">
-                    <input
-                      type="text"
-                      className="w-full p-2 border border-gray-300 rounded-lg"
-                      placeholder="Write a reply..."
-                      value={replyText[post.id] || ""}
-                      onChange={(e) => handleReplyChange(post.id, e.target.value)}
-                    />
-                    <button
-                      onClick={() => handleReplySubmit(post.id)}
-                      className="mt-2 bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
-                    >
-                      Reply
-                    </button>
-                  </div>
                 </div>
               ))}
           </div>
