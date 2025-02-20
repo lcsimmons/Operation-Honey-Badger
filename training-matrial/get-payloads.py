@@ -21,7 +21,24 @@ files_to_process = {
     ],
     "XSS Injection": [
         {"file_path": "XSS Injection/README.md", "language": "html"}
+    ], 
+    "SSRF": [
+        {"file_path": "Server Side Request Forgery/README.md", "language": "html"}
+    ], 
+    "Security Misconfiguration": [
+        {"file_path": "Upload Insecure Files/README.md", "language": "ps1"},
+        {"file_path": "Upload Insecure Files/README.md", "language": "ini"}
+    ],
+    "Broken Access Control": [
+        {"file_path": "Insecure Direct Object References/README.md", "language": ""}, 
+        {"file_path": "Account Takeover/README.md", "language": "http"}
+    ], 
+    "Cryptographic Failures": [
+        {"file_path": "API Key Leaks/README.md", "language": ""}, 
+        {"file_path": "Insecure Randomness/README.md", "language": ""}
     ]
+
+
 }
 
 google_auth_token = os.getenv("GOOGLE_AUTH_TOKEN")
@@ -37,8 +54,11 @@ def fetch_file_contents(repo, file_path):
         print(f"Error fetching {file_path}: {e}")
         return None
 
-def extract_payloads(markdown_content, lang):
-    pattern = r"```" + re.escape(lang) + r"\s+(.*?)\s+```"
+def extract_payloads(markdown_content, language_marker):
+    if language_marker:
+        pattern = r"```" + re.escape(language_marker) + r"\s+(.*?)\s+```"
+    else:
+        pattern = r"```(?:\w+)?\s+(.*?)\s+```"
     return re.findall(pattern, markdown_content, re.DOTALL)
 
 def create_payload_json(payloads, category, start_id=1):
@@ -62,4 +82,6 @@ for category, file_infos in files_to_process.items():
             current_id += len(payloads_json)
 
 json_data = json.dumps(all_payloads, indent=4)
-print(json_data)
+
+with open("payloads.json", "w") as f:
+    f.write(json_data)
