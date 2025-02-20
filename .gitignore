@@ -128,3 +128,14 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+#virtual environments
+venv/
+.venv/
+
+#environment variables
+ENV/
+env/
+
+# Explicitly include example environment file
+!.env.example
