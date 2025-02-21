@@ -134,3 +134,14 @@ dist
 training-matrial/venv
 
 .env 
+=======
+#virtual environments
+venv/
+.venv/
+
+#environment variables
+ENV/
+env/
+
+# Explicitly include example environment file
+!.env.example

