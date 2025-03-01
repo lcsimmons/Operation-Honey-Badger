@@ -1,5 +1,6 @@
 from faker import Faker
 import random
+import base64
 import hashlib
 
 fake = Faker() 
@@ -50,7 +51,8 @@ def generate_forum_comments():
     comment_id = random.randint(1000, 9999)
     forum_id = random.randint(100, 300)
     user_id = random.randint(1, 187) 
-    comment = fake.sentence(nb_words=10).replace("'", "''")
+    comment_bytes = fake.sentence(nb_words=10).encode("ascii")
+    comment = base64.b64encode(comment_bytes).decode()
     timestamp = fake.date_time_this_year().strftime("%Y-%m-%d %H:%M:%S")
     
     return f"INSERT INTO ForumComments (CommentID, ForumID, UserID, Comment, Timestamp) VALUES ({comment_id}, {forum_id}, {user_id}, '{comment}', '{timestamp}');"
@@ -58,8 +60,10 @@ def generate_forum_comments():
 
 def generate_forum():
     forum_id = random.randint(100, 300)
-    title = fake.sentence(nb_words=5).replace("'", "''")
-    description = fake.text(max_nb_chars=100).replace("'", "''")
+    title_bytes = fake.sentence(nb_words=5).encode("ascii")
+    title =  base64.b64encode(title_bytes).decode()
+    description_bytes = fake.text(max_nb_chars=100).encode("ascii")
+    description =  base64.b64encode(description_bytes).decode()
     forum_category = random.choice(["General", "Announcements", "Support"])
     
     return f"INSERT INTO Forum (ForumID, Title, Description, ForumCategory) VALUES ({forum_id}, '{title}', '{description}', '{forum_category}');"
@@ -71,19 +75,16 @@ def generate_sql_insert():
     for _ in range(187):
         statements.append(generate_users())
         
-    for _ in range(10):
+    for _ in range(623):
         statements.append(generate_cloud_resources())
         
-    statements.append("\n-- Keys")
     for _ in range(187):
         statements.append(generate_keys())
         
-    statements.append("\n-- Forums")
-    for _ in range(300):
+    for _ in range(1032):
         statements.append(generate_forum())
         
-    statements.append("\n-- Forum Comments")
-    for _ in range(534):
+    for _ in range(1632):
         statements.append(generate_forum_comments())
     
     full_sql = "\n".join(statements)
