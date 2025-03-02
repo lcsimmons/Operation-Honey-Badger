@@ -34,6 +34,8 @@ def analyze_payload(payload):
     except Exception as e:
         return f"Error: {e}"
 
+# This function should be replaced in the future. Use it as a template, but we should
+# not actually use this in production for OPSEC reasons. 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     data = request.get_json()
@@ -43,6 +45,20 @@ def analyze():
     payload = data['payload']
     analysis_result = analyze_payload(payload)
     return jsonify({"analysis": analysis_result})
+
+@app.route('/api/login', methods=['POST'])
+def analyze_login():
+    data = request.get_json()
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({"error": "username and password are required"}), 400
+
+    username = data['username']
+    password = data['password']
+    
+    payload = username + password
+    
+    return jsonify({"login": analyze_payload(payload)})
+
 
 @app.route('/api/test', methods=['GET'])
 def test_connection():
