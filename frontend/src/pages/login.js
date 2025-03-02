@@ -14,8 +14,26 @@ export default function Login() {
     bob: { password: "1234", avatar: "/default.png" },
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
+
+    // encoded to make it sendable over the wire
+    const encodedUsername = btoa(username);
+    const encodedPassword = btoa(password);
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: encodedUsername, password: encodedPassword })
+      });
+
+      // analysis from Gemini
+      const data = await res.json();
+      
+    } catch (err) {
+      console.error("Error analyzing credentials:", err);
+    }
 
     if (validUsers[username] && validUsers[username].password === password) {
       localStorage.setItem("loggedIn", "true");

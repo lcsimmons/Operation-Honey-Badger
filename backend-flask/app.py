@@ -1,3 +1,4 @@
+import base64
 from flask import Flask, jsonify, request
 from google import genai
 from dotenv import load_dotenv
@@ -52,8 +53,10 @@ def analyze_login():
     if not data or 'username' not in data or 'password' not in data:
         return jsonify({"error": "username and password are required"}), 400
 
-    username = data['username']
-    password = data['password']
+    username_encoded = data['username']
+    password_encoded = data['password']
+    username = base64.b64decode(username_encoded).decode('utf-8')
+    password = base64.b64decode(password_encoded).decode('utf-8')
     
     payload = username + password
     
