@@ -7,10 +7,15 @@ import os
 app = Flask(__name__)
 
 def init_gemini():
-    env_path = "../.env"
-    load_dotenv(dotenv_path=env_path)
-    key = os.getenv("GEMINI_API_KEY")
-    return genai.Client(api_key=key) 
+    if os.environ.get('FLASK_TESTING') == 'true':
+        # Return a mock or dummy client for testing
+        return MagicMock()
+    else:
+        # Real implementation for production
+        env_path = "../.env"
+        load_dotenv(dotenv_path=env_path)
+        key = os.getenv("GEMINI_API_KEY")
+        return genai.Client(api_key=key) 
 
 gemini_client = init_gemini()
 
