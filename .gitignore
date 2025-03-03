@@ -129,6 +129,12 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+
+# ignore venv for data processing 
+training-matrial/venv
+
+.env 
+=======
 #virtual environments
 venv/
 .venv/
