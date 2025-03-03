@@ -117,12 +117,12 @@ export default function Forum() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-800">
+    <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
       <Sidebar selectedCategory={selectedCategory} />
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto bg-gray-700 shadow-md rounded-lg p-6">
+        <div className="max-w-3xl mx-auto bg-gray-200 shadow-md rounded-lg p-6">
           {/* Company Branding */}
           <div className="text-center mb-4">
             <img src="/opossumdynamics.jpg" alt="Company Logo" className="w-24 mx-auto" />
