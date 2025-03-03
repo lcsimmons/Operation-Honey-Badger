@@ -2,6 +2,7 @@ import base64
 from flask import Flask, jsonify, request
 from google import genai
 from dotenv import load_dotenv
+from unittest.mock import MagicMock
 import os
 
 app = Flask(__name__)
