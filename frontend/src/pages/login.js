@@ -5,6 +5,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [alertMessage, setAlertMessage] = useState(""); 
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [resetError, setResetError] = useState("");
@@ -19,26 +20,41 @@ export default function Login() {
     bob: { password: "1234", avatar: "/default.png", question: "What is your pet’s name?", answer: "fluffy" },
   };
 
+  // XSS and SQL Injection Detection
+  const detectInjection = (input) => {
+    const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
+    const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
+
+    // Reset alert before setting a new one
+    setAlertMessage("");
+
+    if (xssPattern.test(input)) {
+      console.warn("🚨 XSS Attempt Detected:", input);
+      setTimeout(() => setAlertMessage("🚨 XSS Attack Detected! 🚨"), 50);
+      return true;
+    }
+
+    if (sqlPattern.test(input)) {
+      console.warn("🚨 SQL Injection Attempt Detected:", input);
+      setTimeout(() => setAlertMessage("🚨 SQL Injection Attempt Detected! 🚨"), 50);
+      return true;
+    }
+
+    return false;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // encoded to make it sendable over the wire
+    // Check for XSS or SQL Injection in username & password
+    if (detectInjection(username) || detectInjection(password)) {
+      // Stop login attempt if malicious input is detected
+      return; 
+    }
+
+    // Encode credentials for future API use
     const encodedUsername = btoa(username);
     const encodedPassword = btoa(password);
-
-    // This will be for future, fetch call
-    // try {
-    //   const res = await fetch("/api/login", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ username: encodedUsername, password: encodedPassword }),
-    //   });
-
-    //   const data = await res.json();
-      
-    // } catch (err) {
-    //   console.error("Error analyzing credentials:", err);
-    // }
 
     if (validUsers[username] && validUsers[username].password === password) {
       localStorage.setItem("loggedIn", "true");
@@ -84,6 +100,13 @@ export default function Login() {
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
             Employee Forum Login
           </h2>
+
+          {/* Alert Message for XSS & SQLi */}
+          {alertMessage && (
+            <div className="bg-red-500 text-white p-3 rounded-lg text-center mb-4">
+              {alertMessage}
+            </div>
+          )}
 
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
