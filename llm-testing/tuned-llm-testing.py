@@ -15,11 +15,14 @@ class TestCase:
     owaspCategory: str
 
 class GeminiTester:
-    def __init__(self, model_name: str = "gemini-2.0-flash", batch_size: int = 100):
+    def __init__(self, model_name: str = "gemini-2.0-flash", batch_size: int = 158):
         """Initialize the tester with Google API credentials from parent directory .env file."""
         self.ATTACK_VECTORS = [
             "SQL Injection",
-            "XSS Injection"
+            "XSS Injection",
+            "Security Misconfiguration",
+            "Broken Access Control",
+            "Cryptographic Failures"
         ]
         self.batch_size = batch_size
         
