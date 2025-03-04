@@ -33,7 +33,6 @@ export default function Login() {
       setTimeout(() => setAlertMessage("🚨 XSS Attack Detected! 🚨"), 50);
       return true;
     }
-
     if (sqlPattern.test(input)) {
       console.warn("🚨 SQL Injection Attempt Detected:", input);
       setTimeout(() => setAlertMessage("🚨 SQL Injection Attempt Detected! 🚨"), 50);
