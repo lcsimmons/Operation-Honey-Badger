@@ -69,6 +69,7 @@ export default function Forum() {
   ]);
 
   const [replyText, setReplyText] = useState({});
+  const [commentText, setCommentText] = useState("");
 
   const handleReplyChange = (postId, text) => {
     setReplyText((prev) => ({
@@ -98,20 +99,37 @@ export default function Forum() {
     }));
   };
 
+  const handleCommentSubmit = () => {
+    if (!commentText.trim()) return;
+
+    const newPostEntry = {
+      id: posts.length + 1,
+      category: selectedCategory,
+      user: username,
+      avatar: avatar,
+      message: commentText,
+      timestamp: "Just now",
+      replies: [],
+    };
+
+    setPosts([newPostEntry, ...posts]);
+    setCommentText("");
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-800">
+    <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
       <Sidebar selectedCategory={selectedCategory} />
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto bg-gray-700 shadow-md rounded-lg p-6">
+        <div className="max-w-3xl mx-auto bg-gray-200 shadow-md rounded-lg p-6">
           {/* Company Branding */}
           <div className="text-center mb-4">
             <img src="/opossumdynamics.jpg" alt="Company Logo" className="w-24 mx-auto" />
             <p className="text-gray-400 italic mt-2">"Innovation, Distraction, Opossum Action™"</p>
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-4">Opossum Forum - Welcome {username}! 👋</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">Opossum Forum - Welcome {username}! 👋</h1>
 
           {/* Profile & Logout */}
           <div className="flex items-center justify-between mb-6">
@@ -122,16 +140,32 @@ export default function Forum() {
                 className="w-12 h-12 rounded-full border" 
                 onError={(e) => e.target.src = "/default.png"}
               />
-              <p className="text-lg font-semibold text-white">{username}</p>
+              <p className="text-lg font-semibold text-black">{username}</p>
             </div>
             <button
               onClick={() => {
                 localStorage.clear();
                 router.push("/login");
               }}
-              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600"
+              className="bg-red-500 text-black p-2 rounded-lg hover:bg-red-600"
             >
               Logout
+            </button>
+          </div>
+
+          {/* New Comment Input */}
+          <div className="mb-6 p-4 bg-gray-600 rounded-lg">
+            <textarea
+              className="w-full p-2 rounded-md text-black"
+              placeholder="Write a new post..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+            />
+            <button
+              onClick={handleCommentSubmit}
+              className="mt-2 bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Post
             </button>
           </div>
 
@@ -163,6 +197,22 @@ export default function Forum() {
                       ))}
                     </div>
                   )}
+
+                  {/* Reply Input */}
+                  <div className="mt-3">
+                    <textarea
+                      className="w-full p-2 rounded-md text-black"
+                      placeholder="Write a reply..."
+                      value={replyText[post.id] || ""}
+                      onChange={(e) => handleReplyChange(post.id, e.target.value)}
+                    />
+                    <button
+                      onClick={() => handleReplySubmit(post.id)}
+                      className="mt-2 bg-green-500 text-black px-4 py-2 rounded-lg hover:bg-green-600"
+                    >
+                      Reply
+                    </button>
+                  </div>
                 </div>
               ))}
           </div>

