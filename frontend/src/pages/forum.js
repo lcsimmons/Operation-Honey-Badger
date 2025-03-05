@@ -129,7 +129,7 @@ export default function Forum() {
             <p className="text-gray-400 italic mt-2">"Innovation, Distraction, Opossum Action™"</p>
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-4">Opossum Forum - Welcome {username}! 👋</h1>
+          <h1 className="text-2xl font-bold text-black mb-4">Opossum Forum - Welcome {username}! 👋</h1>
 
           {/* Profile & Logout */}
           <div className="flex items-center justify-between mb-6">
@@ -140,14 +140,14 @@ export default function Forum() {
                 className="w-12 h-12 rounded-full border" 
                 onError={(e) => e.target.src = "/default.png"}
               />
-              <p className="text-lg font-semibold text-white">{username}</p>
+              <p className="text-lg font-semibold text-black">{username}</p>
             </div>
             <button
               onClick={() => {
                 localStorage.clear();
                 router.push("/login");
               }}
-              className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600"
+              className="bg-red-500 text-black p-2 rounded-lg hover:bg-red-600"
             >
               Logout
             </button>
@@ -163,7 +163,7 @@ export default function Forum() {
             />
             <button
               onClick={handleCommentSubmit}
-              className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              className="mt-2 bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600"
             >
               Post
             </button>
@@ -208,7 +208,7 @@ export default function Forum() {
                     />
                     <button
                       onClick={() => handleReplySubmit(post.id)}
-                      className="mt-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                      className="mt-2 bg-green-500 text-black px-4 py-2 rounded-lg hover:bg-green-600"
                     >
                       Reply
                     </button>
