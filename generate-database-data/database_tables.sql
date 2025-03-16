@@ -46,7 +46,11 @@ CREATE TABLE `Forum` (
   `ForumID` int PRIMARY KEY AUTO_INCREMENT,
   `Title` varchar(255),
   `Description` text,
-  `ForumCategory` varchar(255)
+  `ForumCategory` varchar(255),
+  `UserID` int,
+  `IsPinned` boolean,
+  `LikesCount` int,
+  `Timestamp` datetime
 );
 
 CREATE TABLE `Expenses` (
@@ -106,6 +110,8 @@ ALTER TABLE `Keys` ADD FOREIGN KEY (`ResourceID`) REFERENCES `CloudResources` (`
 ALTER TABLE `ForumComments` ADD FOREIGN KEY (`ForumID`) REFERENCES `Forum` (`ForumID`);
 
 ALTER TABLE `ForumComments` ADD FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`);
+
+ALTER TABLE `Forum` ADD FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`);
 
 ALTER TABLE `Expenses` ADD FOREIGN KEY (`UserID`) REFERENCES `Users` (`UserID`);
 
