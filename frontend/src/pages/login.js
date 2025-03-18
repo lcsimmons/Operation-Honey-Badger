@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { loginUser } from "./api/apiHelper";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -54,15 +55,30 @@ export default function Login() {
     // Encode credentials for future API use
     const encodedUsername = btoa(username);
     const encodedPassword = btoa(password);
+    
+    const res = await loginUser({username: encodedUsername, password: encodedPassword});
 
-    if (validUsers[username] && validUsers[username].password === password) {
+    console.log(res)
+
+    if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {
+      const user = res.data['username'] || username
+      let avatar = "/default.png"
+
       localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("username", username);
-      localStorage.setItem("avatar", validUsers[username].avatar);
-      router.push("/forum");
+      localStorage.setItem("username", user);
+      localStorage.setItem("avatar", avatar);
+
+
+      try{
+        router.push("/forum");
+      }catch(err){
+        console.err(err)
+      }
     } else {
       setError("Invalid username or password. Please try again.");
     }
+
+    
   };
 
   const handleForgotPassword = () => {
