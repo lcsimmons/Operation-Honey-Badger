@@ -4,7 +4,7 @@ import { Home, List, Clipboard, AlertTriangle, Settings, User, LogOut } from "lu
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(false);
-  const manualExpand = useRef(false); // Keeps expansion state across page navigations
+  const manualExpand = useRef(false); 
 
   const handleMouseEnter = () => {
     if (!manualExpand.current) {
@@ -33,7 +33,10 @@ const Sidebar = () => {
     >
       <div className="relative flex flex-col h-full text-black p-4">
         {/* Logo */}
-        <div className="text-2xl font-bold mb-6">Co.</div>
+        <div className="w-12 h-12 flex items-center justify-center mx-auto flex-shrink-0">
+          <img src="/honey_badger.png" className="w-full h-full object-contain" alt="Honey Badger Logo" />
+        </div>
+      <br></br>
 
         {/* Navigation */}
         <nav className="space-y-10">
