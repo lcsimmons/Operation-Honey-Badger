@@ -85,7 +85,7 @@ export default function Logs() {
 
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
                 {/* Search & Filter Panel */}
-                <div className="bg-white/70 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
+                <div className="bg-white/40 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
                     <div className="flex items-center w-2/3 bg-gray-100 p-2 rounded-lg">
                         <Search size={20} className="text-gray-400" />
                         <input
@@ -108,7 +108,7 @@ export default function Logs() {
                 </div>
 
                 {/* Bar Chart - Logs Per Timestamp */}
-                <div className="bg-white/70 p-4 rounded-lg shadow-md mt-6">
+                <div className="bg-white/40 p-4 rounded-lg shadow-md mt-6">
                     <h2 className="text-lg font-bold">Log Entries Over Time</h2>
                     <ResponsiveContainer width="100%" height={150}>
                         <BarChart data={barChartData}>
@@ -121,10 +121,10 @@ export default function Logs() {
                 </div>
 
                 {/* Logs Table */}
-                <div className="bg-white/70 p-6 rounded-lg shadow-md mt-6 overflow-auto max-h-[65vh]">
+                <div className="bg-white/40 p-6 rounded-lg shadow-md mt-6 overflow-auto max-h-[65vh]">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-100">
+                            <tr className="bg-gray-100/60">
                                 <th className="p-2 border-b">Timestamp</th>
                                 <th className="p-2 border-b">Source</th>
                                 <th className="p-2 border-b">Host</th>
@@ -134,7 +134,7 @@ export default function Logs() {
                         <tbody>
                             {currentLogs.length > 0 ? (
                                 currentLogs.map((log) => (
-                                    <tr key={log.id} className="border-b hover:bg-gray-50">
+                                    <tr key={log.id} className="border-b hover:bg-gray-50/40">
                                         <td className="p-2">{new Date(log.timestamp).toLocaleString()}</td>
                                         <td className="p-2">{log.source}</td>
                                         <td className="p-2">{log.host}</td>

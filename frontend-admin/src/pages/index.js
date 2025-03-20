@@ -31,7 +31,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 text-black ml-20 transition-all duration-300">
         {/* TopBar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white/50 backdrop-blur-lg shadow-md rounded-lg m-4">
+        <div className="flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg m-4">
           <h1 className="text-xl font-semibold">
             Operation Honey Badger: <span className="font-bold">Admin Dashboard</span>
           </h1>
@@ -55,7 +55,7 @@ export default function Dashboard() {
         {/* Dashboard Content */}
         <div className="grid grid-cols-3 gap-6 p-6">
           {/* MITRE ATT&CK */}
-          <div className="bg-white/60 p-4 rounded-lg shadow-md flex flex-col">
+          <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
             <h2 className="text-lg font-bold">MITRE | ATT&CK</h2>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -68,14 +68,23 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Recent Reports */}
-          <div className="bg-white/60 p-4 rounded-lg shadow-md flex flex-col items-center">
-            <h2 className="text-lg font-bold">Recent Reports</h2>
-            <p className="text-5xl font-bold text-black mt-2">8</p>
+          {/* Recent Reports & Report Severity */}
+          <div className="grid grid-rows-2 gap-6">
+            {/* Recent Reports */}
+            <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col items-center">
+              <h2 className="text-lg font-bold">Recent Reports</h2>
+              <p className="text-5xl font-bold text-black mt-2">8</p>
+            </div>
+
+            {/* Report Severity */}
+            <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col items-center">
+              <h2 className="text-lg font-bold">Report Severity</h2>
+              <p className="text-5xl font-bold text-red-600 mt-2">High</p>
+            </div>
           </div>
 
           {/* Bar Charts */}
-          <div className="bg-white/60 p-4 rounded-lg shadow-md">
+          <div className="row-span-21 bg-white/40 p-4 rounded-lg shadow-md">
             <h2 className="text-lg font-bold">Engagement Time</h2>
             <ResponsiveContainer width="100%" height={120}>
               <BarChart data={barData}>
@@ -97,8 +106,65 @@ export default function Dashboard() {
           </div>
 
           {/* Attack Types */}
-          <div className="col-span-2 bg-white/60 p-4 rounded-lg shadow-md flex flex-col">
+          <div className="col-span-2 row-span-20 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
             <h2 className="text-lg font-bold">Attack Types</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Another thing */}
+          <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+            <h2 className="text-lg font-bold">LOL</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+
+          {/* Another thing */}
+          <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+            <h2 className="text-lg font-bold">LOL</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Another thing */}
+          <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+            <h2 className="text-lg font-bold">LOL</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Another thing */}
+          <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+            <h2 className="text-lg font-bold">LOL</h2>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">

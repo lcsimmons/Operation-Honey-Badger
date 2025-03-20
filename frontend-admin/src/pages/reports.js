@@ -67,7 +67,7 @@ export default function Reports() {
             {/* Main Content */}
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
                 {/* Search Bar */}
-                
+
                 <div className="bg-white/70 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
                     <div className="max-w-[800px] flex items-center w-2/3 bg-gray-100 p-2 rounded-lg">
                         <Search size={20} className="text-gray-400" />
