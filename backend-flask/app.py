@@ -7,11 +7,13 @@ import os
 import sqlite3
 import json
 import hashlib
+import uuid
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
 from postgres_db import get_db_connection, log_enhanced_attacker_info
 from psycopg2.extras import DictCursor
+from datetime import datetime
 
 app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
@@ -319,6 +321,56 @@ def analyze_login(data):
     
     payload = username + password
     return jsonify({"login": analyze_payload(payload)})
+
+def generate_detailed_attacker_json(input_data):
+    
+    ip_address = input_data.get('ip', 'Unknown')
+    
+    user_agent_string = input_data.get('user_agent', '')
+    parsed_ua = parse(user_agent_string)
+    
+    device_fingerprint = input_data.get('device_fingerprint', hashlib.sha256(json.dumps({
+        'ip': ip_address,
+        'user_agent': user_agent_string
+    }, sort_keys=True).encode()).hexdigest())
+    
+    browser = parsed_ua.browser.family
+    os = parsed_ua.os.family
+    
+    device_type = 'Mobile' if parsed_ua.is_mobile else 'Tablet' if parsed_ua.is_tablet else 'PC' if parsed_ua.is_pc else 'Other'
+    
+    bot_or_human = 'Bot' if parsed_ua.is_bot else 'Human'
+    
+    first_interaction = input_data.get('first_interaction', str(datetime.now()))
+    current_interaction = input_data.get('current_interaction', str(datetime.now()))
+
+    session_id = input_data.get('session_id', 'Unknown')
+    payload = input_data.get('payload', '')
+
+    gemini_response = input_data.get('gemini_response', 'No response')
+    request_url = input_data.get('request_url', 'Unknown')
+    
+    # Construct the JSON output
+    result_json = {
+        "ip": ip_address,
+        "user-agent": user_agent_string,
+        "device-fingerprint": device_fingerprint,
+        "browser": browser,
+        "os": os,
+        "device-type": device_type,
+        "bot-or-human": bot_or_human,
+        "first-interaction": first_interaction,
+        "current-interaction": current_interaction,
+        "sessionID": session_id,
+        "payload": payload,
+        "gemini-response": gemini_response,
+        "request-url": request_url,
+        "severity-rating": "High",
+        "incident-response-id" : f"IR-{uuid.uuid4()}",
+        "log-id" : f"LOG-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4()}"
+    }
+    
+    return result_json
 
 @app.route('/api/test', methods=['GET'])
 def test_connection():
