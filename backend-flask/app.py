@@ -8,6 +8,7 @@ import sqlite3
 import json
 import hashlib
 import uuid
+import requests
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
@@ -370,7 +371,16 @@ def generate_detailed_attacker_json(input_data):
         "log-id" : f"LOG-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4()}"
     }
     
+    send_log_to_logstash(result_json)
     return result_json
+
+def send_log_to_logstash(log_data):
+    logstash_url = 'http://localhost:5044'  # Logstash HTTP input port
+    try:
+        response = requests.post(logstash_url, json=log_data)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending log to Logstash: {e}")
 
 @app.route('/api/test', methods=['GET'])
 def test_connection():
