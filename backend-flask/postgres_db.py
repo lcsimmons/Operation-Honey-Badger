@@ -1,10 +1,13 @@
 import psycopg2
 from dotenv import load_dotenv
 import os
+import uuid
+import requests
 from psycopg.rows import dict_row
 from psycopg2.extras import DictCursor
 import psycopg
-
+from datetime import datetime
+import json
 
 
 # Actual Database connection
@@ -89,4 +92,42 @@ def log_enhanced_attacker_info(attacker_info):
             )
         )
     conn.commit()
+
+    attacker_json = generate_attacker_json(attacker_info)
+    response = send_to_logstash("http://localhost:5044", attacker_json)
+    #Response used for debugging
+
+    
     cur.close()
+
+def generate_attacker_json(attacker_info):
+
+    attacker_log = {
+        "ip": attacker_info.get("ip_address"),
+        "user-agent": attacker_info.get("user_agent"),
+        "device-fingerprint": attacker_info.get("device_fingerprint"),
+        "browser OS": f"{attacker_info.get('browser')} {attacker_info.get('os')}",
+        "device-type": attacker_info.get("device_type"),
+        "bot-or-human": "bot" if attacker_info.get("is_bot") else "human",
+        "first-interaction": attacker_info.get("first_seen", str(datetime.now())),
+        "current-interaction": str(datetime.now()),
+        "sessionID": str(uuid.uuid4()),  # Generate a unique session ID
+        "payload": attacker_info.get("payload", ""),
+        "gemini-response": attacker_info.get("gemini_response", ""),
+        "request-url": attacker_info.get("request_url", ""),
+        "severity-rating": attacker_info.get("severity_rating", "low"),  # Default to "low" if not provided
+        "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
+        "log-id": str(uuid.uuid4())  # Generate a unique log ID
+    }
+
+    return json.dumps(attacker_log, indent=4)
+
+def send_log_to_logstash(elk_url, attacker_json):
+    url = f"{elk_url}/{index_name}/_doc/"
+    index_name = "attacker_logs"
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, headers=headers, data=attacker_json)
+    return response 
