@@ -96,7 +96,6 @@ def log_enhanced_attacker_info(attacker_info):
     attacker_json = generate_attacker_json(attacker_info)
     response = send_to_logstash("http://localhost:5044", attacker_json)
     #Response used for debugging
-
     
     cur.close()
 
