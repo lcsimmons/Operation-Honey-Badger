@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google-cloud/translate": "^9.0.1",
     "lucide-react": "^0.483.0",
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "rechart": "^0.0.1",
     "recharts": "^2.15.1"
   },
   "devDependencies": {
