@@ -59,7 +59,7 @@ def log_attacker_information(attacker_summary):
     conn.commit()
 
     attacker_json = generate_attacker_json(attacker_info, attack_command)
-    response = send_to_logstash("http://localhost:5044", attacker_json)
+    response = send_log_to_logstash("http://localhost:5044", attacker_json)
     cur.close()
 
 
@@ -140,7 +140,7 @@ def generate_attacker_json(attacker_info, attack_command):
         "sessionID": attack_command.get("session_id"),  # Generate a unique session ID
         "payload": attacker_info.get("payload", ""),
         "gemini-response": attack_command.get("gemini", ""),
-        "request-url": attacker_command.get("request_details", ""),
+        "request-url": attack_command.get("request_details", ""),
         "severity-rating": attacker_info.get("severity_rating", "high"),  # Default to "low" if not provided
         "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
         "log-id": str(uuid.uuid4())  # Generate a unique log ID

@@ -10,7 +10,7 @@ import hashlib
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
-from postgres_db import get_db_connection, log_attacker_information
+from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json
 from psycopg2.extras import DictCursor
 
 app = Flask(__name__)
@@ -650,6 +650,38 @@ def debug_attackers():
 #         print(e)
 #         return jsonify({"error": str(e)}), 500
 
+@app.route('/test_generate_json', methods=['POST'])
+def test_generate_json():
+    # Sample attacker information and attack command for testing
+    attacker_info = {
+        "ip_address": "192.168.0.1",
+        "user_agent": "Mozilla/5.0",
+        "device_fingerprint": "sample-fingerprint-123",
+        "geolocation": "USA",
+        "browser": "Chrome",
+        "os": "Windows 10",
+        "device_type": "desktop",
+        "is_bot": False,
+        "first_seen": "1/1/2025",
+        "severity_rating": "high",
+        "payload": "example_payload"
+    }
+
+    attack_command = {
+        "session_id": "123013238",  # Generate a unique session ID
+        "gemini": {
+            "technique": "SQL Injection",
+            "iocs": "12345-67890",
+            "description": "An SQL Injection attempt."
+        },
+        "attacker_info": attacker_info,
+        "request_details": {
+            "path": "/login"
+        }
+    }
+
+    attacker_json = generate_attacker_json(attacker_info, attack_command)
+    return jsonify({"attacker_log": attacker_json}), 200
 
 #initialize the in memory database
 with app.app_context():
