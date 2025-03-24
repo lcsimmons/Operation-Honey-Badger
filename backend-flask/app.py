@@ -680,7 +680,7 @@ def test_generate_json():
         }
     }
 
-    attacker_json = generate_attacker_json(attacker_info, attack_command)
+    attacker_json = generate_attacker_json(attack_command)
     return jsonify({"attacker_log": attacker_json}), 200
 
 #initialize the in memory database

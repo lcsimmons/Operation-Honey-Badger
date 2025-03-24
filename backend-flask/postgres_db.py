@@ -58,7 +58,7 @@ def log_attacker_information(attacker_summary):
 
     conn.commit()
 
-    attacker_json = generate_attacker_json(attacker_info, attack_command)
+    attacker_json = generate_attacker_json(attack_command)
     response = send_log_to_logstash("http://localhost:5044", attacker_json)
     cur.close()
 
@@ -126,22 +126,22 @@ def update_attacker(attacker_info):
     
     cur.close()
 
-def generate_attacker_json(attacker_info, attack_command):
+def generate_attacker_json(attack_command):
 
     attacker_log = {
-        "ip": attacker_info.get("ip_address"),
-        "user-agent": attacker_info.get("user_agent"),
-        "device-fingerprint": attacker_info.get("device_fingerprint"),
-        "browser OS": f"{attacker_info.get('browser')} {attacker_info.get('os')}",
-        "device-type": attacker_info.get("device_type"),
-        "bot-or-human": "bot" if attacker_info.get("is_bot") else "human",
-        "first-interaction": attacker_info.get("first_seen", str(datetime.now())),
+        "ip": attack_command.get("attacker_info").get("ip_address"),
+        "user-agent": attack_command.get("attacker_info").get("user_agent"),
+        "device-fingerprint": attack_command.get("attacker_info").get("device_fingerprint"),
+        "browser OS": f"{attack_command.get('attacker_info').get('browser')} {attack_command.get('attacker_info').get('os')}",
+        "device-type": attack_command.get("attacker_info").get("device_type"),
+        "bot-or-human": "bot" if attack_command.get("attacker_info").get("is_bot") else "human",
+        "first-interaction": attack_command.get("attacker_info").get("first_seen", str(datetime.now())),
         "current-interaction": str(datetime.now()),
         "sessionID": attack_command.get("session_id"),  # Generate a unique session ID
-        "payload": attacker_info.get("payload", ""),
+        "payload": attack_command.get("attacker_info").get("payload", ""),
         "gemini-response": attack_command.get("gemini", ""),
         "request-url": attack_command.get("request_details", ""),
-        "severity-rating": attacker_info.get("severity_rating", "high"),  # Default to "low" if not provided
+        "severity-rating": attack_command.get("attacker_info").get("severity_rating", "high"),  # Default to "low" if not provided
         "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
         "log-id": str(uuid.uuid4())  # Generate a unique log ID
     }
