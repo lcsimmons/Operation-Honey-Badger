@@ -2,40 +2,46 @@ import Sidebar from "../components/sidebar";
 import { useState, useEffect } from "react";
 
 export default function Settings() {
-  // Start with null to indicate we haven't loaded the preference yet
-  const [selectedLanguage, setSelectedLanguage] = useState(null);
+  // Start with definite boolean values instead of null
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  // Start with false but update immediately on mount
+  const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(false);
   
-  // Load the language preference from localStorage only once on component mount
+  // Load settings from localStorage only once on component mount
   useEffect(() => {
+    // Load language setting
     const savedLanguage = localStorage.getItem('reportLanguage');
-    // Set to English only if nothing is saved, otherwise use the saved value
-    setSelectedLanguage(savedLanguage || "en");
+    if (savedLanguage) {
+      setSelectedLanguage(savedLanguage);
+    }
+    
+    // Load text-to-speech setting - parse as boolean explicitly
+    const savedTTS = localStorage.getItem('textToSpeechEnabled');
+    // Make sure we're explicitly parsing as boolean
+    const ttsEnabled = savedTTS === 'true';
+    setTextToSpeechEnabled(ttsEnabled);
+    
+    console.log('Settings page loaded TTS setting:', savedTTS, 'Parsed as:', ttsEnabled);
+    console.log('Settings page loaded language setting:', savedLanguage);
   }, []);
   
-  // Only save to localStorage when the language is changed by the user
-  // and not during the initial load
-  useEffect(() => {
-    // Only save if selectedLanguage is not null (meaning it's been loaded or changed)
-    if (selectedLanguage !== null) {
-      localStorage.setItem('reportLanguage', selectedLanguage);
-    }
-  }, [selectedLanguage]);
-
-  // Don't render the language selector until the saved preference is loaded
-  if (selectedLanguage === null) {
-    return (
-      <div className="flex min-h-screen bg-gradient-to-br from-[#91d2ff] to-[#72b4ea]">
-        <Sidebar />
-        <div className="flex-1 text-black ml-20 transition-all duration-300">
-          <div className="p-6">
-            <div className="bg-white/40 backdrop-blur-lg shadow-md rounded-lg p-6">
-              Loading settings...
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Save language setting when it changes
+  const handleLanguageChange = (e) => {
+    const newLanguage = e.target.value;
+    setSelectedLanguage(newLanguage);
+    // Immediately update localStorage with the new value
+    localStorage.setItem('reportLanguage', newLanguage);
+    console.log('Language changed to:', newLanguage, 'Saved to localStorage as:', newLanguage);
+  };
+  
+  // Save text-to-speech setting immediately when it changes
+  const handleTTSToggle = (e) => {
+    const newValue = e.target.checked;
+    setTextToSpeechEnabled(newValue);
+    // Immediately update localStorage with the new value
+    localStorage.setItem('textToSpeechEnabled', String(newValue));
+    console.log('TTS checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
+  };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#91d2ff] to-[#72b4ea]">
@@ -100,7 +106,7 @@ export default function Settings() {
                 <select 
                   id="language-select"
                   value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  onChange={handleLanguageChange}
                   className="bg-white border border-gray-300 text-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="en">English</option>
@@ -114,7 +120,34 @@ export default function Settings() {
                   <option value="pt">Portuguese</option>
                   <option value="ko">Korean</option>
                   <option value="vi">Vietnamese</option>
+                  <option value="hi">Hindi</option>
                 </select>
+              </div>
+            </div>
+            
+            {/* Text-to-Speech Option with explicit onChange handler */}
+            <div className="mb-4">
+              <h2 className="text-lg font-medium mb-2">Text-to-Speech</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Enable text-to-speech functionality for report details. When enabled, text in reports will be read aloud when you hover over it.
+              </p>
+              
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="text-to-speech-checkbox"
+                  checked={textToSpeechEnabled}
+                  onChange={handleTTSToggle}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="text-to-speech-checkbox" className="text-sm font-medium text-gray-700">
+                  Enable Text-to-Speech
+                </label>
+              </div>
+              
+              {/* Debug info - can be removed in production */}
+              <div className="text-xs text-gray-500 mt-1">
+                Current setting: {textToSpeechEnabled ? 'Enabled' : 'Disabled'}
               </div>
             </div>
             
