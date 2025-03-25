@@ -1,11 +1,13 @@
 import psycopg2
 from dotenv import load_dotenv
 import os
+import uuid
+import requests
 from psycopg.rows import dict_row
 from psycopg2.extras import DictCursor
 import psycopg
+import json
 from datetime import datetime, timedelta, timezone
-
 _psql_db_conn = None
 
 # Actual Database connection
@@ -55,6 +57,9 @@ def log_attacker_information(attacker_summary):
     update_attack_command(attack_command)
 
     conn.commit()
+
+    attacker_json = generate_attacker_json(attack_command)
+    response = send_log_to_logstash("http://localhost:5044", attacker_json)
     cur.close()
 
 
@@ -117,8 +122,41 @@ def update_attacker(attacker_info):
         attacker_id = cur.fetchone()
         attacker_id = attacker_id['attacker_id']
     conn.commit()
+    #Response used for debugging
+    
     cur.close()
-    return attacker_id
+
+def generate_attacker_json(attack_command):
+
+    attacker_log = {
+        "ip": attack_command.get("attacker_info").get("ip_address"),
+        "user-agent": attack_command.get("attacker_info").get("user_agent"),
+        "device-fingerprint": attack_command.get("attacker_info").get("device_fingerprint"),
+        "browser OS": f"{attack_command.get('attacker_info').get('browser')} {attack_command.get('attacker_info').get('os')}",
+        "device-type": attack_command.get("attacker_info").get("device_type"),
+        "bot-or-human": "bot" if attack_command.get("attacker_info").get("is_bot") else "human",
+        "first-interaction": attack_command.get("attacker_info").get("first_seen", str(datetime.now())),
+        "current-interaction": str(datetime.now()),
+        "sessionID": attack_command.get("session_id"),  # Generate a unique session ID
+        "payload": attack_command.get("attacker_info").get("payload", ""),
+        "gemini-response": attack_command.get("gemini", ""),
+        "request-url": attack_command.get("request_details", ""),
+        "severity-rating": attack_command.get("attacker_info").get("severity_rating", "high"),  # Default to "low" if not provided
+        "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
+        "log-id": str(uuid.uuid4())  # Generate a unique log ID
+    }
+
+    return json.dumps(attacker_log, indent=4)
+
+def send_log_to_logstash(elk_url, attacker_json):
+    url = f"{elk_url}/{index_name}/_doc/"
+    index_name = "attacker_logs"
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, headers=headers, data=attacker_json)
+    return response
 
 def update_honey_session(attacker_id):
     conn = get_db_connection()
