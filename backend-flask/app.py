@@ -242,9 +242,8 @@ def get_attacker_summary(attacker_info):
         "request_details": {
             "full_url": request.url,
             "path": request.path,
-            "query_string": request.query_string,
+            "query_string": request.query_string.decode('utf-8'),
             "root_path": request.root_path
-
         }
     }
 
@@ -815,6 +814,11 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
+
+    if not attacker_json:
+        #Not connecting to the elk
+        return jsonify({"error" : "Probably having issue connecting to elk"}), 500
+    
     return jsonify({"attacker_log": attacker_json}), 200
 
 #initialize the in memory database
