@@ -13,7 +13,6 @@ from user_agents import parse
 from decoy_database import get_memory_db
 from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash
 from psycopg2.extras import DictCursor
-import geocoder
 
 
 app = Flask(__name__)
@@ -132,12 +131,6 @@ def extract_attacker_info():
     
     # Placeholder for geolocation
     #Will need to get a real service/api to get the geolocation based on IP
-
-    #Assign IP address to a variable
-    geocoder_ip = geocoder.ip("165.183.90.84")
-    print(geocoder_ip)
-    # print(geocoder_ip)
-    print(geocoder_ip.country)
 
     geolocation = "Unknown"
     
