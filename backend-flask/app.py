@@ -13,6 +13,8 @@ from user_agents import parse
 from decoy_database import get_memory_db
 from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash
 from psycopg2.extras import DictCursor
+import geocoder
+
 
 app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
@@ -130,6 +132,13 @@ def extract_attacker_info():
     
     # Placeholder for geolocation
     #Will need to get a real service/api to get the geolocation based on IP
+
+    #Assign IP address to a variable
+    geocoder_ip = geocoder.ip("165.183.90.84")
+    print(geocoder_ip)
+    # print(geocoder_ip)
+    print(geocoder_ip.country)
+
     geolocation = "Unknown"
     
     # Look for IOCs
@@ -556,6 +565,131 @@ def fake_reimbursements():
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+@app.route('/api/admin/it_support', methods=['GET'])
+def fake_it_support():
+    request_args = list(request.args.items())
+
+    # print(dict(request.args))
+    # print(dict(request.args).items())
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select ITSupport.reported_by as reported_by_id, ITSupport.assigned_to as assigned_to_id, user1.name as reported_by, user2.name as assigned_to, ITSupport.* from ITSupport " \
+        "inner join Users as user1 on ITSupport.reported_by = user1.user_id " \
+        "inner join Users as user2 on ITSupport.assigned_to = user2.user_id "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/api/admin/performance_analytics', methods=['GET'])
+def fake_performance_analytics():
+    request_args = list(request.args.items())
+
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select *, d.name as department_name from PerformanceAnalytics " \
+        "inner join Department as d on PerformanceAnalytics.department_id = d.department_id "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+
+@app.route('/api/admin/corporate_initiatives', methods=['GET'])
+def fake_corporate_initiatives():
+    request_args = list(request.args.items())
+
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select * from CorporateInitiatives "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])

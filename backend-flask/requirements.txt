@@ -4,6 +4,7 @@ python-dotenv==1.0.1
 google-genai
 psycopg[binary]
 psycopg2-binary
+psycopg2
 flask-cors
 faker
 user-agents

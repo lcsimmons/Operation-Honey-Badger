@@ -86,7 +86,7 @@ def create_table():
     cur.execute(""" CREATE TABLE SOC_Dashboard
                     (
                         report_id       serial primary key,
-                        session_id serial references  Honeypot (session_id),
+                        session_id serial references  Honeypot_Session (session_id),
                         severity integer,
                         summary text,
                         affected_components text,
