@@ -53,11 +53,14 @@ def log_attacker_information(attacker_summary):
         "request_details": attacker_summary['request_details']
     }
 
+    #update the attack table with the attack command / request information
     update_attack_command(attack_command)
 
     #generate the json for the log
     attacker_json = generate_attacker_json(attack_command)
-    response = send_log_to_logstash("http://localhost:5044", attacker_json)
+
+    #send to logstash, can have a response if the connection isn't working
+    send_log_to_logstash("http://localhost:5044", attacker_json)
 
     #close db connection
     conn.commit()
@@ -251,11 +254,14 @@ def generate_attacker_json(attack_command):
     return json.dumps(attacker_log, indent=4)
 
 def send_log_to_logstash(elk_url, attacker_json):
-    url = f"{elk_url}/{index_name}/_doc/"
     index_name = "attacker_logs"
+    url = f"{elk_url}/{index_name}/_doc/"
     headers = {
         "Content-Type": "application/json"
     }
-
-    response = requests.post(url, headers=headers, data=attacker_json)
-    return response
+    try:
+        response = requests.post(url, headers=headers, data=attacker_json)
+        return response
+    except Exception as e: 
+        print(e)
+        return None
