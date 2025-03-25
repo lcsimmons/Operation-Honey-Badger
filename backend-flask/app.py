@@ -12,7 +12,6 @@ from user_agents import parse
 from decoy_database import get_memory_db
 from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash
 from psycopg2.extras import DictCursor
-import geocoder
 
 
 app = Flask(__name__)
@@ -132,12 +131,6 @@ def extract_attacker_info():
     # Placeholder for geolocation
     #Will need to get a real service/api to get the geolocation based on IP
 
-    #Assign IP address to a variable
-    geocoder_ip = geocoder.ip("165.183.90.84")
-    print(geocoder_ip)
-    # print(geocoder_ip)
-    print(geocoder_ip.country)
-
     geolocation = "Unknown"
     
     # Look for IOCs
@@ -242,9 +235,8 @@ def get_attacker_summary(attacker_info):
         "request_details": {
             "full_url": request.url,
             "path": request.path,
-            "query_string": request.query_string,
+            "query_string": request.query_string.decode('utf-8'),
             "root_path": request.root_path
-
         }
     }
 
@@ -815,9 +807,12 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
-    response = send_log_to_logstash(attacker_json)
 
-    return response
+    if not attacker_json:
+        #Not connecting to the elk
+        return jsonify({"error" : "Probably having issue connecting to elk"}), 500
+    
+    return jsonify({"attacker_log": attacker_json}), 200
 
 #initialize the in memory database
 with app.app_context():
