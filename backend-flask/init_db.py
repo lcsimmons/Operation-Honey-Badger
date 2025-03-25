@@ -43,12 +43,12 @@ def create_table():
     
     cur.execute('DROP TABLE IF EXISTS Attacker CASCADE;')
     cur.execute(""" CREATE TABLE Attacker (
-                        id serial primary key,
+                        attacker_id serial primary key,
                         ip_address TEXT,
                         user_agent TEXT,
                         device_fingerprint TEXT,
                         geolocation TEXT,
-                        ioc TEXT,
+                        --- ioc TEXT, might need to remove this
                         browser TEXT,       
                         os TEXT,                 
                         device_type TEXT,        
@@ -60,26 +60,25 @@ def create_table():
                 
                 );
     
-    cur.execute('DROP TABLE IF EXISTS Honeypot CASCADE;')
-    cur.execute(""" CREATE TABLE Honeypot (
+    cur.execute('DROP TABLE IF EXISTS Honeypot_Session CASCADE;')
+    cur.execute(""" CREATE TABLE Honeypot_Session (
                         session_id serial primary key ,
-                        attacker_ip text,
-                        user_agent text,
-                        device_fingerprint text,
-                        geolocation text,
-                        interaction_type text,
-                        owasp_technique text,
-                        timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-                        session_duration integer
+                        attacker_id serial references Attacker(attacker_id),
+                        last_seen timestamp DEFAULT CURRENT_TIMESTAMP,
+                        first_seen timestamp DEFAULT CURRENT_TIMESTAMP
                     ); """
                 );
 
-    cur.execute('DROP TABLE IF EXISTS Honeypot_Commands CASCADE;')
-    cur.execute(""" CREATE TABLE Honeypot_Commands
+    cur.execute('DROP TABLE IF EXISTS Attack CASCADE;')
+    cur.execute(""" CREATE TABLE Attack
                     (
-                        session_id       serial references Honeypot (session_id),
-                        executed_command text,
-                        timestamp        timestamp DEFAULT CURRENT_TIMESTAMP
+                        session_id       serial references Honeypot_Session (session_id),
+                        request_url text,
+                        interaction_type text,
+                        owasp_technique text,
+                        ioc text,
+                        gemini_response text,
+                        timestamp timestamp DEFAULT CURRENT_TIMESTAMP
                     ); """
                 );        
     
@@ -87,7 +86,7 @@ def create_table():
     cur.execute(""" CREATE TABLE SOC_Dashboard
                     (
                         report_id       serial primary key,
-                        session_id serial references  Honeypot (session_id),
+                        session_id serial references  Honeypot_Session (session_id),
                         severity integer,
                         summary text,
                         affected_components text,

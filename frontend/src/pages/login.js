@@ -56,29 +56,33 @@ export default function Login() {
     const encodedUsername = btoa(username);
     const encodedPassword = btoa(password);
     
-    const res = await loginUser({username: encodedUsername, password: encodedPassword});
 
-    console.log(res)
+    try{
+      const res = await loginUser({username: encodedUsername, password: encodedPassword});
 
-    if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {
-      const user = res.data['username'] || username
-      let avatar = "/default.png"
+      console.log(res)
 
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("username", user);
-      localStorage.setItem("avatar", avatar);
+      //will be able to remove this soon since the api response tells you if it exists or not
+      if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {
+        const user = res.data['username'] || username
+        let avatar = "/default.png"
+
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("username", user);
+        localStorage.setItem("avatar", avatar);
 
 
-      try{
-        router.push("/forum");
-      }catch(err){
-        console.err(err)
+        try{
+          router.push("/forum");
+        }catch(err){
+          console.err(err)
+        }
+      } else {
+        setError("Invalid username or password. Please try again.");
       }
-    } else {
+    }catch(err){
       setError("Invalid username or password. Please try again.");
     }
-
-    
   };
 
   const handleForgotPassword = () => {
