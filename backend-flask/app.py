@@ -1,6 +1,5 @@
 import base64
 from flask import Flask, jsonify, request, g
-from elasticsearch import Elasticsearch
 from google import genai
 from dotenv import load_dotenv
 from unittest.mock import MagicMock
