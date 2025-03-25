@@ -5,7 +5,6 @@ import uuid
 import requests
 from psycopg.rows import dict_row
 from psycopg2.extras import DictCursor
-import psycopg
 import json
 from datetime import datetime, timedelta, timezone
 _psql_db_conn = None
