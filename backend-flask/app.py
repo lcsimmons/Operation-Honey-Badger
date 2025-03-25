@@ -1,5 +1,6 @@
 import base64
 from flask import Flask, jsonify, request, g
+from elasticsearch import Elasticsearch
 from google import genai
 from dotenv import load_dotenv
 from unittest.mock import MagicMock
@@ -10,7 +11,7 @@ import hashlib
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
-from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json
+from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash
 from psycopg2.extras import DictCursor
 import geocoder
 
@@ -801,7 +802,7 @@ def test_generate_json():
     }
 
     attack_command = {
-        "session_id": "123013238",  # Generate a unique session ID
+        "session_id": "123013238",
         "gemini": {
             "technique": "SQL Injection",
             "iocs": "12345-67890",
