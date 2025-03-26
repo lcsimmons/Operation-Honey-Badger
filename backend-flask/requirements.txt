@@ -9,3 +9,5 @@ flask-cors
 faker
 user-agents
 geocoder
+gunicorn
+python-dotenv

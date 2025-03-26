@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=env_path)
 def get_db_connection():
     try:
         conn = psycopg2.connect(host='localhost',
-                                database='honeybager_db_postgres',
+                                database='honeybadger_db_postgres',
                                 user=os.environ['DB_USERNAME'],
                                 password=os.environ['DB_PASSWORD'],#hardcode for now
                                 connect_timeout=1
@@ -48,7 +48,7 @@ def create_table():
                         user_agent TEXT,
                         device_fingerprint TEXT,
                         geolocation TEXT,
-                        --- ioc TEXT, might need to remove this
+                        -- ioc TEXT, might need to remove this
                         browser TEXT,       
                         os TEXT,                 
                         device_type TEXT,        
