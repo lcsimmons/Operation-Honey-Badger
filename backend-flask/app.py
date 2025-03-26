@@ -807,8 +807,9 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
+    response = send_log_to_logstash(attacker_json)
 
-    if not attacker_json:
+    if not response:
         #Not connecting to the elk
         return jsonify({"error" : "Probably having issue connecting to elk"}), 500
     
