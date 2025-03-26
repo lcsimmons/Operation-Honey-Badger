@@ -44,11 +44,12 @@ run:
 	@echo "Starting Flask application..."
 	$(PYTHON_VENV) $(APP_FILE)
 
-# Clean up the environment
+# Clean up the environment (including .pytest_cache)
 clean:
 	@echo "Cleaning up..."
 	rm -rf $(VENV_NAME)
 	rm -rf __pycache__
+	rm -rf .pytest_cache
 	rm -rf *.pyc
 	@echo "Cleanup complete."
 

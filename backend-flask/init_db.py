@@ -48,7 +48,7 @@ def create_table():
                         user_agent TEXT,
                         device_fingerprint TEXT,
                         geolocation TEXT,
-                        --- ioc TEXT, might need to remove this
+                        -- ioc TEXT, might need to remove this
                         browser TEXT,       
                         os TEXT,                 
                         device_type TEXT,        
