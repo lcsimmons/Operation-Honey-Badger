@@ -11,19 +11,38 @@ _psql_db_conn = None
 
 # Actual Database connection
 def get_db_connection():
-    try:
-        conn = psycopg2.connect(
-            host='localhost',
-            database='honeybadger_db_postgres',
-            user=os.environ['DB_USERNAME'],
-            password=os.environ['DB_PASSWORD'],
-            connect_timeout=3  # Increased timeout
-        )
-        print("Successfully connected to PostgreSQL database")
-        return conn
-    except Exception as e:
-        print(f"Database connection error: {e}")
-        return None
+    global _psql_db_conn
+    
+    #reduce the amount of actual connections
+    if _psql_db_conn is None:
+        try:
+            env_path = ".env"
+            load_dotenv(dotenv_path=env_path)
+            
+            _psql_db_conn = conn = psycopg2.connect(
+                host='localhost',
+                database='honeybadger_db_postgres',
+                user=os.environ['DB_USERNAME'],
+                password=os.environ['DB_PASSWORD'],
+                connect_timeout=3  # Increased timeout
+            )
+            print("Successfully connected to PostgreSQL database")
+            return _psql_db_conn
+        except Exception as e:
+            print(f"Database connection error: {e}")
+            return None
+    else:
+        # Return existing connection if it's still valid
+        try:
+            # Test if connection is still alive with a simple query
+            cur = _psql_db_conn.cursor()
+            cur.execute("SELECT 1")
+            cur.close()
+            return _psql_db_conn
+        except Exception:
+            # If connection is dead, set to None and try again
+            _psql_db_conn = None
+            return get_db_connection()
 
 def query_db(query, args=(), one=False):
     #cursor(cursor_factory=psycopg2.extras.DictCursor)
