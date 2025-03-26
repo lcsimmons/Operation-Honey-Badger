@@ -392,13 +392,6 @@ def test_get_employees_no_results(client, mock_attacker_info, mock_attacker_summ
     assert response.status_code == 200
     assert response.get_json() == []
 
-# Test the preflight OPTIONS route (though it's redundant)
-def test_preflight_method(client):
-    """Test the OPTIONS preflight request."""
-    response = client.options('/api/login')
-    assert response.status_code == 200
-    assert response.data == b''
-
 # Test the analyze endpoint
 @patch('app.analyze_payload')
 def test_analyze_success(mock_analyze_payload, client):

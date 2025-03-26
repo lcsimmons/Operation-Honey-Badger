@@ -374,9 +374,9 @@ def analyze_payload_2(payload):
     except Exception as e:
         return f"Error: {e}"
     
-@app.route("/api/login", methods=["OPTIONS"])
-def preflight_method():
-    return "",200
+# @app.route("/api/login", methods=["OPTIONS"])
+# def preflight_method():
+#     return "",200
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
