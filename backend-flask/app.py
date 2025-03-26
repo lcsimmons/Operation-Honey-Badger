@@ -373,7 +373,21 @@ def analyze_payload_2(payload):
         return response.text
     except Exception as e:
         return f"Error: {e}"
+
+def analyze_login(data):
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({"error": "username and password are required"}), 400
+
+    username_encoded = data['username']
+    password_encoded = data['password']
+    username = base64.b64decode(username_encoded).decode('utf-8')
+    password = base64.b64decode(password_encoded).decode('utf-8')
     
+    payload = username + password
+    return jsonify({"login": analyze_payload(payload)})
+
+
+#All the api routes
 @app.route("/api/login", methods=["OPTIONS"])
 def preflight_method():
     return "",200
@@ -461,23 +475,52 @@ def handleDecoyLogin():
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
-def analyze_login(data):
-    if not data or 'username' not in data or 'password' not in data:
-        return jsonify({"error": "username and password are required"}), 400
+#Forum Routes
+@app.route('/api/forum/comments', methods=['GET'])
+def get_forum_coments():
+    request_args = list(request.args.items())
 
-    username_encoded = data['username']
-    password_encoded = data['password']
-    username = base64.b64decode(username_encoded).decode('utf-8')
-    password = base64.b64decode(password_encoded).decode('utf-8')
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
     
-    payload = username + password
-    return jsonify({"login": analyze_payload(payload)})
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select *, fm.title as forum_title from ForumComments " \
+        "inner join Forum as fm on ForumComments.forum_id = f.forum_id " \
+        "inner join Users as us on ForumComments.user_id = u.user_id "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 #Admin route functions
 @app.route('/api/admin/reimbursement', methods=['GET'])
 def fake_reimbursements():
-    # request_data = request.get_json()
-
     #if we want to add some error handling
     # employee_name = request.args.get('name', default = "", type = str)
     # amount = request.args.get('amount', default = 0, type = int)
@@ -487,43 +530,6 @@ def fake_reimbursements():
     print(request.args.items())
 
     attacker_info = extract_attacker_info()
-
-    # # if not employee_name or not amount:
-    # #     log_attacker_information(attacker_info)
-    # #     return jsonify({"error": "No name or amount data provided. Invalid Request"}), 400
-    
-    # #send the information to the ai to process
-    # payload_to_analyze = {
-    #     "attacker": attacker_info,
-    #     "employee_name": employee_name,
-    #     "amount": amount
-    # }
-    
-    # # print(payload_to_analyze)
-
-    # gemini_analysis = analyze_payload_2(payload_to_analyze)
-
-    # response_string = str(gemini_analysis).split("\n")
-
-    # gemini_analysis_res = {
-    #     "technique": response_string[0],
-    #     "iocs": response_string[1],
-    #     "description": response_string[2] 
-    # }
-
-    # attacker_info = {
-    #     "attacker" : attacker_info,
-    #     "gemini" : gemini_analysis_res,
-    #     "request_details": {
-    #         "full_url": request.url,
-    #         "path": request.path,
-    #         "query_string": request.query_string,
-    #         "root_path": request.root_path
-
-    #     }
-    # }
-
-    # print(attacker_info['request_details'])
 
     attacker_summary = get_attacker_summary(attacker_info)
 
@@ -776,7 +782,7 @@ def debug_attackers():
 #         print(e)
 #         return jsonify({"error": str(e)}), 500
 
-@app.route('/test_generate_json', methods=['POST'])
+@app.route('/test_generate_json', methods=['GET'])
 def test_generate_json():
     # Sample attacker information and attack command for testing
     attacker_info = {
@@ -807,8 +813,9 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
+    response = send_log_to_logstash("http://localhost:5044", attacker_json)
 
-    if not attacker_json:
+    if not response:
         #Not connecting to the elk
         return jsonify({"error" : "Probably having issue connecting to elk"}), 500
     

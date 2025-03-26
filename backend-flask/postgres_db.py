@@ -17,7 +17,7 @@ def get_db_connection():
         env_path = ".env"
         load_dotenv(dotenv_path=env_path)
         _psql_db_conn = conn = psycopg2.connect(host='localhost',
-                                database='honeybager_db_postgres',
+                                database=os.environ['DB_NAME'],
                                 user=os.environ['DB_USERNAME'],
                                 password=os.environ['DB_PASSWORD'],
                                 )

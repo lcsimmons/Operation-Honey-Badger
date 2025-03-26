@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { loginUser } from "./api/apiHelper";
+import { getExpenses, loginUser } from "./api/apiHelper";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -59,8 +59,11 @@ export default function Login() {
 
     try{
       const res = await loginUser({username: encodedUsername, password: encodedPassword});
+      const res2 = await getExpenses()
+
 
       console.log(res)
+      console.log(res2)
 
       //will be able to remove this soon since the api response tells you if it exists or not
       if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {
