@@ -682,6 +682,45 @@ def fake_corporate_initiatives():
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+@app.route('/api/admin/employees', methods=['GET'])
+def getEmployees():
+    request_args = list(request.args.items())
+    
+    attacker_info = extract_attacker_info()
+    attacker_summary = get_attacker_summary(attacker_info)
+    log_attacker_information(attacker_summary)
+    
+    try:
+        # Connect to the database
+        db = get_memory_db()
+        
+        # Base query to get all employees
+        query = "SELECT * FROM Users "
+        
+        # Add WHERE clause if query parameters are provided
+        if len(request_args) != 0:
+            query += "WHERE "
+            
+            for i in range(len(request_args)):
+                query += request_args[i][0] + " = '" + request_args[i][1] + "'"
+                if i != len(request_args) - 1:
+                    query += " AND "
+        
+        # Execute the query
+        cur = db.execute(query)
+        result = cur.fetchall()
+        
+        # Convert the result to a list of dictionaries
+        res = []
+        if result:
+            res = [dict(row) for row in result]
+            
+        return jsonify(res)
+    
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
 def test_connection():
