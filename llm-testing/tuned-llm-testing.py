@@ -16,7 +16,7 @@ class TestCase:
 
 class GeminiTester:
     def __init__(self, model_name: str = "gemini-2.0-flash", batch_size: int = 158):
-        """Initialize the tester with Google API credentials from parent directory .env file."""
+        """Initialize the tester with Google API credentials from .env in the same directory."""
         self.ATTACK_VECTORS = [
             "SQL Injection",
             "XSS Injection",
@@ -26,13 +26,14 @@ class GeminiTester:
         ]
         self.batch_size = batch_size
         
-        # Load API key from parent directory
-        parent_env = Path(__file__).parent.parent / '.env'
-        load_dotenv(dotenv_path=parent_env)
+        # Load API key from the same directory as this script
+        current_dir = Path(__file__).parent  # Directory containing this script
+        env_file = current_dir / '.env'
+        load_dotenv(dotenv_path=env_file)
         
         self.api_key = os.getenv('GEMINI_API_KEY')
         if not self.api_key:
-            raise ValueError("GEMINI_API_KEY not found in parent directory .env file")
+            raise ValueError("GEMINI_API_KEY not found in .env file in the current directory")
             
         self.client = genai.Client(api_key=self.api_key)
         self.model_name = model_name
@@ -52,7 +53,7 @@ class GeminiTester:
         # Log initialization
         logging.info(f"Initializing GeminiTester with model: {model_name}")
         logging.info(f"Logs will be stored in: {self.logs_dir}")
-
+        
     def load_test_cases(self) -> List[TestCase]:
         """Load test cases from payloads_current_progress.json."""
         try:
