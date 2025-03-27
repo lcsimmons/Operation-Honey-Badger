@@ -255,7 +255,7 @@ def generate_attacker_json(attack_command):
 
 def send_log_to_logstash(elk_url, attacker_json):
     index_name = "attacker_logs"
-    url = f"{elk_url}/{index_name}/_doc/"
+    url = f"{elk_url}:5044"
     headers = {
         "Content-Type": "application/json"
     }
