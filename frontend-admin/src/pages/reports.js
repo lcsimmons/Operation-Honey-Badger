@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import { Search, HelpCircle, Flame, ShieldAlert, BugPlay } from "lucide-react";
 import { useRouter } from 'next/router';
@@ -46,6 +47,8 @@ export default function Reports() {
     // Keeps track of the selected text size, by default it's text-base
     const [textSize, setTextSize] = useState("text-base");
 
+    const { useOpenDyslexic } = useContext(FontContext);
+    
     // Placeholder Reports Data with original English values
     const originalReports = [
         {
@@ -715,7 +718,9 @@ export default function Reports() {
     }, []);
 
     return (
-        <div className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        <div 
+        style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
             {/* Sidebar */}
             <Sidebar />
 
