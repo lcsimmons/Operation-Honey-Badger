@@ -8,7 +8,9 @@ export default function Settings() {
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(false);
   // When false, the default font (Arial) is used.
   const [useOpenDyslexic, setUseOpenDyslexic] = useState(false);
-  
+
+  const [textSize, setTextSize] = useState('text-base');
+
   // Load settings from localStorage only once on component mount
   useEffect(() => {
     // Load language setting
@@ -29,7 +31,11 @@ export default function Settings() {
       setUseOpenDyslexic(savedFont === 'true');
     }
 
-    
+    const storedTextSize = localStorage.getItem('textSize');
+    if (storedTextSize) {
+      setTextSize(storedTextSize);
+    }
+
     console.log('Settings page loaded TTS setting:', savedTTS, 'Parsed as:', ttsEnabled);
     console.log('Settings page loaded language setting:', savedLanguage);
   }, []);
@@ -60,11 +66,12 @@ export default function Settings() {
    
     localStorage.setItem('fontPreference', String(newValue));
     console.log('Font preference checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
+  };
 
   // stores the text size locally
-  const [textSize, setTextSize] = useState(() => {
-    return localStorage.getItem('textSize') || 'text-base';
-  });
+  // const [textSize, setTextSize] = useState(() => {
+  //   return localStorage.getItem('textSize') || 'text-base';
+  // });
   
   // Text sizes based on label
   const sizes = [
@@ -78,7 +85,6 @@ export default function Settings() {
   const handleSizeClick = (value) => {
     setTextSize(value);
     localStorage.setItem('textSize', value);
-
   };
 
   return (
@@ -220,7 +226,7 @@ export default function Settings() {
                   Enable OpenDyslexic Font
                 </label>
               </div>
-
+            </div>
             <h2 className="text-lg font-medium mb-2 mt-4">Adjust Text Sizing on Report</h2>
             <div className="p-3">
               <div className="flex gap-2">
@@ -243,5 +249,6 @@ export default function Settings() {
         </div>
       </div>
     </div>
+    
   );
 }
