@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Sidebar from "../components/sidebar";
-import { Search, HelpCircle } from "lucide-react";
+import { Search, HelpCircle, Flame, ShieldAlert, BugPlay } from "lucide-react";
 import { useRouter } from 'next/router';
 
 export default function Reports() {
@@ -184,7 +184,6 @@ export default function Reports() {
             setUiText({
                 recentReports: "Recent Reports",
                 reportDetails: "Report Details",
-                exportReport: "Export Report (PDF, CSV)",
                 noReportsFound: "No reports found.",
                 incidentId: "Incident ID",
                 time: "Time",
@@ -764,7 +763,7 @@ export default function Reports() {
                                     <p className={`text-sm font-bold ${
                                         report.severity === "High" || 
                                         report.severity === uiText.high ? 
-                                        "text-red-600" : "text-orange-500"}`}
+                                        "text-[#B22222]" : "text-orange-500"}`}
                                     >
                                         {uiText?.severity || "Severity"}: {report.severity}
                                     </p>
@@ -778,20 +777,6 @@ export default function Reports() {
 
                     {/* Report Details Panel */}
                     <div className="bg-white p-6 rounded-lg shadow-md col-span-2">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-bold">{uiText?.reportDetails || "Report Details"}</h2>
-                            <div className="flex gap-2">
-                                <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">
-                                    {uiText?.exportReport || "Export Report (PDF, CSV)"}
-                                </button>
-                                <span className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">
-                                    {uiText?.sqlInjection || "SQL Injection"}
-                                </span>
-                                <span className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">
-                                    {uiText?.high || "HIGH"}
-                                </span>
-                            </div>
-                        </div>
 
                         {/* Translation Loading Indicator */}
                         {isTranslating && (
