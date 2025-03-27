@@ -1,5 +1,6 @@
 import Sidebar from "../components/sidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { FontContext } from "@/context/FontContext";
 
 export default function Settings() {
   // Start with definite boolean values instead of null
@@ -7,7 +8,7 @@ export default function Settings() {
   // Start with false but update immediately on mount
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(false);
   // When false, the default font (Arial) is used.
-  const [useOpenDyslexic, setUseOpenDyslexic] = useState(false);
+  const { useOpenDyslexic, toggleFont } = useContext(FontContext);
 
   const [textSize, setTextSize] = useState('text-base');
 
@@ -25,11 +26,11 @@ export default function Settings() {
     const ttsEnabled = savedTTS === 'true';
     setTextToSpeechEnabled(ttsEnabled);
 
-    // Set default font
-    const savedFont = localStorage.getItem('fontPreference');
-    if (savedFont !== null) {
-      setUseOpenDyslexic(savedFont === 'true');
-    }
+    // // Set default font
+    // const savedFont = localStorage.getItem('fontPreference');
+    // if (savedFont !== null) {
+    //   setUseOpenDyslexic(savedFont === 'true');
+    // }
 
     const storedTextSize = localStorage.getItem('textSize');
     if (storedTextSize) {
@@ -61,11 +62,7 @@ export default function Settings() {
 
   // Handle font change 
   const handleFontToggle = (e) => {
-    const newValue = e.target.checked;
-    setUseOpenDyslexic(newValue);
-   
-    localStorage.setItem('fontPreference', String(newValue));
-    console.log('Font preference checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
+    toggleFont(e.target.checked);
   };
 
   // stores the text size locally
