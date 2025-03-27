@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
-import { Search, HelpCircle } from "lucide-react";
+import { Search, HelpCircle, Flame, ShieldAlert, BugPlay } from "lucide-react";
 import { useRouter } from 'next/router';
 
 export default function Reports() {
@@ -44,6 +44,8 @@ export default function Reports() {
     const lastSpokenTextRef = useRef("");
     // Add timeout reference to handle hover delays
     const hoverTimeoutRef = useRef(null);
+    // Keeps track of the selected text size, by default it's text-base
+    const [textSize, setTextSize] = useState("text-base");
 
     const { useOpenDyslexic } = useContext(FontContext);
     
@@ -67,6 +69,42 @@ export default function Reports() {
             notes: "Reviewed attack patterns and verified false positive.",
             actions: ["Report archived, no further action needed.", "Continue monitoring for similar activity."]
         },
+        {
+            id: "2446",
+            title: "Incident Report 3.23.25.1457",
+            time: "3/23/25 2:57PM",
+            severity: "High",
+            status: "In Progress",
+            notes: "Multiple failed login attempts followed by successful access using elevated privileges.",
+            actions: ["Isolate affected host", "Check for lateral movement", "Initiate incident response protocol"]
+          },
+          {
+            id: "2447",
+            title: "Incident Report 3.23.25.1532",
+            time: "3/23/25 3:32PM",
+            severity: "Low",
+            status: "Completed",
+            notes: "Bot activity detected attempting outdated XSS vector — automatically blocked.",
+            actions: ["No action required", "Review WAF rules to ensure continued coverage"]
+          },
+          {
+            id: "2448",
+            title: "Incident Report 3.23.25.1610",
+            time: "3/23/25 4:10PM",
+            severity: "Medium",
+            status: "Under Review",
+            notes: "Suspicious SQL-like payload detected in login field. May be part of scanning behavior.",
+            actions: ["Review correlated logs for follow-up attempts", "Notify detection engineering team"]
+          },
+          {
+            id: "2449",
+            title: "Incident Report 3.23.25.1718",
+            time: "3/23/25 5:18PM",
+            severity: "High",
+            status: "In Progress",
+            notes: "Outbound DNS request to known C2 domain observed on honeypot node.",
+            actions: ["Analyze DNS logs", "Update threat intelligence mapping", "Flag domain in detection rules"]
+          }
     ];
 
     // Create a state for the translated reports
@@ -149,7 +187,6 @@ export default function Reports() {
             setUiText({
                 recentReports: "Recent Reports",
                 reportDetails: "Report Details",
-                exportReport: "Export Report (PDF, CSV)",
                 noReportsFound: "No reports found.",
                 incidentId: "Incident ID",
                 time: "Time",
@@ -673,6 +710,13 @@ export default function Reports() {
         };
     }, [textToSpeechEnabled, reportHTML]); // Re-run when reportHTML or TTS setting changes
 
+    useEffect(() => {
+    const storedSize = localStorage.getItem('textSize');
+    if (storedSize) {
+        setTextSize(storedSize);
+    }
+    }, []);
+
     return (
         <div 
         style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
@@ -694,6 +738,13 @@ export default function Reports() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+
+                    {/* <div className="flex gap-2 mt-4">
+                        <button onClick={() => setTextSize("text-base")} className="px-2 py-1 bg-gray-200 rounded">A-</button>
+                        <button onClick={() => setTextSize("text-xl")} className="px-2 py-1 bg-gray-200 rounded">A</button>
+                        <button onClick={() => setTextSize("text-2xl")} className="px-2 py-1 bg-gray-200 rounded">A+</button>
+                    </div> */}
+
                     
                     <HelpCircle size={24} className="cursor-pointer text-gray-500 hover:text-black" />
                 </div>
@@ -717,7 +768,7 @@ export default function Reports() {
                                     <p className={`text-sm font-bold ${
                                         report.severity === "High" || 
                                         report.severity === uiText.high ? 
-                                        "text-red-600" : "text-orange-500"}`}
+                                        "text-[#B22222]" : "text-orange-500"}`}
                                     >
                                         {uiText?.severity || "Severity"}: {report.severity}
                                     </p>
@@ -731,20 +782,6 @@ export default function Reports() {
 
                     {/* Report Details Panel */}
                     <div className="bg-white p-6 rounded-lg shadow-md col-span-2">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-bold">{uiText?.reportDetails || "Report Details"}</h2>
-                            <div className="flex gap-2">
-                                <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">
-                                    {uiText?.exportReport || "Export Report (PDF, CSV)"}
-                                </button>
-                                <span className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">
-                                    {uiText?.sqlInjection || "SQL Injection"}
-                                </span>
-                                <span className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">
-                                    {uiText?.high || "HIGH"}
-                                </span>
-                            </div>
-                        </div>
 
                         {/* Translation Loading Indicator */}
                         {isTranslating && (
@@ -788,8 +825,7 @@ export default function Reports() {
                         />
 
                         {/* Injecting Selected Report HTML */}
-                        <div 
-                            className="mt-4 p-4 border rounded-md text-sm report-details-container" 
+                        <div className={`mt-4 p-4 border rounded-md ${textSize} report-details-container`} 
                             dangerouslySetInnerHTML={{ __html: reportHTML }} 
                         />
                     </div>

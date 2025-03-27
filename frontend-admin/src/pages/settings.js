@@ -52,6 +52,7 @@ export default function Settings() {
     console.log('TTS checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
   };
 
+
   // Handle font change 
   const handleFontToggle = (e) => {
     const newValue = e.target.checked;
@@ -59,6 +60,25 @@ export default function Settings() {
    
     localStorage.setItem('fontPreference', String(newValue));
     console.log('Font preference checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
+
+  // stores the text size locally
+  const [textSize, setTextSize] = useState(() => {
+    return localStorage.getItem('textSize') || 'text-base';
+  });
+  
+  // Text sizes based on label
+  const sizes = [
+    { label: "Small", value: "text-sm" },
+    { label: "Normal", value: "text-base" },
+    { label: "Big", value: "text-xl" },
+    { label: "Bigger", value: "text-2xl" },
+    { label: "Huge", value: "text-3xl" },
+  ];
+
+  const handleSizeClick = (value) => {
+    setTextSize(value);
+    localStorage.setItem('textSize', value);
+
   };
 
   return (
@@ -70,40 +90,40 @@ export default function Settings() {
       <div className="flex-1 text-black ml-20 transition-all duration-300">
         <div className="grid grid-cols-3 gap-6 p-6">
           {/* TopBar */}
-          <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-4 mr-4 ml-4">
+          {/* <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-4 mr-4 ml-4">
             <h1 className="text-xl font-semibold">
               General Settings
             </h1>
-          </div>
+          </div> */}
 
           {/* General Settings */}
-          <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             
-          </div>
+          </div> */}
 
           {/* MidBar */}
-          <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             <h1 className="text-xl font-semibold">
               Admin Dashboard Settings
             </h1>
-          </div>
+          </div> */}
 
           {/* Admin Dashboard Settings */}
-          <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             
-          </div>
+          </div> */}
 
           {/* BottomBar */}
-          <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             <h1 className="text-xl font-semibold">
               Logs Settings
             </h1>
-          </div>
+          </div> */}
 
           {/* Logs Settings */}
-          <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             
-          </div>
+          </div> */}
 
           {/* BottomBar */}
           <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
@@ -181,6 +201,7 @@ export default function Settings() {
               </p>
             </div>
 
+
             <div className="mb-4">
               <h2 className="text-lg font-medium mb-2">OpenDyslexic Font</h2>
               <p className="text-sm text-gray-600 mb-4">
@@ -199,6 +220,24 @@ export default function Settings() {
                   Enable OpenDyslexic Font
                 </label>
               </div>
+
+            <h2 className="text-lg font-medium mb-2 mt-4">Adjust Text Sizing on Report</h2>
+            <div className="p-3">
+              <div className="flex gap-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size.value}
+                    onClick={() => handleSizeClick(size.value)}
+                    className={`px-3 py-1 rounded-md border ${
+                      textSize === size.value ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+              <p className={`mt-4 ${textSize}`}>Preview: The quick brown fox jumps over the lazy dog</p>
+
             </div>
           </div>
         </div>
