@@ -815,7 +815,7 @@ def debug_attackers():
 #         print(e)
 #         return jsonify({"error": str(e)}), 500
 
-@app.route('/test_generate_json', methods=['POST'])
+@app.route('/test_generate_json', methods=['GET'])
 def test_generate_json():
     # Sample attacker information and attack command for testing
     attacker_info = {
@@ -846,7 +846,7 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
-    response = send_log_to_logstash(attacker_json)
+    response = send_log_to_logstash("https://cs412anallam.me", attacker_json)
 
     if not response:
         #Not connecting to the elk
