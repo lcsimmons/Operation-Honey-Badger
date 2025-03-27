@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { loginUser } from "./api/apiHelper";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -54,13 +55,32 @@ export default function Login() {
     // Encode credentials for future API use
     const encodedUsername = btoa(username);
     const encodedPassword = btoa(password);
+    
 
-    if (validUsers[username] && validUsers[username].password === password) {
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("username", username);
-      localStorage.setItem("avatar", validUsers[username].avatar);
-      router.push("/forum");
-    } else {
+    try{
+      const res = await loginUser({username: encodedUsername, password: encodedPassword});
+
+      console.log(res)
+
+      //will be able to remove this soon since the api response tells you if it exists or not
+      if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {
+        const user = res.data['username'] || username
+        let avatar = "/default.png"
+
+        localStorage.setItem("loggedIn", "true");
+        localStorage.setItem("username", user);
+        localStorage.setItem("avatar", avatar);
+
+
+        try{
+          router.push("/forum");
+        }catch(err){
+          console.err(err)
+        }
+      } else {
+        setError("Invalid username or password. Please try again.");
+      }
+    }catch(err){
       setError("Invalid username or password. Please try again.");
     }
   };
