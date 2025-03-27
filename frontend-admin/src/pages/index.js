@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import AttackMatrix from "../components/AttackMatrix";
 import { Search, HelpCircle } from "lucide-react";
@@ -57,9 +58,12 @@ const getColor = (frequency) => {
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { useOpenDyslexic } = useContext(FontContext);
 
   return (
-    <div className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+    <div 
+    style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+    className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
       {/* Sidebar */}
       <Sidebar />
 

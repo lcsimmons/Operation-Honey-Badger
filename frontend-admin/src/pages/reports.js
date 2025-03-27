@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import { Search, HelpCircle } from "lucide-react";
 import { useRouter } from 'next/router';
@@ -44,6 +45,8 @@ export default function Reports() {
     // Add timeout reference to handle hover delays
     const hoverTimeoutRef = useRef(null);
 
+    const { useOpenDyslexic } = useContext(FontContext);
+    
     // Placeholder Reports Data with original English values
     const originalReports = [
         {
@@ -671,7 +674,9 @@ export default function Reports() {
     }, [textToSpeechEnabled, reportHTML]); // Re-run when reportHTML or TTS setting changes
 
     return (
-        <div className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        <div 
+        style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
             {/* Sidebar */}
             <Sidebar />
 

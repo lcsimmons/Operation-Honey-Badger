@@ -6,6 +6,8 @@ export default function Settings() {
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   // Start with false but update immediately on mount
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(false);
+  // When false, the default font (Arial) is used.
+  const [useOpenDyslexic, setUseOpenDyslexic] = useState(false);
   
   // Load settings from localStorage only once on component mount
   useEffect(() => {
@@ -20,6 +22,13 @@ export default function Settings() {
     // Make sure we're explicitly parsing as boolean
     const ttsEnabled = savedTTS === 'true';
     setTextToSpeechEnabled(ttsEnabled);
+
+    // Set default font
+    const savedFont = localStorage.getItem('fontPreference');
+    if (savedFont !== null) {
+      setUseOpenDyslexic(savedFont === 'true');
+    }
+
     
     console.log('Settings page loaded TTS setting:', savedTTS, 'Parsed as:', ttsEnabled);
     console.log('Settings page loaded language setting:', savedLanguage);
@@ -43,8 +52,20 @@ export default function Settings() {
     console.log('TTS checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
   };
 
+  // Handle font change 
+  const handleFontToggle = (e) => {
+    const newValue = e.target.checked;
+    setUseOpenDyslexic(newValue);
+   
+    localStorage.setItem('fontPreference', String(newValue));
+    console.log('Font preference checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
+  };
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#91d2ff] to-[#72b4ea]">
+    <div 
+      style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+      className="flex min-h-screen bg-gradient-to-br from-[#91d2ff] to-[#72b4ea]"
+    >
       <Sidebar />
       <div className="flex-1 text-black ml-20 transition-all duration-300">
         <div className="grid grid-cols-3 gap-6 p-6">
@@ -158,6 +179,26 @@ export default function Settings() {
                 some technical security terms may not translate perfectly. Critical security information will always be 
                 available in English as a fallback.
               </p>
+            </div>
+
+            <div className="mb-4">
+              <h2 className="text-lg font-medium mb-2">OpenDyslexic Font</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Switch to alternative font designed to mitigate symptoms from dyslexia.  
+              </p>
+              
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="open-dyslexic-checkbox"
+                  checked={useOpenDyslexic}
+                  onChange={handleFontToggle}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="open-dyslexic-checkbox" className="text-sm font-medium text-gray-700">
+                  Enable OpenDyslexic Font
+                </label>
+              </div>
             </div>
           </div>
         </div>

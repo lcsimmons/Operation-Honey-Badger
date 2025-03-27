@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import { Search, Filter, Download } from "lucide-react";
 import {
@@ -16,6 +17,7 @@ export default function Logs() {
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const logsPerPage = 10;
+    const { useOpenDyslexic } = useContext(FontContext);
 
     // Fetch log data (Replace with API call)
     useEffect(() => {
@@ -80,7 +82,9 @@ export default function Logs() {
     const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
 
     return (
-        <div className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        <div 
+        style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
             <Sidebar />
 
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
