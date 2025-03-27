@@ -12,7 +12,7 @@ export default function EmojiReactions({ postId, posts, setPosts }) {
     return (
         <div className="flex space-x-2 mt-2">
             {reactions.map((emoji) => (
-                <buttonkey={emoji}
+                <button key={emoji}
                     onClick={() => handleReaction(emoji)}
                     className="text-lg hover:scale-110 transition transform">
                     {emoji}
