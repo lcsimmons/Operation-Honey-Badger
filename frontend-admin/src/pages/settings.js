@@ -1,12 +1,17 @@
 import Sidebar from "../components/sidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { FontContext } from "@/context/FontContext";
 
 export default function Settings() {
   // Start with definite boolean values instead of null
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   // Start with false but update immediately on mount
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(false);
-  
+  // When false, the default font (Arial) is used.
+  const { useOpenDyslexic, toggleFont } = useContext(FontContext);
+
+  const [textSize, setTextSize] = useState('text-base');
+
   // Load settings from localStorage only once on component mount
   useEffect(() => {
     // Load language setting
@@ -20,7 +25,18 @@ export default function Settings() {
     // Make sure we're explicitly parsing as boolean
     const ttsEnabled = savedTTS === 'true';
     setTextToSpeechEnabled(ttsEnabled);
-    
+
+    // // Set default font
+    // const savedFont = localStorage.getItem('fontPreference');
+    // if (savedFont !== null) {
+    //   setUseOpenDyslexic(savedFont === 'true');
+    // }
+
+    const storedTextSize = localStorage.getItem('textSize');
+    if (storedTextSize) {
+      setTextSize(storedTextSize);
+    }
+
     console.log('Settings page loaded TTS setting:', savedTTS, 'Parsed as:', ttsEnabled);
     console.log('Settings page loaded language setting:', savedLanguage);
   }, []);
@@ -43,46 +59,74 @@ export default function Settings() {
     console.log('TTS checkbox toggled to:', newValue, 'Saved to localStorage as:', String(newValue));
   };
 
+
+  // Handle font change 
+  const handleFontToggle = (e) => {
+    toggleFont(e.target.checked);
+  };
+
+  // stores the text size locally
+  // const [textSize, setTextSize] = useState(() => {
+  //   return localStorage.getItem('textSize') || 'text-base';
+  // });
+  
+  // Text sizes based on label
+  const sizes = [
+    { label: "Small", value: "text-sm" },
+    { label: "Normal", value: "text-base" },
+    { label: "Big", value: "text-xl" },
+    { label: "Bigger", value: "text-2xl" },
+    { label: "Huge", value: "text-3xl" },
+  ];
+
+  const handleSizeClick = (value) => {
+    setTextSize(value);
+    localStorage.setItem('textSize', value);
+  };
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#91d2ff] to-[#72b4ea]">
+    <div 
+      style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+      className="flex min-h-screen bg-gradient-to-br from-[#91d2ff] to-[#72b4ea]"
+    >
       <Sidebar />
       <div className="flex-1 text-black ml-20 transition-all duration-300">
         <div className="grid grid-cols-3 gap-6 p-6">
           {/* TopBar */}
-          <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-4 mr-4 ml-4">
+          {/* <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-4 mr-4 ml-4">
             <h1 className="text-xl font-semibold">
               General Settings
             </h1>
-          </div>
+          </div> */}
 
           {/* General Settings */}
-          <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             
-          </div>
+          </div> */}
 
           {/* MidBar */}
-          <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             <h1 className="text-xl font-semibold">
               Admin Dashboard Settings
             </h1>
-          </div>
+          </div> */}
 
           {/* Admin Dashboard Settings */}
-          <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             
-          </div>
+          </div> */}
 
           {/* BottomBar */}
-          <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             <h1 className="text-xl font-semibold">
               Logs Settings
             </h1>
-          </div>
+          </div> */}
 
           {/* Logs Settings */}
-          <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
+          {/* <div className="col-span-20 row-span-10 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
             
-          </div>
+          </div> */}
 
           {/* BottomBar */}
           <div className="col-span-20 flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-2 mr-4 ml-4">
@@ -159,9 +203,49 @@ export default function Settings() {
                 available in English as a fallback.
               </p>
             </div>
+
+
+            <div className="mb-4">
+              <h2 className="text-lg font-medium mb-2">OpenDyslexic Font</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Switch to alternative font designed to mitigate symptoms from dyslexia.  
+              </p>
+              
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="open-dyslexic-checkbox"
+                  checked={useOpenDyslexic}
+                  onChange={handleFontToggle}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="open-dyslexic-checkbox" className="text-sm font-medium text-gray-700">
+                  Enable OpenDyslexic Font
+                </label>
+              </div>
+            </div>
+            <h2 className="text-lg font-medium mb-2 mt-4">Adjust Text Sizing on Report</h2>
+            <div className="p-3">
+              <div className="flex gap-2">
+                {sizes.map((size) => (
+                  <button
+                    key={size.value}
+                    onClick={() => handleSizeClick(size.value)}
+                    className={`px-3 py-1 rounded-md border ${
+                      textSize === size.value ? 'bg-blue-500 text-white' : 'bg-gray-100'
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+              <p className={`mt-4 ${textSize}`}>Preview: The quick brown fox jumps over the lazy dog</p>
+
+            </div>
           </div>
         </div>
       </div>
     </div>
+    
   );
 }

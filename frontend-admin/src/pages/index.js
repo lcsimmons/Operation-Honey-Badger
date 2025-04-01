@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import AttackMatrix from "../components/AttackMatrix";
 import { Search, HelpCircle } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
 const pieData = [
   { name: "Item 1", value: 20 },
@@ -12,6 +13,57 @@ const pieData = [
   { name: "Item 5", value: 20 },
 ];
 
+const attackerIntentData = [
+  { name: "Recon", value: 34 },
+  { name: "Credential Access", value: 27 },
+  { name: "Privilege Escalation", value: 19 },
+  { name: "Persistence", value: 13 },
+  { name: "Lateral Movement", value: 7 },
+];
+
+
+const commonExploitsData = [
+  { name: "Remote Code Exec", value: 80 },
+  { name: "SQL Injection", value: 65 },
+  { name: "Cross-Site Scripting", value: 50 },
+  { name: "Buffer Overflow", value: 35 },
+  { name: "Privilege Escalation", value: 20 },
+];
+
+const attackerInputsData = [
+  { name: "SQL Injection", value: 40 },
+  { name: "XSS Payload", value: 30 },
+  { name: "Command Injection", value: 15 },
+  { name: "Directory Traversal", value: 10 },
+  { name: "Encoded Script Tags", value: 5 },
+];
+
+const attackTypeData = [
+  { name: "Phishing", value: 30 },
+  { name: "Malware", value: 25 },
+  { name: "Brute Force", value: 20 },
+  { name: "Insider Threat", value: 15 },
+  { name: "Ransomware", value: 10 },
+];
+
+const engagementTimeData = [
+  { name: "Mar 16", value: 22 },
+  { name: "Mar 17", value: 18 },
+  { name: "Mar 18", value: 35 },
+  { name: "Mar 19", value: 40 },
+  { name: "Mar 20", value: 25 },
+];
+
+const attackFrequencyByHour = [
+  { hour: "00:00", attacks: 4 },
+  { hour: "04:00", attacks: 9 },
+  { hour: "08:00", attacks: 5 },
+  { hour: "12:00", attacks: 7 },
+  { hour: "16:00", attacks: 6 },
+  { hour: "20:00", attacks: 13 },
+];
+
+
 const barData = [
   { name: "Metric 1", value: 80 },
   { name: "Metric 2", value: 60 },
@@ -19,7 +71,16 @@ const barData = [
   { name: "Metric 4", value: 20 },
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A020F0"];
+const COLORS = [
+  "#1b9e77", // Teal
+  "#d95f02", // Orange
+  "#7570b3", // Purple
+  "#e7298a", // Pink
+  "#66a61e", // Olive Green
+  "#e6ab02", // Mustard
+  "#a6761d", // Brown
+  "#666666", // Gray
+];
 
 // Placeholder tactic frequencies (replace with backend API data later)
 const tacticFrequencies = {
@@ -57,9 +118,12 @@ const getColor = (frequency) => {
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { useOpenDyslexic } = useContext(FontContext);
 
   return (
-    <div className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+    <div 
+    style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
+    className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
       {/* Sidebar */}
       <Sidebar />
 
@@ -91,16 +155,37 @@ export default function Dashboard() {
         <div className="grid grid-cols-3 gap-6 p-6">
           {/* Nope */}
           <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
-            <h2 className="text-lg font-bold">ATtack data</h2>
-            <ResponsiveContainer width="100%" height={180}>
+            <h2 className="text-lg font-bold">Common Exploits</h2>
+            <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
-                  {pieData.map((_, index) => (
+                <Pie
+                  data={commonExploitsData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {commonExploitsData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+            {/* Custom Legend */}
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 text-sm">
+              {commonExploitsData.map((entry, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span>{entry.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Recent Reports & Report Severity */}
@@ -108,55 +193,142 @@ export default function Dashboard() {
             {/* Recent Reports */}
             <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col items-center">
               <h2 className="text-lg font-bold">Recent Reports</h2>
-              <p className="text-5xl font-bold text-black mt-2">8</p>
+              <p className="text-8xl text-black mt-2">8</p>
             </div>
 
             {/* Report Severity */}
             <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col items-center">
               <h2 className="text-lg font-bold">Report Severity</h2>
-              <p className="text-5xl font-bold text-red-600 mt-2">High</p>
+              <p className="text-8xl text-red-600 mt-2">High</p>
             </div>
           </div>
 
           {/* Bar Charts */}
           <div className="row-span-21 bg-white/40 p-4 rounded-lg shadow-md">
-            <h2 className="text-lg font-bold">Engagement Time</h2>
-            <ResponsiveContainer width="100%" height={120}>
-              <BarChart data={barData}>
+            <h2 className="text-lg font-bold mb-2">Engagement Time</h2>
+            <ResponsiveContainer width="100%" height={150}>
+              <BarChart data={engagementTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="value" fill="#FFA500" />
               </BarChart>
             </ResponsiveContainer>
-            <h2 className="text-lg font-bold mt-4">Common Exploits Used</h2>
-            <ResponsiveContainer width="100%" height={120}>
-              <BarChart data={barData}>
-                <XAxis dataKey="name" />
+
+            <h2 className="text-lg font-bold mt-6 mb-2">Common Exploits Used</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={commonExploitsData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
+                <XAxis
+                  dataKey="name"
+                  interval={0}
+                  angle={-25}
+                  textAnchor="end"
+                />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="value" fill="#007FFF" />
               </BarChart>
             </ResponsiveContainer>
+
+            <h2 className="text-lg font-bold mt-6 mb-2">Detected Attacker Intent</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={attackerIntentData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
+                <XAxis
+                  dataKey="name"
+                  interval={0}
+                  angle={-25}
+                  textAnchor="end"
+                />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#4CAF50" />
+              </BarChart>
+            </ResponsiveContainer>
+
           </div>
 
-          {/* Attack Types */}
-          <div className="col-span-2 row-span-20 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
-            <h2 className="text-lg font-bold">Attack Types</h2>
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
-                  {pieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+
+
+          {/* Attack Types & Attacker Inputs */}
+          <div className="col-span-2 row-span-20 bg-white/40 p-6 rounded-lg shadow-md">
+            <div className="flex justify-between gap-6 h-full">
+              {/* Attack Types */}
+              <div className="flex flex-col items-center w-1/2 h-full">
+                <h3 className="text-3xl font-bold mb-4">Attack Types</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={attackTypeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {attackTypeData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Custom Legend */}
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 text-sm">
+                  {attackTypeData.map((entry, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span>{entry.name}</span>
+                    </div>
                   ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Attacker Inputs */}
+              <div className="flex flex-col items-center w-1/2 h-full">
+                <h3 className="text-3xl font-bold mb-4">Attacker Inputs</h3>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={attackerInputsData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {attackerInputsData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Custom Legend */}
+                <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 text-sm">
+                  {attackerInputsData.map((entry, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                      />
+                      <span>{entry.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
+
+
 
           {/* MITRE ATT&CK Matrix */}
           {/* <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"> */}
-            <AttackMatrix />
+          <AttackMatrix />
           {/* </div> */}
 
           {/* Another thing */}

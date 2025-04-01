@@ -1,4 +1,4 @@
-import axios from 'Axios';
+import axios from 'axios';
 
 const apiHost = process.env.NEXT_PUBLIC_API_HOST;
 
