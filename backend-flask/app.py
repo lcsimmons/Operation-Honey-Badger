@@ -852,7 +852,7 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
-    response = send_log_to_logstash("http://cs412anallam.me", attacker_json)
+    response = send_log_to_logstash("https://cs412anallam.me", attacker_json)
 
     if not response:
         #Not connecting to the elk
