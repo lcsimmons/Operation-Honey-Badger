@@ -1,8 +1,11 @@
 import axios from 'Axios';
 
+const apiHost = process.env.NEXT_PUBLIC_API_HOST;
 
 export const loginUser = async (body) => {
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
+
+    console.log(apiHost)
 
     const url =  host + '/api/login';
 
@@ -26,10 +29,10 @@ export const loginUser = async (body) => {
 export const getForumComments = async (queryParams=null) => {
     //host should be something like https://cs412abhinavnallam:5000
     //follow this string to make the queryParams https://www.geeksforgeeks.org/how-to-create-query-parameters-in-javascript/
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
     const params = queryParams || ""
 
-    const url =  host + '/api/forum_comments?' + params.toString();
+    const url =  host + '/api/forum/comments?' + params.toString();
 
     try{
         const res = await axios.get(url);
@@ -44,7 +47,8 @@ export const getForumComments = async (queryParams=null) => {
 export const getEmployees = async (queryParams=null) => {
     //host should be something like https://cs412abhinavnallam:5000
     //follow this string to make the queryParams https://www.geeksforgeeks.org/how-to-create-query-parameters-in-javascript/
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
+
     const params = queryParams || ""
 
     const url =  host + '/api/admin/employees?' + params.toString();
@@ -61,7 +65,7 @@ export const getEmployees = async (queryParams=null) => {
 export const getExpenses = async (queryParams=null) => {
     //host should be something like https://cs412abhinavnallam:5000
     //follow this string to make the queryParams https://www.geeksforgeeks.org/how-to-create-query-parameters-in-javascript/
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
     const params = queryParams || ""
 
     const url =  host + '/api/admin/reimbursement?' + params.toString();
@@ -77,7 +81,7 @@ export const getExpenses = async (queryParams=null) => {
 
 
 export const getITTickets  = async (queryParams) => {
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
 
     const params = queryParams || ""
     const url =  host + '/api/admin/it_support?' + params.toString();
@@ -92,9 +96,10 @@ export const getITTickets  = async (queryParams) => {
 } 
 
 export const getPerformanceData = async (queryParams) => {
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
+    const params = queryParams || ""
 
-    const url =  host + '/api/admin/performance_analytics?' + queryParams.toString();
+    const url =  host + '/api/admin/performance_analytics?' + params.toString();
 
     try{
         const res = await axios.get(url);
@@ -106,7 +111,7 @@ export const getPerformanceData = async (queryParams) => {
 } 
 
 export const getCorporateProjects = async (queryParams) => {
-    const host = process.env['HOST'] || "http://127.0.0.1:5000";
+    const host = apiHost || "http://127.0.0.1:5000";
 
     const params = queryParams || ""
     const url =  host + '/api/admin/corporate_initiatives?' + params.toString();

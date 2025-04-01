@@ -79,8 +79,13 @@ CREATE TABLE IF NOT EXISTS PerformanceAnalytics (
 CREATE TABLE IF NOT EXISTS Forum (
     forum_id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
+    forum_category TEXT,
     description TEXT,
-    forum_category TEXT
+    is_pinned BOOLEAN DEFAULT 0,
+    likes_count INTEGER DEFAULT 0,
+    user_id INTEGER NOT NULL,
+    timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 -- Forum Comments table
@@ -89,6 +94,8 @@ CREATE TABLE IF NOT EXISTS ForumComments (
     forum_id INTEGER NOT NULL,
     user_id INTEGER NOT NULL,
     comment TEXT NOT NULL,
+    is_pinned BOOLEAN DEFAULT 0,
+    likes_count INTEGER DEFAULT 0,
     timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (forum_id) REFERENCES Forum(forum_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
@@ -96,7 +103,7 @@ CREATE TABLE IF NOT EXISTS ForumComments (
 
 -- Cloud Resources table
 CREATE TABLE IF NOT EXISTS CloudResources (
-    cloud_resource_id INTEGER PRIMARY KEY,
+    resource_id INTEGER PRIMARY KEY,
     category TEXT,
     department_id INTEGER,
     access_requirement TEXT,
