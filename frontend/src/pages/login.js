@@ -59,11 +59,11 @@ export default function Login() {
 
     try{
       const res = await loginUser({username: encodedUsername, password: encodedPassword});
-      const res2 = await getExpenses()
+      // const res2 = await getExpenses()
 
 
       console.log(res)
-      console.log(res2)
+      // console.log(res2)
 
       //will be able to remove this soon since the api response tells you if it exists or not
       if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {

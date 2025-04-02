@@ -493,8 +493,8 @@ def get_forum_coments():
         db = get_memory_db()
 
         query = "Select *, fm.title as forum_title from ForumComments " \
-        "inner join Forum as fm on ForumComments.forum_id = f.forum_id " \
-        "inner join Users as us on ForumComments.user_id = u.user_id "
+        "inner join Forum as fm on ForumComments.forum_id = fm.forum_id " \
+        "inner join Users as us on ForumComments.user_id = us.user_id "
         
         # request_args = list(dict(request.args).items())
         if len(request_args) != 0:
@@ -777,6 +777,14 @@ def debug_attackers():
 
         if rows:
             attackers = [dict(row) for row  in rows]
+        
+
+        db.execute("SELECT * FROM Attack ORDER BY timestamp DESC")
+
+        rows = db.fetchall()
+
+        if rows:
+            attacks = [dict(row) for row  in rows]
 
         print("Getting to this stage")
         reponse_obj = example_ua_queries()
@@ -784,7 +792,8 @@ def debug_attackers():
         return jsonify({
             "count": len(attackers),
             "attackers": attackers,
-            "examples": reponse_obj
+            "examples": reponse_obj,
+            "attack_information": attacks
         })
     except Exception as e:
         print(e)
