@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS  Users (
     department_id INTEGER,
     privileges TEXT,
     salary INTEGER,
+    avatar TEXT DEFAULT '/default.png',
     last_login timestamp DEFAULT CURRENT_TIMESTAMP,
     is_sensitive BOOLEAN,
     FOREIGN KEY (department_id) REFERENCES Department(department_id)
