@@ -14,13 +14,6 @@ export default function Login() {
 
   const router = useRouter();
 
-  // Hardcoded credentials (for now)
-  const validUsers = {
-    admin: { password: "password123", avatar: "/default.png", question: "What is your favorite color?", answer: "blue" },
-    employee: { password: "securepass", avatar: "/default.png", question: "What is 2+2?", answer: "4" },
-    bob: { password: "1234", avatar: "/default.png", question: "What is your pet’s name?", answer: "fluffy" },
-  };
-
   // XSS and SQL Injection Detection
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
