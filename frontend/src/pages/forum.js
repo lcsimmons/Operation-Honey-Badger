@@ -9,6 +9,7 @@ import PinnedPosts from "../components/PinnedPosts";
 import Search from "../components/Search";
 import Link from "next/link";
 import { Bell, Info, Wrench } from "lucide-react";
+import { getForumComments } from "./api/apiHelper.js";
 
 export default function Forum() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function Forum() {
   const [avatar, setAvatar] = useState("/default.png");
   const [commentText, setCommentText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [replyText, setReplyText] = useState({});
   const [posts, setPosts] = useState([
     {
       id: 1,
@@ -173,6 +175,25 @@ export default function Forum() {
     } else {
       setUsername(storedUsername || "Employee");
       setAvatar(storedAvatar || "/default.png");
+
+      //add tge the information for the forum
+      
+      const res = getForumComments();
+
+      res.then((result) => {
+        if(result.status !== 200){
+          console.log("There was an error");
+          return ;
+        }
+
+        const resObj = result.data;
+
+        setPosts(resObj);
+
+        console.log(resObj);
+      }).catch((err) => {
+        console.log(err);
+      })
     }
   }, []);
 
@@ -264,15 +285,16 @@ export default function Forum() {
           {/* Posts */}
           <div className="mt-6 space-y-6">
             {posts
-              .filter((post) => selectedCategory === "All" || post.category === selectedCategory)
+              .filter((post) => selectedCategory === "All" || post.forum_category === selectedCategory)
               .map((post) => (
-                <div key={post.id} className="p-4 border border-gray-300 rounded-lg bg-gray-50">
+                <div key={post.comment_id} className="p-4 border border-gray-300 rounded-lg bg-gray-50">
                   <div className="flex items-center space-x-3">
+                    <span className="text-xs bg-blue-200 text-blue-700 px-2 py-1 rounded-md">{post.forum_category}</span>
                     <img src={post.avatar} alt="User Avatar" className="w-8 h-8 rounded-full border" />
-                    <p className="text-sm font-semibold text-gray-800">{post.user}</p>
+                    <p className="text-sm font-semibold text-gray-800">{post.name}</p>
                     <p className="text-xs text-gray-600">{post.timestamp}</p>
                   </div>
-                  <p className="text-gray-900 mt-2">{post.message}</p>
+                  <p className="text-gray-900 mt-2">{post.comment}</p>
 
                   {post.file && (
                     <div className="mt-2">
