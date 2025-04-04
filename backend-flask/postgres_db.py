@@ -63,6 +63,9 @@ def log_attacker_information(attacker_summary):
     attacker_info = attacker_summary['attacker_info']
     gemini = attacker_summary['gemini']
 
+    #make sure the dict is in string format
+    attacker_info['geolocation'] = json.dumps(attacker_info['geolocation'])
+
     attacker_id = update_attacker(attacker_info)
 
     session_id = update_honey_session(attacker_id)
@@ -193,6 +196,7 @@ def update_honey_session(attacker_id):
         # if datetime.now(tzinfo=datetime.timezone.utc) - exists['last_seen'] < 15 : 
         # Update last_seen timestamp
         session_id = exists["session_id"]
+        print("The session id is", str(session_id))
         cur.execute(
             """
             UPDATE Honeypot_Session SET 

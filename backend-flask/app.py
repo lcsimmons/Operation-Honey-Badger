@@ -7,6 +7,7 @@ import os
 import sqlite3
 import json
 import hashlib
+import ipinfo
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
@@ -18,7 +19,6 @@ app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
 CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-
 
 def parse_user_agent(user_agent_string):
     """
@@ -131,7 +131,12 @@ def extract_attacker_info():
     # Placeholder for geolocation
     #Will need to get a real service/api to get the geolocation based on IP
 
-    geolocation = "Unknown"
+    load_dotenv('.env')
+    geolocation_handler = ipinfo.getHandler(os.environ.get('IP_INFO_ACCESS_TOKEN'))
+
+    geolocation = geolocation_handler.getDetails(ip_address)
+    print(type(geolocation.all))
+    print(geolocation.all)
     
     # Look for IOCs
     ioc_list = []
@@ -158,7 +163,7 @@ def extract_attacker_info():
         "ip_address": ip_address,
         "user_agent": user_agent_data,  # Store the full parsed data as JSON
         "device_fingerprint": device_fingerprint,
-        "geolocation": geolocation,
+        "geolocation": geolocation.all,
         "ioc": ioc,
         # Additional parsed fields for easy querying
         "browser": parsed_ua["browser"],
@@ -201,7 +206,11 @@ def get_attacker_summary(attacker_info):
         # print("JSON", dict(request.get_json()))
         # print("Data", request.data)
         # print(dict(request.get_json()).items())
-        decoded_request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request.get_json()).items()]
+        try:
+            decoded_request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request.get_json()).items()]
+        except:
+            #No need to decode
+            decoded_request_data = dict(request.get_json()).items()
         payload_to_analyze['request_data'] = dict(decoded_request_data)
     
     #get any query arguments or strings 
@@ -241,6 +250,7 @@ def get_attacker_summary(attacker_info):
     }
 
     print(attacker_summary['request_details'])
+    print(type(attacker_summary['request_details']))
     # print(attacker_summary['attacker_info'])
 
     return attacker_summary
@@ -433,8 +443,16 @@ def handleDecoyLogin():
     username_encoded = data['username']
     password_encoded = data['password']
 
-    username = base64.b64decode(username_encoded).decode('utf-8')
-    password = base64.b64decode(password_encoded).decode('utf-8')
+    print(username_encoded)
+    print(password_encoded)
+    try:
+        #Attempt to decode if it was encoded through http request
+        username = base64.b64decode(username_encoded).decode('utf-8')
+        password = base64.b64decode(password_encoded).decode('utf-8')
+    except Exception as e:
+        username = username_encoded
+        password = password_encoded
+        print("Did the except")
 
     # Hash the incoming password before comparison
     hashed_password = hashlib.md5(password.encode()).hexdigest()
@@ -476,6 +494,112 @@ def handleDecoyLogin():
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 #Forum Routes
+@app.route('/api/forum', methods=['GET'])
+def get_forum():
+    request_args = list(request.args.items())
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select *  from Forum " \
+        "inner join Users as us on Forum.user_id = us.user_id "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/api/forum', methods=['POST'])
+def add_forum():
+    if request.method == "OPTIONS":
+        return "", 200
+    
+    request_data_encoded = request.get_json()
+
+    print(request_data_encoded)
+
+    if ('username' not in request_data_encoded and 'user_id' not in request_data_encoded)  or 'title' not in request_data_encoded or 'description' not in request_data_encoded or 'forum_category' not in request_data_encoded:
+        return jsonify({"error": "Bad request, incorrect body data"}), 400
+
+    #decode all the items if possible
+    try:
+        request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request_data_encoded).items()]
+    except:
+        request_data = request_data_encoded
+
+    #get user id
+    user_id = ""
+    if not 'user_id' in request_data_encoded:
+        db = get_memory_db()
+        query = "SELECT user_id from Users where username = '" + request_data['username'] + "';" 
+
+        res = db.execute(query).fetchone()
+
+        #not able to find the user
+        if not res:
+            return jsonify({"error": "Bad request, invalid username"}), 400 
+        
+        user_id = res['user_id']
+    else:
+        user_id = request_data['user_id']
+
+
+    print("Add forum post request data:")
+    print(request_data)
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "INSERT INTO Forum (title, description, forum_category, user_id, is_pinned)" \
+            " VALUES " \
+            "( '" + request_data['title'] + "' , '" + request_data['description'] + "', '" + request_data['forum_category'] + "', '" + str(user_id) + "', " + ('1' if request_data['is_pinned'] else '0') + " ) RETURNING *;"
+        
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchone()
+        print(result)
+
+        if result:
+            result = dict(result)
+            
+        return jsonify(result)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
 @app.route('/api/forum/comments', methods=['GET'])
 def get_forum_coments():
     request_args = list(request.args.items())
@@ -517,6 +641,7 @@ def get_forum_coments():
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
 
 #Admin route functions
 @app.route('/api/admin/reimbursement', methods=['GET'])
