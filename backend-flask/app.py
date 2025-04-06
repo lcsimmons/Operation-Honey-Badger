@@ -854,6 +854,84 @@ def test_generate_json():
     
     return jsonify({"attacker_log": attacker_json}), 200
 
+def validate_security_answers(username, answers):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Fetch user_id based on username
+        cursor.execute("SELECT user_id FROM Users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return False, "User not found."
+        
+        user_id = user['user_id']
+        
+        # Check the answers to the security questions
+        for answer in answers:
+            question_id = answer.get('question_id')
+            answer_text = answer.get('answer')
+            
+            cursor.execute("""
+                SELECT * FROM SecurityAnswers 
+                WHERE user_id = ? AND question_id = ? AND answer = ?
+            """, (user_id, question_id, answer_text))
+            
+            if not cursor.fetchone():
+                return False, f"Incorrect answer for question {question_id}."
+        
+        return True, "Answers validated successfully."
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    data = request.json
+    username = data.get('username')
+    answers = data.get('answers', [])
+
+    if not username or not answers:
+        return jsonify({"error": "Username and answers are required."}), 400
+
+    # Validate security answers
+    valid, message = validate_security_answers(username, answers)
+    
+    if not valid:
+        return jsonify({"error": message}), 400
+
+    # Return a message indicating that password reset can proceed
+    return jsonify({"message": "Security questions validated. You can reset your password."}), 200
+
+
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    data = request.json
+    username = data.get('username')
+    new_password = data.get('new_password')
+
+    if not username or not new_password:
+        return jsonify({"error": "Username and new password are required."}), 400
+
+    # Fetch the user based on username
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT user_id FROM Users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    user_id = user['user_id']
+
+    # Update the user's password
+    cursor.execute("UPDATE Users SET password = ? WHERE user_id = ?", (new_password, user_id))
+    conn.commit()
+
+    return jsonify({"message": "Password successfully changed."}), 200
+
 #initialize the in memory database
 with app.app_context():
     get_memory_db()
