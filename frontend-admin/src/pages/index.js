@@ -390,7 +390,7 @@ const AttackTypesAndAttackerInputs = () =>(
  {/* Another thing */}
 const LOL = () =>(
 <div>
-  <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+  <div>
   <h2 className="text-lg font-bold">LOL</h2>
   <ResponsiveContainer width="100%" height={180}>
     <PieChart>
@@ -403,7 +403,7 @@ const LOL = () =>(
   </ResponsiveContainer>
 </div>
 
-  <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+  <div>
     <h2 className="text-lg font-bold">LOL</h2>
     <ResponsiveContainer width="100%" height={180}>
       <PieChart>
@@ -416,7 +416,7 @@ const LOL = () =>(
     </ResponsiveContainer>
   </div>
 
-  <div className="col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
+  <div>
     <h2 className="text-lg font-bold">LOL</h2>
     <ResponsiveContainer width="100%" height={180}>
       <PieChart>
