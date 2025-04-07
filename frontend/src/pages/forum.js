@@ -8,7 +8,7 @@ import ReportButton from "../components/ReportButton";
 import PinnedPosts from "../components/PinnedPosts";
 import Search from "../components/Search";
 import Link from "next/link";
-import { Bell, Info, Wrench } from "lucide-react";
+import { Bell, Info, Wrench, LogOut } from "lucide-react";
 import { getForumComments } from "./api/apiHelper.js";
 
 export default function Forum() {
@@ -225,6 +225,18 @@ export default function Forum() {
     setUploadedFile(null);
   };
 
+  
+  const handleLogout = () => {
+      localStorage.removeItem("loggedIn");
+      localStorage.removeItem("username");
+      localStorage.removeItem("avatar");
+    
+      try {
+        router.push("/login");
+      } catch (err) {
+        console.error("Logout redirect failed:", err);
+      }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -249,6 +261,9 @@ export default function Forum() {
           </button>
           <button>
             <Wrench className="w-5 h-5" />
+          </button>
+          <button onClick={handleLogout}>
+            <LogOut className="w-5 h-5" />
           </button>
         </div>
       </div>
