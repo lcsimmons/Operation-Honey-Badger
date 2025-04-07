@@ -66,14 +66,7 @@ export default function Resources() {
                   <p className="text-lg font-semibold text-gray-800">IT Support Portal</p>
                   <p className="text-gray-600">Service requests typically disappear into the void within 3-5 business days.</p>
                 </div>
-              </li>
-              <li className="flex items-start space-x-4">
-                <Plane className="w-8 h-8 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="text-lg font-semibold text-gray-800">PTO Request Form</p>
-                  <p className="text-gray-600">Please submit your request 6-12 years in advance for processing.</p>
-                </div>
-              </li>
+              </li>              
               <li className="flex items-start space-x-4">
                 <CreditCard className="w-8 h-8 text-blue-600 flex-shrink-0" />
                 <div>
