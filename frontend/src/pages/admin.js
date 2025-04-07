@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/router"; 
 
 export default function AdminPage() {
   const router = useRouter(); 
@@ -58,7 +59,7 @@ export default function AdminPage() {
         <div className="mt-auto">
           <button
             className="w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg mt-6"
-            onClick={() => alert("Logging out...")}
+            onClick={handleLogout}
           >
             🚪 Log Out
           </button>
