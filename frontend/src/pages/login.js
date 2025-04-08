@@ -138,8 +138,8 @@ export default function Login() {
 
           {!showForgotPassword ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input type="text" placeholder="Username" className="w-full p-3 border border-gray-300 rounded-lg" value={username} onChange={(e) => setUsername(e.target.value)} />
-              <input type="password" placeholder="Password" className="w-full p-3 border border-gray-300 rounded-lg" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input type="text" placeholder="Username" className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <input type="password" placeholder="Password" className="w-full text-gray-800 p-3 border border-gray-300 rounded-lg" value={password} onChange={(e) => setPassword(e.target.value)} />
               <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">Login</button>
               <p className="text-sm text-blue-500 cursor-pointer text-center mt-2 hover:underline" onClick={handleForgotPassword}>Forgot Password?</p>
             </form>
