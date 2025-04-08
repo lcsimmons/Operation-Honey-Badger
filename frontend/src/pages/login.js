@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 import { loginUser } from "./api/apiHelper";
 
 export default function Login() {
@@ -8,18 +9,20 @@ export default function Login() {
   const [error, setError] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showSecurityInput, setShowSecurityInput] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetError, setResetError] = useState("");
   const [resetMessage, setResetMessage] = useState("");
 
   const router = useRouter();
 
-  // XSS and SQL Injection Detection
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
     const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
-
-    // Reset alert before setting a new one
     setAlertMessage("");
 
     if (xssPattern.test(input)) {
@@ -32,49 +35,30 @@ export default function Login() {
       setTimeout(() => setAlertMessage("🚨 SQL Injection Attempt Detected! 🚨"), 50);
       return true;
     }
-
     return false;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (detectInjection(username) || detectInjection(password)) return;
 
-    // Check for XSS or SQL Injection in username & password
-    if (detectInjection(username) || detectInjection(password)) {
-      // Stop login attempt if malicious input is detected
-      return;
-    }
-
-    // Encode credentials for future API use
     const encodedUsername = btoa(username);
     const encodedPassword = btoa(password);
-    
 
-    try{
-      const res = await loginUser({username: encodedUsername, password: encodedPassword});
+    try {
+      const res = await loginUser({ username: encodedUsername, password: encodedPassword });
 
-      console.log(res)
-
-      //will be able to remove this soon since the api response tells you if it exists or not
-      if (res.data['success'] || validUsers[username] && validUsers[username].password === password) {
-        const user = res.data['username'] || username
-        let avatar = "/default.png"
-
+      if (res.data.success) {
+        const user = res.data.username || username;
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("username", user);
-        localStorage.setItem("avatar", avatar);
-
-
-        try{
-          router.push("/forum");
-        }catch(err){
-          console.err(err)
-        }
+        localStorage.setItem("avatar", "/default.png");
+        router.push("/forum");
       } else {
         setError("Invalid username or password. Please try again.");
       }
-    }catch(err){
-      setError("Invalid username or password. Please try again.");
+    } catch (err) {
+      setError("Login failed. Please try again.");
     }
   };
 
@@ -82,26 +66,64 @@ export default function Login() {
     setShowForgotPassword(true);
     setResetMessage("");
     setResetError("");
+    setShowSecurityInput(false);
+    setShowPasswordReset(false);
   };
 
-  const handleResetPassword = (e) => {
-    e.preventDefault();
+  const [questionId, setQuestionId] = useState(null);
 
-    if (validUsers[username] && validUsers[username].answer.toLowerCase() === securityAnswer.toLowerCase()) {
-      setResetMessage(`Your password is: ${validUsers[username].password}`);
-      setResetError("");
-    } else {
-      setResetError("Incorrect answer. Try again.");
-      setResetMessage("");
+  const fetchSecurityQuestion = async () => {
+    try {
+      const res = await axios.post("/security_questions", { username });
+
+      if (res.data.questions && res.data.questions.length > 0) {
+        setSecurityQuestion(res.data.questions[0].question_text);
+        setQuestionId(res.data.questions[0].question_id);
+        setShowSecurityInput(true);
+        setResetError("");
+      } else {
+        setResetError("No security questions found for this username.");
+      }
+    } catch {
+      setResetError("Error retrieving security question.");
     }
   };
 
-  const handleBackToLogin = () => {
-    setShowForgotPassword(false);
-    setUsername("");
-    setSecurityAnswer("");
-    setResetMessage("");
-    setResetError("");
+
+  const validateSecurityAnswer = async () => {
+    try {
+      const res = await axios.post("/forgot_password", {
+        username,
+        answers: [{ question_id: questionId, answer: securityAnswer }],
+      });
+
+      if (res.data.message?.includes("validated")) {
+        setShowPasswordReset(true);
+        setResetError("");
+      } else {
+        setResetError("Security answer not accepted.");
+      }
+    } catch (err) {
+      setResetError(err.response?.data?.error || "Error validating answer.");
+    }
+  };
+
+
+  const submitNewPassword = async () => {
+    try {
+      const res = await axios.post("/change_password", {
+        username,
+        newPassword,
+      });
+      if (res.data.success) {
+        setResetMessage("Password changed successfully. You may now log in.");
+        setShowForgotPassword(false);
+      } else {
+        setResetError("Failed to change password.");
+      }
+    } catch {
+      setResetError("Error updating password.");
+    }
   };
 
   return (
@@ -111,27 +133,38 @@ export default function Login() {
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Employee Forum Login</h2>
           {alertMessage && <div className="bg-red-500 text-white p-3 rounded-lg text-center mb-4">{alertMessage}</div>}
           {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {resetError && <p className="text-red-500 text-sm text-center">{resetError}</p>}
+          {resetMessage && <p className="text-green-600 text-sm text-center">{resetMessage}</p>}
+
           {!showForgotPassword ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input type="text" placeholder="Username" className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-gray-800 placeholder-gray-500" value={username} onChange={(e) => setUsername(e.target.value)} />
-              <input type="password" placeholder="Password" className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-gray-800 placeholder-gray-500" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input type="text" placeholder="Username" className="w-full p-3 border border-gray-300 rounded-lg" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <input type="password" placeholder="Password" className="w-full p-3 border border-gray-300 rounded-lg" value={password} onChange={(e) => setPassword(e.target.value)} />
               <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">Login</button>
               <p className="text-sm text-blue-500 cursor-pointer text-center mt-2 hover:underline" onClick={handleForgotPassword}>Forgot Password?</p>
             </form>
           ) : (
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <h3 className="text-lg font-semibold text-center text-gray-800">Forgot Password</h3>
-              <input type="text" placeholder="Username" className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-gray-800 placeholder-gray-500" value={username} onChange={(e) => setUsername(e.target.value)} />
-              {validUsers[username] ? (
+            <div className="space-y-4">
+              <input type="text" placeholder="Username" className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg" value={username} onChange={(e) => setUsername(e.target.value)} />
+              <button onClick={fetchSecurityQuestion} className="w-full bg-gray-600 text-white p-2 rounded hover:bg-gray-700">Fetch Security Question</button>
+
+              {showSecurityInput && (
                 <>
-                  <p className="text-gray-800 text-sm">{validUsers[username].question}</p>
-                  <input type="text" placeholder="Answer" className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-gray-800 placeholder-gray-500" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
-                  <button type="submit" className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">Reset Password</button>
+                  <p className="text-gray-800 text-sm">{securityQuestion}</p>
+                  <input type="text" placeholder="Answer" className="w-full p-3 border border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
+                  <button onClick={validateSecurityAnswer} className="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600">Submit</button>
                 </>
-              ) : (
-                <p className="text-red-500 text-sm text-center">Invalid username.</p>
               )}
-            </form>
+
+              {showPasswordReset && (
+                <>
+                  <input type="password" placeholder="New Password" className="w-full p-3 border border-gray-300 rounded-lg" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                  <button onClick={submitNewPassword} className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Reset Password</button>
+                </>
+              )}
+
+              <p className="text-sm text-blue-500 cursor-pointer text-center mt-2 hover:underline" onClick={() => setShowForgotPassword(false)}>Back to Login</p>
+            </div>
           )}
         </div>
       </div>
