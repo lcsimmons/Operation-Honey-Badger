@@ -69,6 +69,7 @@ def parse_user_agent(user_agent_string):
             "raw": user_agent_string,
             "error": str(e)
         }
+
 def example_ua_queries():
     conn = get_db_connection()
     db = conn.cursor()
@@ -819,7 +820,7 @@ def getEmployees():
     
     attacker_info = extract_attacker_info()
     attacker_summary = get_attacker_summary(attacker_info)
-    log_attacker_information(attacker_summary)
+    log_attacker_information(attacker_summary) #logging to postgres
     
     try:
         # Connect to the database
@@ -854,27 +855,44 @@ def getEmployees():
 
 @app.route('/api/log/security_misconfiguration', methods=['POST'])
 def logConnection():
-    attacker_info = request.get_json()
+    try:
+        attacker_info = request.get_json()
 
-    #Hardcoded since we are not sending anything to Gemini
-    gemini_analysis_res = {
-        "technique": "Security Misconfiguration",
-        "iocs": "Port 6969",
-        "description": "Port 6969 scanned or unathorized access attempt"
-    }
-
-    attacker_summary = {
-        "attacker_info" : attacker_info,
-        "gemini" : gemini_analysis_res,
-        "request_details": {
-            "full_url": "N/A",
-            "path": "N/A",
-            "query_string": "N/A",
-            "root_path": "N/A"
+        #Hardcoded since we are not sending anything to Gemini
+        gemini_analysis_res = {
+            "technique": "Security Misconfiguration",
+            "iocs": "Port 6969",
+            "description": "Port 6969: unauthorized access attempt or scanned"
         }
-    }
 
-    log_attacker_information(attacker_summary)
+        print(attacker_info)
+
+        attacker_summary = {
+            "attacker_info": attacker_info,
+            "gemini": gemini_analysis_res,
+            "request_details": {
+                "full_url": "N/A",
+                "path": "/log/security_misconfiguration",
+                "query_string": "N/A",
+                "root_path": "N/A"
+            }
+        }
+
+        log_result = log_attacker_information(attacker_summary)
+        
+        # Return a success response with status code 200
+        return jsonify({
+            "status": "success",
+            "message": "Attack attempt logged successfully"
+        }), 200
+        
+    except Exception as e:
+        # Return an error response with status code 500
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to log attack: {str(e)}"
+        }), 500
+    
 
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
