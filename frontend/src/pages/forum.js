@@ -143,7 +143,7 @@ export default function Forum() {
   };
 
   
-  const handleLogout = () => {
+  const handleLogout = (forumId) => {
       localStorage.removeItem("loggedIn");
       localStorage.removeItem("username");
       localStorage.removeItem("avatar");
@@ -154,6 +154,12 @@ export default function Forum() {
         console.error("Logout redirect failed:", err);
       }
   };
+
+  // TO DO: Write backend for this 
+  const handleLike = () => {
+    console.log("Liked!")
+    return
+  }
 
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
@@ -270,6 +276,12 @@ export default function Forum() {
                   )}
 
                   {/* <EmojiReactions postId={post.forum_id} posts={posts} setPosts={setPosts} /> */}
+                  <div className="mt-2 flex items-center space-x-2 text-sm text-gray-700 cursor-pointer hover:text-blue-600"
+                    onClick={() => handleLike(post.forum_id)}>
+                    <span className="text-lg">👍</span>
+                    <span>{post.likes_count}</span>
+                  </div>
+
                   <ReportButton postId={post.forum_id} />
 
                   {/* Threaded Replies */}
