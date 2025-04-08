@@ -25,7 +25,6 @@ export const loginUser = async (body) => {
     }
 }
 
-//not implemented yet on the backend
 export const getForumComments = async (queryParams=null) => {
     //host should be something like https://cs412abhinavnallam:5000
     //follow this string to make the queryParams https://www.geeksforgeeks.org/how-to-create-query-parameters-in-javascript/
@@ -33,6 +32,23 @@ export const getForumComments = async (queryParams=null) => {
     const params = queryParams || ""
 
     const url =  host + '/api/forum/comments?' + params.toString();
+
+    try{
+        const res = await axios.get(url);
+        return res;
+    }catch(err){
+        console.log(err);
+        return err.response
+    }
+} 
+
+export const getForumPosts = async (queryParams=null) => {
+    //host should be something like https://cs412abhinavnallam:5000
+    //follow this string to make the queryParams https://www.geeksforgeeks.org/how-to-create-query-parameters-in-javascript/
+    const host = apiHost || "http://127.0.0.1:5000";
+    const params = queryParams || ""
+
+    const url =  host + '/api/forum?' + params.toString();
 
     try{
         const res = await axios.get(url);

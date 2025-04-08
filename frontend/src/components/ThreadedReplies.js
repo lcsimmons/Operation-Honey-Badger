@@ -18,7 +18,7 @@ export default function ThreadedReplies({ postId, posts, setPosts, username }) {
 
   return (
     <div className="mt-3 pl-6 border-l border-gray-300 space-y-2">
-      {(posts.find((post) => post.id === postId)?.replies || []).map((reply, index) => (
+      {(posts.find((post) => post.forum_id === postId)?.replies || []).map((reply, index) => (
         <div key={index} className="flex items-start space-x-3 bg-gray-100 p-2 rounded-lg">
           <img src={reply.avatar} alt="User Avatar" className="w-6 h-6 rounded-full border" />
           <div>
