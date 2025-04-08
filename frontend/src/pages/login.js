@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { getExpenses, loginUser } from "./api/apiHelper";
 import axios from "axios";
-import { loginUser } from "./api/apiHelper";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -20,9 +20,12 @@ export default function Login() {
 
   const router = useRouter();
 
+  // XSS and SQL Injection Detection
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
     const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
+    
+    // Reset alert before setting a new one
     setAlertMessage("");
 
     if (xssPattern.test(input)) {
@@ -40,7 +43,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (detectInjection(username) || detectInjection(password)) return;
+
+    // Check for XSS or SQL Injection in username & password
+    if (detectInjection(username) || detectInjection(password)) {
+      // Stop login attempt if malicious input is detected
+      return;
+    }
 
     const encodedUsername = btoa(username);
     const encodedPassword = btoa(password);
@@ -48,8 +56,11 @@ export default function Login() {
     try {
       const res = await loginUser({ username: encodedUsername, password: encodedPassword });
 
+      console.log(res)
+
       if (res.data.success) {
         const user = res.data.username || username;
+
         localStorage.setItem("loggedIn", "true");
         localStorage.setItem("username", user);
         localStorage.setItem("avatar", "/default.png");

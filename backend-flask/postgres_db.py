@@ -21,7 +21,7 @@ def get_db_connection():
             
             _psql_db_conn = conn = psycopg2.connect(
                 host='localhost',
-                database='honeybadger_db_postgres',
+                database=os.environ['DB_NAME'],
                 user=os.environ['DB_USERNAME'],
                 password=os.environ['DB_PASSWORD'],
                 connect_timeout=3  # Increased timeout
@@ -63,6 +63,9 @@ def log_attacker_information(attacker_summary):
     attacker_info = attacker_summary['attacker_info']
     gemini = attacker_summary['gemini']
 
+    #make sure the dict is in string format
+    attacker_info['geolocation'] = json.dumps(attacker_info['geolocation'])
+
     attacker_id = update_attacker(attacker_info)
 
     session_id = update_honey_session(attacker_id)
@@ -80,7 +83,7 @@ def log_attacker_information(attacker_summary):
     attacker_json = generate_attacker_json(attack_command)
 
     #send to logstash, can have a response if the connection isn't working
-    send_log_to_logstash("http://localhost:5044", attacker_json)
+    send_log_to_logstash("http://cs412anallam.me", attacker_json)
 
     #close db connection
     conn.commit()
@@ -193,6 +196,7 @@ def update_honey_session(attacker_id):
         # if datetime.now(tzinfo=datetime.timezone.utc) - exists['last_seen'] < 15 : 
         # Update last_seen timestamp
         session_id = exists["session_id"]
+        print("The session id is", str(session_id))
         cur.execute(
             """
             UPDATE Honeypot_Session SET 
@@ -268,7 +272,9 @@ def generate_attacker_json(attack_command):
         "request-url": attack_command.get("request_details", ""),
         "severity-rating": attack_command.get("attacker_info").get("severity_rating", "high"),  # Default to "low" if not provided
         "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
-        "log-id": str(uuid.uuid4())  # Generate a unique log ID
+        "log-id": str(uuid.uuid4()),  # Generate a unique log ID
+        "geolocation" : attack_command.get("attacker_info").get("geolocation"),
+        "port" : "6969" if attack_command.get("gemini").get("techinque") == "Security Misconfiguration" else ""
     }
 
     return json.dumps(attacker_log, indent=4)
