@@ -852,6 +852,30 @@ def getEmployees():
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
+@app.route('/api/log/security_misconfiguration', methods=['POST'])
+def logConnection():
+    attacker_info = request.get_json()
+
+    #Hardcoded since we are not sending anything to Gemini
+    gemini_analysis_res = {
+        "technique": "Security Misconfiguration",
+        "iocs": "Port 6969",
+        "description": "Port 6969 scanned or unathorized access attempt"
+    }
+
+    attacker_summary = {
+        "attacker_info" : attacker_info,
+        "gemini" : gemini_analysis_res,
+        "request_details": {
+            "full_url": "N/A",
+            "path": "N/A",
+            "query_string": "N/A",
+            "root_path": "N/A"
+        }
+    }
+
+    log_attacker_information(attacker_summary)
+
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
 def test_connection():
