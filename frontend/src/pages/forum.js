@@ -240,6 +240,7 @@ export default function Forum() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <title>ODX Forum · Internal Discussions</title>
       {/* Header */}
       <div className="bg-gradient-to-r from-gray-900 to-blue-900 p-4 text-white flex items-center">
         {/* Left: Logo & Search Bar */}
