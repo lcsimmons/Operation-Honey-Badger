@@ -1,8 +1,21 @@
 import Sidebar from "../components/sidebar.js";
 import Search from "../components/Search";
-import { Book, Laptop2, Plane, CreditCard, ShieldCheck, Phone, HelpCircle, Ban, Bell, Info, Wrench } from "lucide-react";
+import { Book, Laptop2, Plane, CreditCard, ShieldCheck, Phone, HelpCircle, Ban, Bell, Info, Wrench, LogOut } from "lucide-react";
+import { useRouter } from "next/router";
 
 export default function Resources() {
+  const router = useRouter(); 
+  const handleLogout = () => {
+      localStorage.removeItem("loggedIn");
+      localStorage.removeItem("username");
+      localStorage.removeItem("avatar");
+    
+      try {
+        router.push("/login");
+      } catch (err) {
+        console.error("Logout redirect failed:", err);
+      }
+  };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
@@ -23,6 +36,9 @@ export default function Resources() {
           </button>
           <button>
             <Wrench className="w-5 h-5" />
+          </button>
+          <button onClick={handleLogout}>
+            <LogOut className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -66,14 +82,7 @@ export default function Resources() {
                   <p className="text-lg font-semibold text-gray-800">IT Support Portal</p>
                   <p className="text-gray-600">Service requests typically disappear into the void within 3-5 business days.</p>
                 </div>
-              </li>
-              <li className="flex items-start space-x-4">
-                <Plane className="w-8 h-8 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="text-lg font-semibold text-gray-800">PTO Request Form</p>
-                  <p className="text-gray-600">Please submit your request 6-12 years in advance for processing.</p>
-                </div>
-              </li>
+              </li>              
               <li className="flex items-start space-x-4">
                 <CreditCard className="w-8 h-8 text-blue-600 flex-shrink-0" />
                 <div>

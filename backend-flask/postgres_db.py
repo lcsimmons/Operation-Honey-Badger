@@ -21,7 +21,7 @@ def get_db_connection():
             
             _psql_db_conn = conn = psycopg2.connect(
                 host='localhost',
-                database='honeybadger_db_postgres',
+                database=os.environ['DB_NAME'],
                 user=os.environ['DB_USERNAME'],
                 password=os.environ['DB_PASSWORD'],
                 connect_timeout=3  # Increased timeout
@@ -62,6 +62,9 @@ def log_attacker_information(attacker_summary):
 
     attacker_info = attacker_summary['attacker_info']
     gemini = attacker_summary['gemini']
+
+    #make sure the dict is in string format
+    attacker_info['geolocation'] = json.dumps(attacker_info['geolocation'])
 
     attacker_id = update_attacker(attacker_info)
 
@@ -193,6 +196,7 @@ def update_honey_session(attacker_id):
         # if datetime.now(tzinfo=datetime.timezone.utc) - exists['last_seen'] < 15 : 
         # Update last_seen timestamp
         session_id = exists["session_id"]
+        print("The session id is", str(session_id))
         cur.execute(
             """
             UPDATE Honeypot_Session SET 

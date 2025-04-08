@@ -11,3 +11,4 @@ user-agents
 geocoder
 gunicorn
 python-dotenv
+ipinfo

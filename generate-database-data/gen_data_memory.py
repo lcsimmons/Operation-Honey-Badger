@@ -118,10 +118,10 @@ def generate_performance_analytics():
     return f"INSERT INTO PerformanceAnalytics (metric, value, department_id, last_updated) VALUES ('{metric}', {value}, {department_id}, '{last_updated}');"
 
 def generate_forum():
-    title_bytes = fake.sentence(nb_words=5).encode("ascii")
-    title = base64.b64encode(title_bytes).decode()
-    description_bytes = fake.text(max_nb_chars=100).encode("ascii")
-    description = base64.b64encode(description_bytes).decode()
+    title = fake.sentence(nb_words=5)
+    # title = base64.b64encode(title_bytes).decode()
+    description = fake.text(max_nb_chars=100)
+    # description = base64.b64encode(description_bytes).decode()
     forum_category = random.choice(["General", "Announcements", "Support"])
     
     # Escape single quotes for SQL
@@ -133,8 +133,9 @@ def generate_forum():
 def generate_forum_comments():
     forum_id = random.randint(1, 50)  # Assuming we'll generate 50 forums
     user_id = random.randint(1, 187)  # Assuming we'll generate 187 users
-    comment_bytes = fake.sentence(nb_words=10).encode("ascii")
-    comment = base64.b64encode(comment_bytes).decode()
+    comment_bytes = fake.sentence(nb_words=10)
+    # comment = base64.b64encode(comment_bytes).decode()
+    comment = comment_bytes
     timestamp = fake.date_time_this_year().strftime("%Y-%m-%d %H:%M:%S")
     
     # Escape single quotes for SQL

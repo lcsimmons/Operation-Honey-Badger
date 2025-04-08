@@ -1,6 +1,19 @@
 import Link from "next/link";
+import { useRouter } from "next/router"; 
 
 export default function AdminPage() {
+  const router = useRouter(); 
+  const handleLogout = () => {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("avatar");
+  
+    try {
+      router.push("/login");
+    } catch (err) {
+      console.error("Logout redirect failed:", err);
+    }
+};
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar Navigation */}
@@ -46,7 +59,7 @@ export default function AdminPage() {
         <div className="mt-auto">
           <button
             className="w-full bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg mt-6"
-            onClick={() => alert("Logging out...")}
+            onClick={handleLogout}
           >
             🚪 Log Out
           </button>
