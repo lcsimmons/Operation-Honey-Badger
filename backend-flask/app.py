@@ -926,6 +926,7 @@ def change_password():
 
     user_id = user['user_id']
 
+    new_password = hashlib.md5(new_password.encode()).hexdigest()
     # Update the user's password
     cursor.execute("UPDATE Users SET password = ? WHERE user_id = ?", (new_password, user_id))
     conn.commit()
