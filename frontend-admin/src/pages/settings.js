@@ -26,12 +26,6 @@ export default function Settings() {
     const ttsEnabled = savedTTS === 'true';
     setTextToSpeechEnabled(ttsEnabled);
 
-    // // Set default font
-    // const savedFont = localStorage.getItem('fontPreference');
-    // if (savedFont !== null) {
-    //   setUseOpenDyslexic(savedFont === 'true');
-    // }
-
     const storedTextSize = localStorage.getItem('textSize');
     if (storedTextSize) {
       setTextSize(storedTextSize);
