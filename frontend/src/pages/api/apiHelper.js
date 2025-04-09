@@ -79,6 +79,26 @@ export const createForumPost = async (postData) => {
     }
 };
 
+export const createForumComment = async (postData) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+    const url = host + "/api/forum/comments";
+
+    const config = {
+        headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        }
+    };
+
+    try {
+        const res = await axios.post(url, postData, config);
+        return res;
+    } catch (err) {
+        console.log("Error creating forum post:", err);
+        return err.response;
+    }
+};
+
 //connor implemented yet in the backend
 export const getEmployees = async (queryParams=null) => {
     //host should be something like https://cs412abhinavnallam:5000
