@@ -117,13 +117,13 @@ export default function Forum() {
 
   const [uploadedFile, setUploadedFile] = useState(null);
 
-  const handleCommentSubmit = () => {
+  const handlePostSubmit = () => {
     if (!commentText.trim() && !uploadedFile) return;
 
-    // if (detectInjection(commentText)) {
-    //   // Stop comment attempt if malicious input is detected
-    //   return;
-    // }
+    if (detectInjection(commentText)) {
+      // Stop comment attempt if malicious input is detected
+      return;
+    }
 
     const newPostEntry = {
       id: posts.length + 1,
@@ -230,7 +230,7 @@ export default function Forum() {
             />
             <FileUpload setUploadedFile={setUploadedFile} />
             <button
-              onClick={handleCommentSubmit}
+              onClick={handlePostSubmit}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
             >
               Share
