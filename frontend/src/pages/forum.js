@@ -9,7 +9,7 @@ import PinnedPosts from "../components/PinnedPosts";
 import Search from "../components/Search";
 import Link from "next/link";
 import { Bell, Info, Wrench, LogOut } from "lucide-react";
-import { getForumComments, createForumPost, getForumPosts, createForumComment } from "./api/apiHelper.js";
+import { getForumComments, createForumPost, getForumPosts } from "./api/apiHelper.js";
 
 export default function Forum() {
   const router = useRouter();
@@ -157,48 +157,6 @@ export default function Forum() {
     
   };
   
-  const handleCommentSubmit = async (postId) => {
-    const reply = replyText[postId];
-  
-    if (!reply || !reply.trim()) return;
-  
-    if (detectInjection(reply)) return;
-  
-    const commentBody = {
-      username: base64Encode(username),
-      forum_id: base64Encode(postId),
-      comment: base64Encode(reply),
-    };
-  
-    try {
-      const response = await createForumComment(commentBody);
-  
-      if (response.status === 200) {
-        const newComment = {
-          ...response.data,
-          user: username,
-          avatar: avatar,
-          message: reply,
-        };
-  
-        setPosts((prevPosts) =>
-          prevPosts.map((post) =>
-            post.forum_id === postId
-              ? { ...post, replies: [...post.replies, newComment] }
-              : post
-          )
-        );
-  
-        setReplyText((prev) => ({ ...prev, [postId]: "" }));
-      } else {
-        console.error("Failed to create comment");
-      }
-    } catch (err) {
-      console.error("Error creating comment:", err);
-    }
-  };
-  
-  
   const handleLogout = (forumId) => {
       localStorage.removeItem("loggedIn");
       localStorage.removeItem("username");
@@ -274,7 +232,7 @@ export default function Forum() {
         {/* Main Content */}
         <div className="flex-1 p-6 max-w-4xl mx-auto bg-gray-100 shadow-md rounded-lg">
           <h1 className="text-2xl font-bold text-black mb-4">Welcome Back, {username}!</h1>
-
+          {alertMessage && <div className="bg-red-500 text-white p-3 rounded-lg text-center mb-4">{alertMessage}</div>}
           {/* New Post Section */}
           <div className="bg-gray-200 p-4 rounded-lg flex items-center space-x-4">
             <img src={avatar} alt="User Avatar" className="w-12 h-12 rounded-full border" />
