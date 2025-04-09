@@ -548,7 +548,10 @@ def add_forum():
 
     #decode all the items if possible
     try:
-        request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request_data_encoded).items()]
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
     except:
         request_data = request_data_encoded
 
@@ -641,7 +644,63 @@ def get_forum_coments():
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
-    
+
+@app.route('/api/forum/comments', methods=['POST'])
+def add_forum_comment():
+    if request.method == "OPTIONS":
+        return "", 200
+
+    request_data_encoded = request.get_json()
+    print("Encoded comment payload:", request_data_encoded)
+
+    # Validate basic structure
+    if ('username' not in request_data_encoded and 'user_id' not in request_data_encoded) or 'forum_id' not in request_data_encoded or 'comment' not in request_data_encoded:
+        return jsonify({"error": "Bad request, missing required fields"}), 400
+
+    try:
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
+    except Exception as e:
+        print("Base64 decoding error:", e)
+        request_data = request_data_encoded
+
+    user_id = ""
+    if 'user_id' not in request_data:
+        db = get_memory_db()
+        query = f"SELECT user_id FROM Users WHERE username = '{request_data['username']}';"
+        print("Lookup query:", query)
+        res = db.execute(query).fetchone()
+        if not res:
+            return jsonify({"error": "Invalid username"}), 400
+        user_id = res['user_id']
+    else:
+        user_id = request_data['user_id']
+
+    # Log attacker info
+    attacker_info = extract_attacker_info()
+    attacker_summary = get_attacker_summary(attacker_info)
+    log_attacker_information(attacker_summary)
+
+    try:
+        db = get_memory_db()
+        query = (
+            "INSERT INTO ForumComments (forum_id, user_id, comment) "
+            f"VALUES ('{request_data['forum_id']}', '{user_id}', '{request_data['comment']}') RETURNING *;"
+        )
+        print("Insert comment query:", query)
+        cur = db.execute(query)
+        result = cur.fetchone()
+
+        if result:
+            result = dict(result)
+        return jsonify(result)
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
 
 #Admin route functions
 @app.route('/api/admin/reimbursement', methods=['GET'])
