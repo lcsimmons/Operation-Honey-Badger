@@ -61,7 +61,7 @@ export default function Resources() {
           {/* Overview */}
           <p className="text-gray-700 leading-relaxed text-lg text-center mb-8">
             If you’re here, you probably need help. We can’t guarantee you’ll find it, but we’ll try.
-            This page contains **everything you need to navigate corporate life at Opossum Dynamics**—
+            This page contains everything you need to navigate corporate life at Opossum Dynamics—
             from essential company policies to IT support and the existential realization that no one reads the handbook.
           </p>
 
