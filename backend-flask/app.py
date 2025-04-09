@@ -1012,10 +1012,8 @@ def validate_security_answers(username, answers):
         #     question_id = answer.get('question_id')
         #     answer_text = answer.get('answer')
 
-        # question_id = db.execute("SELECT question_id FROM users WHERE user_id = '" + user_id + "'")
+        #question_id = db.execute("SELECT question_id FROM users WHERE user_id = '" + user_id + "'")
         userCheck = db.execute("SELECT * FROM SecurityAnswers WHERE user_id = " + str(user_id) + " AND answer = '" + answers + "'")
-        # stored_answer_query = db.execute("SELECT answer FROM SecurityAnswers WHERE user_id = 3")
-        # stored_answer_row = stored_answer_query.fetchone()
 
         if not userCheck.fetchone():
             return False, f"Incorrect answer for question."
@@ -1043,6 +1041,31 @@ def forgot_password():
 
     # Return a message indicating that password reset can proceed
     return jsonify({message: "Security questions validated. You can reset your password."}), 200
+
+@app.route('/api/security_questions', methods=['GET'])
+def security_questions():
+    data = request.json
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required."}), 400
+
+    db = get_memory_db()
+    user = db.execute("SELECT user_id FROM users WHERE username = '" + username + "'")
+    user = user.fetchone()
+
+    if not user:
+            return False, f"User not found. {username}"
+    
+    user_id = user['user_id']
+
+    questionCheck = db.execute("SELECT sq.question_text FROM SecurityAnswers sa JOIN SecurityQuestions sq ON sa.question_id = sq.question_id WHERE sa.user_id = " + (str(user_id)))
+    question = questionCheck.fetchone()
+
+    if question:
+        return jsonify({"question": question[0]}), 200
+    else:
+        return jsonify({"error": "User not found or invalid user_id."}), 404
 
 
 @app.route('/api/change_password', methods=['POST'])

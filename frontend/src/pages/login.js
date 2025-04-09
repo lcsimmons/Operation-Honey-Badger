@@ -93,62 +93,17 @@ export default function Login() {
     setResetMessage("");
     setResetError("");
 
-    const username = 'bjones';
-    const answers = 'Duke';
-
-    fetch('http://localhost:5000/api/forgot_password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, answers }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          setResetError(data.error);
-        } else {
-          setResetMessage(data.message);
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        setResetError("Security Question failed");
-      });
-  };
-
   const handleResetPassword = (e) => {
     e.preventDefault();
 
-    // if (validUsers[username] && validUsers[username].answer.toLowerCase() === securityAnswer.toLowerCase()) {
-    //   setResetMessage(`Your password is: ${validUsers[username].password}`);
-    //   setResetError("");
-    // } else {
-    //   setResetError("Incorrect answer. Try again.");
-    //   setResetMessage("");
-    // }
-
-    const username = 'bjones';
-    const answers = 'Duke';
-    console.log("HERE");
-    fetch('http://localhost:5000/api/forgot_password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username, answers }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          console.log("HERE2");
-        } else {
-          console.log(data);
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+    if (validUsers[username] && validUsers[username].answer.toLowerCase() === securityAnswer.toLowerCase()) {
+      setResetMessage(`Your password is: ${validUsers[username].password}`);
+      setResetError("");
+    } else {
+      setResetError("Incorrect answer. Try again.");
+      setResetMessage("");
+    }
+    
   };
 
   const handleBackToLogin = () => {
