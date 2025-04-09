@@ -135,9 +135,10 @@ def handle_port_6969_connection():
     try:
         # Extract attacker information
         attacker_info = extract_attacker_info()
+        print(attacker_info)
         
         # Define backend API endpoint
-        backend_url = "https://cs412anallam.me:5000/api/log/security_misconfiguration"
+        backend_url = "http://127.0.0.1:5000/api/log/security_misconfiguration"
         
         # Send data to backend
         response = requests.post(
