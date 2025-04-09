@@ -17,7 +17,7 @@ from psycopg2.extras import DictCursor
 
 app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
-CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "OPTIONS"])
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 def parse_user_agent(user_agent_string):
@@ -1071,8 +1071,11 @@ def validate_security_answers(username, answers):
         #     question_id = answer.get('question_id')
         #     answer_text = answer.get('answer')
 
-        #question_id = db.execute("SELECT question_id FROM users WHERE user_id = '" + user_id + "'")
-        userCheck = db.execute("SELECT * FROM SecurityAnswers WHERE user_id = " + str(user_id) + " AND answer = '" + answers + "'")
+        for item in answers:
+            question_id = item["question_id"]
+            answer = item["answer"]
+
+        userCheck = db.execute("SELECT * FROM SecurityAnswers WHERE user_id = " + str(user_id) + " AND question_id = " + str(question_id) + " AND answer = '" + answer + "'")
 
         if not userCheck.fetchone():
             return False, f"Incorrect answer for question."
@@ -1080,7 +1083,7 @@ def validate_security_answers(username, answers):
         return True, "Answers validated successfully."
     except Exception as e:
         print(e)
-        return False, jsonify({"error": str(e)})
+        return False, str(e)
 
 
 @app.route('/api/forgot_password', methods=['POST'])
@@ -1099,9 +1102,9 @@ def forgot_password():
         return jsonify({"error": message}), 400
 
     # Return a message indicating that password reset can proceed
-    return jsonify({message: "Security questions validated. You can reset your password."}), 200
+    return jsonify({"message": "Security questions validated. You can reset your password."}), 200
 
-@app.route('/api/security_questions', methods=['GET'])
+@app.route('/api/security_questions', methods=['POST'])
 def security_questions():
     data = request.json
     username = data.get('username')
@@ -1118,20 +1121,27 @@ def security_questions():
     
     user_id = user['user_id']
 
-    questionCheck = db.execute("SELECT sq.question_text FROM SecurityAnswers sa JOIN SecurityQuestions sq ON sa.question_id = sq.question_id WHERE sa.user_id = " + (str(user_id)))
+    questionCheck = db.execute(
+    "SELECT sq.question_id, sq.question_text "
+    "FROM SecurityAnswers sa "
+    "JOIN SecurityQuestions sq ON sa.question_id = sq.question_id "
+    "WHERE sa.user_id = " + str(user_id))
+
     question = questionCheck.fetchone()
 
     if question:
-        return jsonify({"question": question[0]}), 200
+        return jsonify({
+        "question_text": question[1],
+        "question_id": question[0]
+        }), 200
     else:
         return jsonify({"error": "User not found or invalid user_id."}), 404
-
 
 @app.route('/api/change_password', methods=['POST'])
 def change_password():
     data = request.json
     username = data.get('username')
-    new_password = data.get('new_password')
+    new_password = data.get('newPassword')
 
     if not username or not new_password:
         return jsonify({"error": "Username and new password are required."}), 400
@@ -1151,7 +1161,7 @@ def change_password():
     db.commit()
 
     #"Password successfully changed."
-    return jsonify({"message": "Password changes successfully"}), 200
+    return jsonify({"message": True}), 200
 
 #initialize the in memory database
 with app.app_context():
