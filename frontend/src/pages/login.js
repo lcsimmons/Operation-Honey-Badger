@@ -165,7 +165,7 @@ export default function Login() {
               {showSecurityInput && (
                 <>
                   <p className="text-gray-800 text-sm">{securityQuestion}</p>
-                  <input type="text" placeholder="Answer" className="w-full p-3 border border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
+                  <input type="text" placeholder="Answer" className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
                   <button onClick={validateSecurityAnswer} className="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600">Submit</button>
                 </>
               )}
