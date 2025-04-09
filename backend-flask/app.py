@@ -548,7 +548,10 @@ def add_forum():
 
     #decode all the items if possible
     try:
-        request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request_data_encoded).items()]
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
     except:
         request_data = request_data_encoded
 

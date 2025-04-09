@@ -9,8 +9,7 @@ import PinnedPosts from "../components/PinnedPosts";
 import Search from "../components/Search";
 import Link from "next/link";
 import { Bell, Info, Wrench, LogOut } from "lucide-react";
-import { getForumComments } from "./api/apiHelper.js";
-import { getForumPosts } from "./api/apiHelper.js";
+import { getForumComments, createForumPost, getForumPosts } from "./api/apiHelper.js";
 
 export default function Forum() {
   const router = useRouter();
@@ -117,30 +116,47 @@ export default function Forum() {
 
   const [uploadedFile, setUploadedFile] = useState(null);
 
-  const handlePostSubmit = () => {
-    if (!commentText.trim() && !uploadedFile) return;
+  const base64Encode = (str) => {
+    return btoa(new TextEncoder().encode(str).reduce((data, byte) => data + String.fromCharCode(byte), ""));
+  };  
 
-    if (detectInjection(commentText)) {
-      // Stop comment attempt if malicious input is detected
-      return;
-    }
-
-    const newPostEntry = {
-      id: posts.length + 1,
-      category: selectedCategory === "All" ? "General Chat" : selectedCategory,
-      user: username,
-      avatar: avatar,
-      message: commentText,
-      timestamp: "Just now",
-      likes: 0,
-      replies: [],
-      file: uploadedFile,
+  const handlePostSubmit = async () => {
+    if (!commentText.trim()) return;
+  
+    if (detectInjection(commentText)) return;
+  
+    const postBody = {
+      username: base64Encode(username),
+      title: base64Encode("Untitled"),
+      description: base64Encode(commentText),
+      forum_category: base64Encode(selectedCategory === "All" ? "General Chat" : selectedCategory),
+      is_pinned: base64Encode("0")
     };
-
-    setPosts([newPostEntry, ...posts]);
-    setCommentText("");
-    setUploadedFile(null);
+  
+    try {
+      const response = await createForumPost(postBody);
+  
+      if (response.status === 200) {
+        const newPost = {
+          ...response.data,
+          avatar: avatar,
+          replies: [],
+          likes_count: 0
+        };
+  
+        setPosts([newPost, ...posts]);
+        setCommentText("");
+        setUploadedFile(null);
+      } else {
+        console.error("Failed to create post");
+      }
+    } catch (err) {
+      console.error("Error creating forum post:", err);
+      return { status: 500, data: { error: "Request failed" } };
+    }
+    
   };
+  
 
   
   const handleLogout = (forumId) => {
