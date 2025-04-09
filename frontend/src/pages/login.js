@@ -92,18 +92,63 @@ export default function Login() {
     setShowForgotPassword(true);
     setResetMessage("");
     setResetError("");
+
+    const username = 'bjones';
+    const answers = 'Duke';
+
+    fetch('http://localhost:5000/api/forgot_password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, answers }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          setResetError(data.error);
+        } else {
+          setResetMessage(data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setResetError("Security Question failed");
+      });
   };
 
   const handleResetPassword = (e) => {
     e.preventDefault();
 
-    if (validUsers[username] && validUsers[username].answer.toLowerCase() === securityAnswer.toLowerCase()) {
-      setResetMessage(`Your password is: ${validUsers[username].password}`);
-      setResetError("");
-    } else {
-      setResetError("Incorrect answer. Try again.");
-      setResetMessage("");
-    }
+    // if (validUsers[username] && validUsers[username].answer.toLowerCase() === securityAnswer.toLowerCase()) {
+    //   setResetMessage(`Your password is: ${validUsers[username].password}`);
+    //   setResetError("");
+    // } else {
+    //   setResetError("Incorrect answer. Try again.");
+    //   setResetMessage("");
+    // }
+
+    const username = 'bjones';
+    const answers = 'Duke';
+    console.log("HERE");
+    fetch('http://localhost:5000/api/forgot_password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, answers }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          console.log("HERE2");
+        } else {
+          console.log(data);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   };
 
   const handleBackToLogin = () => {
@@ -136,7 +181,7 @@ export default function Login() {
                 <>
                   <p className="text-gray-800 text-sm">{validUsers[username].question}</p>
                   <input type="text" placeholder="Answer" className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-300 text-gray-800 placeholder-gray-500" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
-                  <button type="submit" className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">Reset Password</button>
+                  <button className="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">Reset Password</button>
                 </>
               ) : (
                 <p className="text-red-500 text-sm text-center">Invalid username.</p>

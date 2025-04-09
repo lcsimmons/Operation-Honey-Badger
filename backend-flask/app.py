@@ -996,42 +996,41 @@ def test_generate_json():
 
 def validate_security_answers(username, answers):
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
+        db = get_memory_db()
         # Fetch user_id based on username
-        cursor.execute("SELECT user_id FROM Users WHERE username = ?", (username,))
-        user = cursor.fetchone()
+        user = db.execute("SELECT user_id FROM users WHERE username = '" + username + "'")
+
+        user = user.fetchone()
         
         if not user:
-            return False, "User not found."
+            return False, f"User not found. {username}"
         
         user_id = user['user_id']
         
         # Check the answers to the security questions
-        for answer in answers:
-            question_id = answer.get('question_id')
-            answer_text = answer.get('answer')
-            
-            cursor.execute("""
-                SELECT * FROM SecurityAnswers 
-                WHERE user_id = ? AND question_id = ? AND answer = ?
-            """, (user_id, question_id, answer_text))
-            
-            if not cursor.fetchone():
-                return False, f"Incorrect answer for question {question_id}."
+        # for answer in answers:
+        #     question_id = answer.get('question_id')
+        #     answer_text = answer.get('answer')
+
+        # question_id = db.execute("SELECT question_id FROM users WHERE user_id = '" + user_id + "'")
+        userCheck = db.execute("SELECT * FROM SecurityAnswers WHERE user_id = " + str(user_id) + " AND answer = '" + answers + "'")
+        # stored_answer_query = db.execute("SELECT answer FROM SecurityAnswers WHERE user_id = 3")
+        # stored_answer_row = stored_answer_query.fetchone()
+
+        if not userCheck.fetchone():
+            return False, f"Incorrect answer for question."
         
         return True, "Answers validated successfully."
     except Exception as e:
         print(e)
-        return jsonify({"error": str(e)}), 500
+        return False, jsonify({"error": str(e)})
 
 
-@app.route('/forgot_password', methods=['POST'])
+@app.route('/api/forgot_password', methods=['POST'])
 def forgot_password():
     data = request.json
     username = data.get('username')
-    answers = data.get('answers', [])
+    answers = data.get('answers')
 
     if not username or not answers:
         return jsonify({"error": "Username and answers are required."}), 400
@@ -1043,10 +1042,10 @@ def forgot_password():
         return jsonify({"error": message}), 400
 
     # Return a message indicating that password reset can proceed
-    return jsonify({"message": "Security questions validated. You can reset your password."}), 200
+    return jsonify({message: "Security questions validated. You can reset your password."}), 200
 
 
-@app.route('/change_password', methods=['POST'])
+@app.route('/api/change_password', methods=['POST'])
 def change_password():
     data = request.json
     username = data.get('username')
@@ -1056,11 +1055,9 @@ def change_password():
         return jsonify({"error": "Username and new password are required."}), 400
 
     # Fetch the user based on username
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT user_id FROM Users WHERE username = ?", (username,))
-    user = cursor.fetchone()
-
+    db = get_memory_db()
+    userCheck = db.execute("SELECT user_id FROM Users WHERE username = '" + username + "'")
+    user = userCheck.fetchone()
     if not user:
         return jsonify({"error": "User not found."}), 404
 
@@ -1068,10 +1065,11 @@ def change_password():
 
     new_password = hashlib.md5(new_password.encode()).hexdigest()
     # Update the user's password
-    cursor.execute("UPDATE Users SET password = ? WHERE user_id = ?", (new_password, user_id))
-    conn.commit()
+    db.execute("UPDATE Users SET password = '" + new_password + "' WHERE user_id = " + str(user_id))
+    db.commit()
 
-    return jsonify({"message": "Password successfully changed."}), 200
+    #"Password successfully changed."
+    return jsonify({"message": "Password changes successfully"}), 200
 
 #initialize the in memory database
 with app.app_context():
