@@ -165,14 +165,14 @@ export default function Login() {
               {showSecurityInput && (
                 <>
                   <p className="text-gray-800 text-sm">{securityQuestion}</p>
-                  <input type="text" placeholder="Answer" className="w-full p-3 border border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
+                  <input type="text" placeholder="Answer" className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
                   <button onClick={validateSecurityAnswer} className="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600">Submit</button>
                 </>
               )}
 
               {showPasswordReset && (
                 <>
-                  <input type="password" placeholder="New Password" className="w-full p-3 border border-gray-300 rounded-lg" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                  <input type="password" placeholder="New Password" className="w-full p-3 text-gray-800 border border-gray-300 rounded-lg" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                   <button onClick={submitNewPassword} className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Reset Password</button>
                 </>
               )}
