@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
+import { useContext } from 'react'; 
+import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import AttackMatrix from "../components/AttackMatrix";
+import WorldMap from "../components/WorldMap";
 import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 
@@ -134,22 +136,27 @@ export default function Dashboard() {
     {
       name: "Bar Charts",
       render: <BarCharts />,
-      className: "row-span-21 bg-white/40 p-4 rounded-lg shadow-md"
+      className: "row-span-2 bg-white/40 p-4 rounded-lg shadow-md"
     },
     {
       name: "Attack Types & Attacker Inputs", 
       render: <AttackTypesAndAttackerInputs/>,
-      className: "col-span-2 row-span-20 bg-white/40 p-6 rounded-lg shadow-md"
+      className: "col-span-2 row-span-2 bg-white/40 p-6 rounded-lg shadow-md"
+    },
+    {
+      name: "Attacker Geolocation",
+      render: <WorldMap />,
+      className: "col-span-3 row-span-2 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
     },
     {
       name: "MITRE Attack", 
       render: <AttackMatrix/>,
-      className: "col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
+      className: "col-span-3 row-span-3 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
     },
     {
       name: "LOL", 
       render: <LOL/>,
-      className: "col-span-3 row-span-30 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
+      className: "col-span-3 row-span-3 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
     }
   ];
 

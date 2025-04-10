@@ -952,6 +952,52 @@ def logConnection():
             "message": f"Failed to log attack: {str(e)}"
         }), 500
     
+#API Endpoints for SOC Admin frontend
+@app.route('/api/geolocation/country', methods=['GET'])
+def get_country_activity():
+    try:
+        # Connect to the database - use your PostgreSQL connection 
+        # (You might be using SQLAlchemy or psycopg2)
+        db = get_db_connection()  # Your database connection function
+        cursor = db.cursor()
+        
+        # PostgreSQL-specific query to extract country from JSON
+        query = """
+        SELECT 
+            (geolocation::json->>'country') as country_code,
+            COUNT(*) as activity_count
+        FROM 
+            attacker
+        WHERE 
+            geolocation IS NOT NULL
+        GROUP BY 
+            country_code
+        ORDER BY 
+            activity_count DESC
+        """
+        
+        # Execute the query
+        cursor.execute(query)
+        result = cursor.fetchall()
+        
+        # Convert the result to a dictionary with country code as key and count as value
+        country_data = {}
+        if result:
+            for row in result:
+                country_code = row[0]  # First column is country_code
+                count = row[1]         # Second column is activity_count
+                
+                if country_code:  # Ensure we have a valid country code
+                    country_data[country_code] = count
+        
+        cursor.close()
+        db.close()
+        
+        return jsonify(country_data)
+    
+    except Exception as e:
+        print(f"Database error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
 
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
