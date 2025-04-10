@@ -1,5 +1,6 @@
 import Sidebar from "../components/sidebar";
 import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
+import { LanguageContext } from '@/context/LanguageContext';
 
 export default function Alerts() {
   const { useOpenDyslexic } = useContext(FontContext);
