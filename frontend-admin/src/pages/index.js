@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useContext } from 'react'; import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
 import AttackMatrix from "../components/AttackMatrix";
@@ -120,6 +120,50 @@ const getColor = (frequency) => {
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const { useOpenDyslexic } = useContext(FontContext);
+  const { language } = useContext(LanguageContext);
+
+  const [uiText, setUiText] = useState({
+    dashboardTitle: "Admin Dashboard",
+    searchPlaceholder: "Search Dashboard...",
+    commonExploits: "Common Exploits",
+    recentReports: "Recent Reports",
+    reportSeverity: "Report Severity",
+    engagementTime: "Engagement Time",
+    commonExploitsUsed: "Common Exploits Used",
+    detectedAttackerIntent: "Detected Attacker Intent",
+    attackTypes: "Attack Types",
+    attackerInputs: "Attacker Inputs"
+  });
+
+  useEffect(() => {
+    const translateUIText = async () => {
+      if (language === 'en') return;
+
+      const keys = Object.keys(uiText);
+      const values = Object.values(uiText);
+
+      try {
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: values, targetLanguage: language }),
+        });
+
+        const data = await response.json();
+        if (data.translations) {
+          const translated = {};
+          keys.forEach((key, idx) => {
+            translated[key] = data.translations[idx].translatedText;
+          });
+          setUiText(translated);
+        }
+      } catch (err) {
+        console.error('Translation error:', err);
+      }
+    };
+
+    translateUIText();
+  }, [language]);
 
   return (
     <div 
@@ -133,7 +177,7 @@ export default function Dashboard() {
         {/* TopBar */}
         <div className="flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg m-4">
           <h1 className="text-xl font-semibold">
-            Operation Honey Badger: <span className="font-bold">Admin Dashboard</span>
+            Operation Honey Badger: <span className="font-bold">{uiText.dashboardTitle}</span>
           </h1>
 
           {/* Search Bar */}
@@ -156,7 +200,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-3 gap-6 p-6">
           {/* Nope */}
           <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col">
-            <h2 className="text-lg font-bold">Common Exploits</h2>
+            <h2 className="text-lg font-bold">{uiText.commonExploits}</h2>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
                 <Pie
@@ -193,20 +237,20 @@ export default function Dashboard() {
           <div className="grid grid-rows-2 gap-6">
             {/* Recent Reports */}
             <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col items-center">
-              <h2 className="text-lg font-bold">Recent Reports</h2>
+              <h2 className="text-lg font-bold">{uiText.recentReports}</h2>
               <p className="text-8xl text-black mt-2">8</p>
             </div>
 
             {/* Report Severity */}
             <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col items-center">
-              <h2 className="text-lg font-bold">Report Severity</h2>
+              <h2 className="text-lg font-bold">{uiText.reportSeverity}</h2>
               <p className="text-8xl text-red-600 mt-2">High</p>
             </div>
           </div>
 
           {/* Bar Charts */}
           <div className="row-span-21 bg-white/40 p-4 rounded-lg shadow-md">
-            <h2 className="text-lg font-bold mb-2">Engagement Time</h2>
+            <h2 className="text-lg font-bold mb-2">{uiText.engagementTime}</h2>
             <ResponsiveContainer width="100%" height={150}>
               <BarChart data={engagementTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
                 <XAxis dataKey="name" />
@@ -216,7 +260,7 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
 
-            <h2 className="text-lg font-bold mt-6 mb-2">Common Exploits Used</h2>
+            <h2 className="text-lg font-bold mt-6 mb-2">{uiText.commonExploitsUsed}</h2>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={commonExploitsData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
                 <XAxis
@@ -231,7 +275,7 @@ export default function Dashboard() {
               </BarChart>
             </ResponsiveContainer>
 
-            <h2 className="text-lg font-bold mt-6 mb-2">Detected Attacker Intent</h2>
+            <h2 className="text-lg font-bold mt-6 mb-2">{uiText.detectedAttackerIntent}</h2>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={attackerIntentData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
                 <XAxis
@@ -255,7 +299,7 @@ export default function Dashboard() {
             <div className="flex justify-between gap-6 h-full">
               {/* Attack Types */}
               <div className="flex flex-col items-center w-1/2 h-full">
-                <h3 className="text-3xl font-bold mb-4">Attack Types</h3>
+                <h3 className="text-3xl font-bold mb-4">{uiText.attackTypes}</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
@@ -290,7 +334,7 @@ export default function Dashboard() {
 
               {/* Attacker Inputs */}
               <div className="flex flex-col items-center w-1/2 h-full">
-                <h3 className="text-3xl font-bold mb-4">Attacker Inputs</h3>
+                <h3 className="text-3xl font-bold mb-4">{uiText.attackerInputs}</h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
