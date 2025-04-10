@@ -85,11 +85,13 @@ export default function Login() {
 
   const fetchSecurityQuestion = async () => {
     try {
-      const res = await axios.post("/security_questions", { username });
+      const res = await axios.post("http://localhost:5000/api/security_questions", { 
+        username
+      });
 
-      if (res.data.questions && res.data.questions.length > 0) {
-        setSecurityQuestion(res.data.questions[0].question_text);
-        setQuestionId(res.data.questions[0].question_id);
+      if (res.data && Object.keys(res.data).length > 0) {
+        setSecurityQuestion(res.data.question_text);
+        setQuestionId(res.data.question_id);
         setShowSecurityInput(true);
         setResetError("");
       } else {
@@ -98,12 +100,13 @@ export default function Login() {
     } catch {
       setResetError("Error retrieving security question.");
     }
+    
   };
 
 
   const validateSecurityAnswer = async () => {
     try {
-      const res = await axios.post("/forgot_password", {
+      const res = await axios.post("http://localhost:5000/api/forgot_password", {
         username,
         answers: [{ question_id: questionId, answer: securityAnswer }],
       });
@@ -122,11 +125,11 @@ export default function Login() {
 
   const submitNewPassword = async () => {
     try {
-      const res = await axios.post("/change_password", {
+      const res = await axios.post("http://localhost:5000/api/change_password", {
         username,
         newPassword,
       });
-      if (res.data.success) {
+      if (res.data.message) {
         setResetMessage("Password changed successfully. You may now log in.");
         setShowForgotPassword(false);
       } else {
@@ -162,7 +165,7 @@ export default function Login() {
               {showSecurityInput && (
                 <>
                   <p className="text-gray-800 text-sm">{securityQuestion}</p>
-                  <input type="text" placeholder="Answer" className="w-full p-3 border border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
+                  <input type="text" placeholder="Answer" className="w-full p-3 border text-gray-800 border-gray-300 rounded-lg" value={securityAnswer} onChange={(e) => setSecurityAnswer(e.target.value)} />
                   <button onClick={validateSecurityAnswer} className="w-full bg-yellow-500 text-white p-2 rounded hover:bg-yellow-600">Submit</button>
                 </>
               )}
