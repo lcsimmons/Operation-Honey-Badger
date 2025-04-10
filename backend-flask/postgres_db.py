@@ -274,7 +274,7 @@ def generate_attacker_json(attack_command):
         "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
         "log-id": str(uuid.uuid4()),  # Generate a unique log ID
         "geolocation" : attack_command.get("attacker_info").get("geolocation"),
-        "port" : "6969" if attack_command.get("gemini").get("techinque") == "Security Misconfiguration" else ""
+        "port" : "6969" if attack_command.get("gemini").get("technique") == "Security Misconfiguration" else ""
     }
 
     return json.dumps(attacker_log, indent=4)
