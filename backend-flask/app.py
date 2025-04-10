@@ -17,7 +17,7 @@ from psycopg2.extras import DictCursor
 
 app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
-CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "OPTIONS"])
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 def parse_user_agent(user_agent_string):
@@ -69,6 +69,7 @@ def parse_user_agent(user_agent_string):
             "raw": user_agent_string,
             "error": str(e)
         }
+
 def example_ua_queries():
     conn = get_db_connection()
     db = conn.cursor()
@@ -548,7 +549,10 @@ def add_forum():
 
     #decode all the items if possible
     try:
-        request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request_data_encoded).items()]
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
     except:
         request_data = request_data_encoded
 
@@ -641,7 +645,63 @@ def get_forum_coments():
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
-    
+
+@app.route('/api/forum/comments', methods=['POST'])
+def add_forum_comment():
+    if request.method == "OPTIONS":
+        return "", 200
+
+    request_data_encoded = request.get_json()
+    print("Encoded comment payload:", request_data_encoded)
+
+    # Validate basic structure
+    if ('username' not in request_data_encoded and 'user_id' not in request_data_encoded) or 'forum_id' not in request_data_encoded or 'comment' not in request_data_encoded:
+        return jsonify({"error": "Bad request, missing required fields"}), 400
+
+    try:
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
+    except Exception as e:
+        print("Base64 decoding error:", e)
+        request_data = request_data_encoded
+
+    user_id = ""
+    if 'user_id' not in request_data:
+        db = get_memory_db()
+        query = f"SELECT user_id FROM Users WHERE username = '{request_data['username']}';"
+        print("Lookup query:", query)
+        res = db.execute(query).fetchone()
+        if not res:
+            return jsonify({"error": "Invalid username"}), 400
+        user_id = res['user_id']
+    else:
+        user_id = request_data['user_id']
+
+    # Log attacker info
+    attacker_info = extract_attacker_info()
+    attacker_summary = get_attacker_summary(attacker_info)
+    log_attacker_information(attacker_summary)
+
+    try:
+        db = get_memory_db()
+        query = (
+            "INSERT INTO ForumComments (forum_id, user_id, comment) "
+            f"VALUES ('{request_data['forum_id']}', '{user_id}', '{request_data['comment']}') RETURNING *;"
+        )
+        print("Insert comment query:", query)
+        cur = db.execute(query)
+        result = cur.fetchone()
+
+        if result:
+            result = dict(result)
+        return jsonify(result)
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
 
 #Admin route functions
 @app.route('/api/admin/reimbursement', methods=['GET'])
@@ -819,7 +879,7 @@ def getEmployees():
     
     attacker_info = extract_attacker_info()
     attacker_summary = get_attacker_summary(attacker_info)
-    log_attacker_information(attacker_summary)
+    log_attacker_information(attacker_summary) #logging to postgres
     
     try:
         # Connect to the database
@@ -851,6 +911,47 @@ def getEmployees():
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/api/log/security_misconfiguration', methods=['POST'])
+def logConnection():
+    try:
+        attacker_info = request.get_json()
+
+        #Hardcoded since we are not sending anything to Gemini
+        gemini_analysis_res = {
+            "technique": "Security Misconfiguration",
+            "iocs": "Port 6969",
+            "description": "Port 6969: unauthorized access attempt or scanned"
+        }
+
+        print(attacker_info)
+
+        attacker_summary = {
+            "attacker_info": attacker_info,
+            "gemini": gemini_analysis_res,
+            "request_details": {
+                "full_url": "N/A",
+                "path": "/log/security_misconfiguration",
+                "query_string": "N/A",
+                "root_path": "N/A"
+            }
+        }
+
+        log_result = log_attacker_information(attacker_summary)
+        
+        # Return a success response with status code 200
+        return jsonify({
+            "status": "success",
+            "message": "Attack attempt logged successfully"
+        }), 200
+        
+    except Exception as e:
+        # Return an error response with status code 500
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to log attack: {str(e)}"
+        }), 500
+    
 
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
@@ -993,6 +1094,116 @@ def test_generate_json():
         return jsonify({"error" : "Probably having issue connecting to elk"}), 500
     
     return jsonify({"attacker_log": attacker_json}), 200
+
+def validate_security_answers(username, answers):
+    try:
+        db = get_memory_db()
+        # Fetch user_id based on username
+        user = db.execute("SELECT user_id FROM users WHERE username = '" + username + "'")
+
+        user = user.fetchone()
+        
+        if not user:
+            return False, f"User not found. {username}"
+        
+        user_id = user['user_id']
+        
+        # Check the answers to the security questions
+        # for answer in answers:
+        #     question_id = answer.get('question_id')
+        #     answer_text = answer.get('answer')
+
+        for item in answers:
+            question_id = item["question_id"]
+            answer = item["answer"]
+
+        userCheck = db.execute("SELECT * FROM SecurityAnswers WHERE user_id = " + str(user_id) + " AND question_id = " + str(question_id) + " AND answer = '" + answer + "'")
+
+        if not userCheck.fetchone():
+            return False, f"Incorrect answer for question."
+        
+        return True, "Answers validated successfully."
+    except Exception as e:
+        print(e)
+        return False, str(e)
+
+
+@app.route('/api/forgot_password', methods=['POST'])
+def forgot_password():
+    data = request.json
+    username = data.get('username')
+    answers = data.get('answers')
+
+    if not username or not answers:
+        return jsonify({"error": "Username and answers are required."}), 400
+
+    # Validate security answers
+    valid, message = validate_security_answers(username, answers)
+    
+    if not valid:
+        return jsonify({"error": message}), 400
+
+    # Return a message indicating that password reset can proceed
+    return jsonify({"message": "Security questions validated. You can reset your password."}), 200
+
+@app.route('/api/security_questions', methods=['POST'])
+def security_questions():
+    data = request.json
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required."}), 400
+
+    db = get_memory_db()
+    user = db.execute("SELECT user_id FROM users WHERE username = '" + username + "'")
+    user = user.fetchone()
+
+    if not user:
+            return False, f"User not found. {username}"
+    
+    user_id = user['user_id']
+
+    questionCheck = db.execute(
+    "SELECT sq.question_id, sq.question_text "
+    "FROM SecurityAnswers sa "
+    "JOIN SecurityQuestions sq ON sa.question_id = sq.question_id "
+    "WHERE sa.user_id = " + str(user_id))
+
+    question = questionCheck.fetchone()
+
+    if question:
+        return jsonify({
+        "question_text": question[1],
+        "question_id": question[0]
+        }), 200
+    else:
+        return jsonify({"error": "User not found or invalid user_id."}), 404
+
+@app.route('/api/change_password', methods=['POST'])
+def change_password():
+    data = request.json
+    username = data.get('username')
+    new_password = data.get('newPassword')
+
+    if not username or not new_password:
+        return jsonify({"error": "Username and new password are required."}), 400
+
+    # Fetch the user based on username
+    db = get_memory_db()
+    userCheck = db.execute("SELECT user_id FROM Users WHERE username = '" + username + "'")
+    user = userCheck.fetchone()
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    user_id = user['user_id']
+
+    new_password = hashlib.md5(new_password.encode()).hexdigest()
+    # Update the user's password
+    db.execute("UPDATE Users SET password = '" + new_password + "' WHERE user_id = " + str(user_id))
+    db.commit()
+
+    #"Password successfully changed."
+    return jsonify({"message": True}), 200
 
 #initialize the in memory database
 with app.app_context():
