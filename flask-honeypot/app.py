@@ -129,25 +129,29 @@ def extract_attacker_info():
 
 def handle_port_6969_connection():
     """
-    Handle connection attempt to port 6969, extract attacker info, 
+    Handle connection attempt to port 6969, extract attacker info,
     and forward to backend for logging
     """
     try:
+        # Load environment from .env.local explicitly if exists
+        if os.path.exists('.env.local'):
+            load_dotenv('.env.local')
+
         # Extract attacker information
         attacker_info = extract_attacker_info()
         print(attacker_info)
-        
-        # Define backend API endpoint
-        backend_url = "http://127.0.0.1:5000/api/log/security_misconfiguration"
-        
+
+        # Get backend URL from env or fallback to localhost
+        backend_url = os.environ.get('BACKEND_API_URL')
+
         # Send data to backend
         response = requests.post(
             backend_url,
-            json=attacker_info,  # Send the complete attacker_info object
+            json=attacker_info,
             headers={"Content-Type": "application/json"}
         )
-        
-        # Check if the request was successful
+
+        # Check response
         if response.status_code == 200:
             print(f"Successfully logged port 6969 connection from {attacker_info['ip_address']}")
             return True
@@ -155,7 +159,7 @@ def handle_port_6969_connection():
             print(f"Failed to log connection: Backend returned status {response.status_code}")
             print(f"Response: {response.text}")
             return False
-            
+
     except Exception as e:
         print(f"Error handling port 6969 connection: {str(e)}")
         return False

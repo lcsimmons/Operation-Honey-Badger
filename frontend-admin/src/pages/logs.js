@@ -11,6 +11,7 @@ import {
     Tooltip,
 } from "recharts";
 import { LanguageContext } from '@/context/LanguageContext';
+import { useTextSize } from '@/context/TextSizeContext';
 
 export default function Logs() {
     const [logs, setLogs] = useState([]);
@@ -20,6 +21,7 @@ export default function Logs() {
     const logsPerPage = 10;
     const { useOpenDyslexic } = useContext(FontContext);
     const { language } = useContext(LanguageContext);
+    const { textSize } = useTextSize();
 
     const [uiText, setUiText] = useState({
         searchLogs: "Search logs...",
@@ -252,7 +254,8 @@ export default function Logs() {
     return (
         <div 
         style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
-        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        className={`flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen ${textSize}`}>
+            <title>Logs Search</title>
             <Sidebar />
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
 
