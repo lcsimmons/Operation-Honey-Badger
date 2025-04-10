@@ -57,7 +57,7 @@ const WorldMap = () => {
   useEffect(() => {
     const fetchCountryData = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/geolocation/country");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/geolocation/country`);
         const data = await res.json();
         setCountryData(data);
       } catch (err) {
@@ -140,9 +140,8 @@ const WorldMap = () => {
           </div>
         )}
 
-        {/* Top 5 Countries */}
-        <div className="absolute top-2 left-2 bg-white/80 p-2 rounded shadow text-xs">
-          <div className="font-semibold mb-1">Top 5 Countries:</div>
+        <div className="absolute top-4 left-4 bg-white/90 p-2 rounded shadow text-xs border border-gray-300">
+          <div className="font-bold mb-1">Top 5 Countries:</div>
           <ul className="list-disc list-inside">
             {topCountries.map((entry, idx) => (
               <li key={idx}>
@@ -152,8 +151,7 @@ const WorldMap = () => {
           </ul>
         </div>
 
-        {/* Map Key */}
-        <div className="absolute top-2 right-2 bg-white/80 p-2 rounded shadow text-xs border border-black border-opacity-20">
+        <div className="absolute top-4 right-4 bg-white/90 p-2 rounded shadow text-xs border border-black">
           <div className="font-bold mb-1">Map Key:</div>
           <div className="grid grid-cols-2 gap-2">
             {COLOR_SCALE.map((range, idx) => (
