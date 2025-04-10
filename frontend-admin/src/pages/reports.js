@@ -3,6 +3,7 @@ import { useContext } from 'react'; import { FontContext } from '../context/Font
 import Sidebar from "../components/sidebar";
 import { Search, HelpCircle, Flame, ShieldAlert, BugPlay } from "lucide-react";
 import { useRouter } from 'next/router';
+import { LanguageContext } from '@/context/LanguageContext';
 
 export default function Reports() {
     // Define all state variables at the top of the component
@@ -30,7 +31,9 @@ export default function Reports() {
     
     const [reportHTML, setReportHTML] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const [currentLanguage, setCurrentLanguage] = useState("en");
+    // const [currentLanguage, setCurrentLanguage] = useState("en");
+    const { language } = useContext(LanguageContext);
+
     const [isTranslating, setIsTranslating] = useState(false);
     const [originalReportHTML, setOriginalReportHTML] = useState("");
     const [translations, setTranslations] = useState({});
@@ -119,10 +122,10 @@ export default function Reports() {
         }
         
         // Load language setting
-        const savedLanguage = localStorage.getItem('reportLanguage');
-        if (savedLanguage) {
-            setCurrentLanguage(savedLanguage);
-        }
+        // const savedLanguage = localStorage.getItem('reportLanguage');
+        // if (savedLanguage) {
+        //     setCurrentLanguage(savedLanguage);
+        // }
         
         // Load text-to-speech setting - explicitly parse as boolean
         const savedTTS = localStorage.getItem('textToSpeechEnabled');
@@ -180,7 +183,7 @@ export default function Reports() {
 
     // Translate UI text whenever language changes
     useEffect(() => {
-        if (currentLanguage !== 'en') {
+        if (language !== 'en') {
             translateUIText();
         } else {
             // Reset to English
@@ -208,7 +211,7 @@ export default function Reports() {
             setReports([...originalReports]);
             setFilteredReports([...originalReports]);
         }
-    }, [currentLanguage]);
+    }, [language]);
 
     // Function to translate static UI text
     const translateUIText = async () => {
@@ -225,7 +228,7 @@ export default function Reports() {
                 },
                 body: JSON.stringify({
                     text: textsToTranslate,
-                    targetLanguage: currentLanguage
+                    targetLanguage: language
                 })
             });
             
@@ -305,19 +308,19 @@ export default function Reports() {
         setReportHTML(initialReportHTML);
 
         // If a non-English language is selected, translate the initial report
-        if (currentLanguage !== 'en') {
-            translateReport(initialReportHTML, currentLanguage);
+        if (language !== 'en') {
+            translateReport(initialReportHTML, language);
         }
-    }, [currentLanguage, reports]);
+    }, [language, reports]);
 
     // Translate report content when language changes
     useEffect(() => {
-        if (originalReportHTML && currentLanguage !== 'en') {
-            translateReport(originalReportHTML, currentLanguage);
+        if (originalReportHTML && language !== 'en') {
+            translateReport(originalReportHTML, language);
         } else if (originalReportHTML) {
             setReportHTML(originalReportHTML);
         }
-    }, [currentLanguage, originalReportHTML]);
+    }, [language, originalReportHTML]);
 
     // Search Functionality
     useEffect(() => {
@@ -454,8 +457,8 @@ export default function Reports() {
         setOriginalReportHTML(newReportHTML);
         
         // If a non-English language is selected, translate the report
-        if (currentLanguage !== 'en') {
-            translateReport(newReportHTML, currentLanguage);
+        if (language !== 'en') {
+            translateReport(newReportHTML, language);
         } else {
             setReportHTML(newReportHTML);
         }
@@ -494,7 +497,7 @@ export default function Reports() {
                 'vi': 'vi-VN'
             };
             
-            const languageCode = languageMap[currentLanguage] || 'en-US';
+            const languageCode = languageMap[language] || 'en-US';
             
             console.log(`Speaking text: "${text}" in language: ${languageCode}`);
             
@@ -738,14 +741,7 @@ export default function Reports() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-
-                    {/* <div className="flex gap-2 mt-4">
-                        <button onClick={() => setTextSize("text-base")} className="px-2 py-1 bg-gray-200 rounded">A-</button>
-                        <button onClick={() => setTextSize("text-xl")} className="px-2 py-1 bg-gray-200 rounded">A</button>
-                        <button onClick={() => setTextSize("text-2xl")} className="px-2 py-1 bg-gray-200 rounded">A+</button>
-                    </div> */}
-
-                    
+                   
                     <HelpCircle size={24} className="cursor-pointer text-gray-500 hover:text-black" />
                 </div>
 
