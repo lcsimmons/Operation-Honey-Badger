@@ -4,6 +4,7 @@ import Sidebar from "../components/sidebar";
 import AttackMatrix from "../components/AttackMatrix";
 import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import { LanguageContext } from '@/context/LanguageContext';
 
 const pieData = [
   { name: "Item 1", value: 20 },

@@ -1,24 +1,26 @@
 import Sidebar from "../components/sidebar";
 import { useState, useEffect, useContext } from "react";
 import { FontContext } from "@/context/FontContext";
+import { LanguageContext } from '@/context/LanguageContext';
 
 export default function Settings() {
   // Start with definite boolean values instead of null
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  // const [selectedLanguage, setSelectedLanguage] = useState("en");
   // Start with false but update immediately on mount
   const [textToSpeechEnabled, setTextToSpeechEnabled] = useState(false);
   // When false, the default font (Arial) is used.
   const { useOpenDyslexic, toggleFont } = useContext(FontContext);
+  const { language, updateLanguage } = useContext(LanguageContext);
 
   const [textSize, setTextSize] = useState('text-base');
 
   // Load settings from localStorage only once on component mount
   useEffect(() => {
     // Load language setting
-    const savedLanguage = localStorage.getItem('reportLanguage');
-    if (savedLanguage) {
-      setSelectedLanguage(savedLanguage);
-    }
+    // const savedLanguage = localStorage.getItem('reportLanguage');
+    // if (savedLanguage) {
+    //   setSelectedLanguage(savedLanguage);
+    // }
     
     // Load text-to-speech setting - parse as boolean explicitly
     const savedTTS = localStorage.getItem('textToSpeechEnabled');
@@ -32,16 +34,18 @@ export default function Settings() {
     }
 
     console.log('Settings page loaded TTS setting:', savedTTS, 'Parsed as:', ttsEnabled);
-    console.log('Settings page loaded language setting:', savedLanguage);
+    // console.log('Settings page loaded language setting:', savedLanguage);
   }, []);
   
   // Save language setting when it changes
   const handleLanguageChange = (e) => {
-    const newLanguage = e.target.value;
-    setSelectedLanguage(newLanguage);
-    // Immediately update localStorage with the new value
-    localStorage.setItem('reportLanguage', newLanguage);
-    console.log('Language changed to:', newLanguage, 'Saved to localStorage as:', newLanguage);
+    const newLang = e.target.value;
+    updateLanguage(newLang);
+    // const newLanguage = e.target.value;
+    // setSelectedLanguage(newLanguage);
+    // // Immediately update localStorage with the new value
+    // localStorage.setItem('reportLanguage', newLanguage);
+    console.log('Language changed to:', newLang, 'Saved to localStorage as:', newLang);
   };
   
   // Save text-to-speech setting immediately when it changes
@@ -143,7 +147,7 @@ export default function Settings() {
                 </label>
                 <select 
                   id="language-select"
-                  value={selectedLanguage}
+                  value={language}
                   onChange={handleLanguageChange}
                   className="bg-white border border-gray-300 text-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
