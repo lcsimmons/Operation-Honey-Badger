@@ -4,6 +4,7 @@ import Sidebar from "../components/sidebar";
 import { Search, HelpCircle, Flame, ShieldAlert, BugPlay } from "lucide-react";
 import { useRouter } from 'next/router';
 import { LanguageContext } from '@/context/LanguageContext';
+import { useTextSize } from '@/context/TextSizeContext';
 
 export default function Reports() {
     // Define all state variables at the top of the component
@@ -48,7 +49,7 @@ export default function Reports() {
     // Add timeout reference to handle hover delays
     const hoverTimeoutRef = useRef(null);
     // Keeps track of the selected text size, by default it's text-base
-    const [textSize, setTextSize] = useState("text-base");
+    const { textSize } = useTextSize();
 
     const { useOpenDyslexic } = useContext(FontContext);
     
@@ -713,24 +714,18 @@ export default function Reports() {
         };
     }, [textToSpeechEnabled, reportHTML]); // Re-run when reportHTML or TTS setting changes
 
-    useEffect(() => {
-    const storedSize = localStorage.getItem('textSize');
-    if (storedSize) {
-        setTextSize(storedSize);
-    }
-    }, []);
-
     return (
         <div 
         style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
-        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        className={`flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen ${textSize}`}>
+            <title>Reports</title>
             {/* Sidebar */}
             <Sidebar />
 
             {/* Main Content */}
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
                 {/* Search Bar */}
-                <div className="bg-white/70 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
+                <div className="bg-white/40 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
                     <div className="max-w-[800px] flex items-center w-2/3 bg-gray-100 p-2 rounded-lg">
                         <Search size={20} className="text-gray-400" />
                         <input
@@ -748,27 +743,27 @@ export default function Reports() {
                 {/* Reports Section */}
                 <div className="grid grid-cols-3 gap-6 p-6">
                     {/* Reports List */}
-                    <div className="bg-white p-4 rounded-lg shadow-md col-span-1 max-h-[75vh] overflow-y-auto">
+                    <div className="bg-white/40 p-4 rounded-lg shadow-md col-span-1 max-h-[75vh] overflow-y-auto">
                         <h2 className="text-lg font-bold">{uiText?.recentReports || "Recent Reports"}</h2>
 
                         {filteredReports.length > 0 ? (
                             filteredReports.map((report) => (
                                 <div
                                     key={report.id}
-                                    className="cursor-pointer bg-gray-100 p-3 rounded-md my-2 hover:bg-gray-200 transition-all"
+                                    className="cursor-pointer bg-gray-100/40 p-3 rounded-md my-2 hover:bg-gray-100/60 transition-all"
                                     onClick={() => selectReport(report)}
                                 >
                                     <h3 className="font-semibold">{report.title}</h3>
-                                    <p className="text-sm">{uiText?.incidentId || "Incident ID"}: {report.id}</p>
-                                    <p className="text-sm">{uiText?.time || "Time"}: {report.time}</p>
-                                    <p className={`text-sm font-bold ${
+                                    <p className="">{uiText?.incidentId || "Incident ID"}: {report.id}</p>
+                                    <p className="">{uiText?.time || "Time"}: {report.time}</p>
+                                    <p className={`font-bold ${
                                         report.severity === "High" || 
                                         report.severity === uiText.high ? 
                                         "text-[#B22222]" : "text-orange-500"}`}
                                     >
                                         {uiText?.severity || "Severity"}: {report.severity}
                                     </p>
-                                    <p className="text-sm">{uiText?.status || "Status"}: {report.status}</p>
+                                    <p className="">{uiText?.status || "Status"}: {report.status}</p>
                                 </div>
                             ))
                         ) : (
@@ -777,7 +772,7 @@ export default function Reports() {
                     </div>
 
                     {/* Report Details Panel */}
-                    <div className="bg-white p-6 rounded-lg shadow-md col-span-2">
+                    <div className="bg-white/40 p-6 rounded-lg shadow-md col-span-2">
 
                         {/* Translation Loading Indicator */}
                         {isTranslating && (
