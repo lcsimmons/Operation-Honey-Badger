@@ -11,14 +11,9 @@ export default function SecurityPage() {
         This page contains sensitive audit logs. However, access controls appear improperly configured.
       </p>
 
-      <div className="bg-gray-100 border border-red-300 p-4 rounded-lg text-sm">
-        <p><strong>Status:</strong> Internal log exposure detected.</p>
-        <p><strong>Note:</strong> This log view is not restricted by user role.</p>
-        <ul className="list-disc pl-6 mt-2 text-gray-700">
-          <li>Login anomalies: suspicious tokens bypassed MFA</li>
-          <li>5 unauthorized attempts from admin role "qa-testing"</li>
-          <li>Config file leaked over GET `/env-vars/` endpoint</li>
-        </ul>
+      <div className="bg-gray-200 border border-red-300 p-4 rounded-lg text-sm">
+        <p><b>Status:</b> Internal log exposure detected.</p>
+        <p><b>Note:</b> This log view is not restricted by user role.</p>
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export default function EmployeeAdminPage() {
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
         <Users size={28} /> Employee Directory
       </h1>
-      <Table data={employees} columns={["id", "name", "email", "role"]} />
+      <Table data={employees} columns={["ID", "Full name", "Email", "Department", "Role", "Salary", "Clearance level", "Last login", "Is sensitive"]} />
     </div>
   );
 }

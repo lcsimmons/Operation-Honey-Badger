@@ -16,7 +16,7 @@ export default function ExpensesPage() {
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
         <Wallet size={28} /> Expense Reports
       </h1>
-      <Table data={expenses} columns={["id", "employee", "amount", "reason", "status"]} />
+      <Table data={expenses} columns={["ID", "Employee ID", "Amount", "Category", "Status", "Last modified by", "Timestamp"]} />
     </div>
   );
 }

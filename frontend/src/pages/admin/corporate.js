@@ -16,7 +16,7 @@ export default function CorporatePage() {
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
         <Building size={28} /> Corporate Initiatives
       </h1>
-      <Table data={projects} columns={["project_id", "name", "owner", "status", "deadline"]} />
+      <Table data={projects} columns={["ID", "Project name", "Budget", "Progress", "Executive sponsor"]} />
     </div>
   );
 }

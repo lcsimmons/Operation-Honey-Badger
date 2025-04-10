@@ -17,7 +17,7 @@ export default function ITSupportPage() {
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
         <LifeBuoy size={28} /> IT Support Tickets
       </h1>
-      <Table data={tickets} columns={["ticket_id", "user", "issue", "priority", "status"]} />
+      <Table data={tickets} columns={["ID", "Reported by", "Issue", "Status", "Assigned to", "Timestamp"]} />
     </div>
   );
 }

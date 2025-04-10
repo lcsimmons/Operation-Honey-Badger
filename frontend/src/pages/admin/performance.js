@@ -16,7 +16,7 @@ export default function PerformancePage() {
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
         <BarChart2 size={28} /> Department Metrics
       </h1>
-      <Table data={data} columns={["team", "metric", "value", "target", "status"]} />
+      <Table data={data} columns={["ID", "Department", "Metric", "Value", "Last updated"]} />
     </div>
   );
 }
