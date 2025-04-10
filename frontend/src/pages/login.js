@@ -142,6 +142,7 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen">
+      <title>Login · Opossum Dynamics Internal</title>
       <div className="w-3/5 flex items-center justify-center bg-black p-8">
         <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Employee Forum Login</h2>

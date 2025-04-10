@@ -21,32 +21,32 @@ export default function Forum() {
   const [alertMessage, setAlertMessage] = useState("");
   const [replyText, setReplyText] = useState({});
   const [posts, setPosts] = useState([]);
-  
+
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("loggedIn");
     const storedUsername = localStorage.getItem("username");
     const storedAvatar = localStorage.getItem("avatar");
-  
+
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
-  
+
     setUsername(storedUsername || "Employee");
     setAvatar(storedAvatar || "/default.png");
-  
+
     const fetchData = async () => {
       try {
         const [postsRes, commentsRes] = await Promise.all([
           getForumPosts(),
           getForumComments(),
         ]);
-  
+
         if (postsRes.status !== 200 || commentsRes.status !== 200) {
           console.error("Error fetching posts or comments");
           return;
         }
-  
+
         const postsData = postsRes.data;
         const commentsData = commentsRes.data;
 
@@ -61,21 +61,21 @@ export default function Forum() {
           });
           return acc;
         }, {});
-        
+
         const postsWithReplies = postsData.map((post) => ({
           ...post,
           replies: commentsByForumId[post.forum_id] || [],
         }));
-  
+
         setPosts(postsWithReplies);
       } catch (err) {
         console.error("Unexpected error", err);
       }
     };
-  
+
     fetchData();
   }, []);
-  
+
   // useEffect(() => {
   //   const isLoggedIn = localStorage.getItem("loggedIn");
   //   const storedUsername = localStorage.getItem("username");
@@ -88,7 +88,7 @@ export default function Forum() {
   //     setAvatar(storedAvatar || "/default.png");
 
   //     //add tge the information for the forum
-      
+
   //     const res = getForumComments();
 
   //     res.then((result) => {
@@ -118,13 +118,13 @@ export default function Forum() {
 
   const base64Encode = (str) => {
     return btoa(new TextEncoder().encode(str).reduce((data, byte) => data + String.fromCharCode(byte), ""));
-  };  
+  };
 
   const handlePostSubmit = async () => {
     if (!commentText.trim()) return;
-  
+
     if (detectInjection(commentText)) return;
-  
+
     const postBody = {
       username: base64Encode(username),
       title: base64Encode("Untitled"),
@@ -132,10 +132,10 @@ export default function Forum() {
       forum_category: base64Encode(selectedCategory === "All" ? "General Chat" : selectedCategory),
       is_pinned: base64Encode("0")
     };
-  
+
     try {
       const response = await createForumPost(postBody);
-  
+
       if (response.status === 200) {
         const newPost = {
           ...response.data,
@@ -143,7 +143,7 @@ export default function Forum() {
           replies: [],
           likes_count: 0
         };
-  
+
         setPosts([newPost, ...posts]);
         setCommentText("");
         setUploadedFile(null);
@@ -154,19 +154,19 @@ export default function Forum() {
       console.error("Error creating forum post:", err);
       return { status: 500, data: { error: "Request failed" } };
     }
-    
+
   };
-  
+
   const handleLogout = (forumId) => {
-      localStorage.removeItem("loggedIn");
-      localStorage.removeItem("username");
-      localStorage.removeItem("avatar");
-    
-      try {
-        router.push("/login");
-      } catch (err) {
-        console.error("Logout redirect failed:", err);
-      }
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("avatar");
+
+    try {
+      router.push("/login");
+    } catch (err) {
+      console.error("Logout redirect failed:", err);
+    }
   };
 
   // TO DO: Write backend for this 
@@ -197,6 +197,7 @@ export default function Forum() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
+      <title>ODX Forum · Internal Discussions</title>
       {/* Header */}
       <div className="bg-gradient-to-r from-gray-900 to-blue-900 p-4 text-white flex items-center">
         {/* Left: Logo & Search Bar */}
