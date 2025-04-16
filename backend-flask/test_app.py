@@ -1,6 +1,6 @@
 import pytest
 from app import app
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, call
 import json
 import base64
 import hashlib
@@ -112,12 +112,19 @@ def test_debug_attackers(mock_example_ua_queries, mock_get_db_connection, client
     mock_conn.cursor.return_value = mock_cursor
     mock_get_db_connection.return_value = mock_conn
     
-    # Mock the query results
+    # Mock the query results for both queries
     mock_attackers = [
         {'attacker_id': 1, 'ip_address': '192.168.1.1', 'user_agent': 'Mozilla/5.0', 'last_seen': '2025-03-25'},
         {'attacker_id': 2, 'ip_address': '10.0.0.1', 'user_agent': 'Chrome/89.0', 'last_seen': '2025-03-26'}
     ]
-    mock_cursor.fetchall.return_value = mock_attackers
+    
+    mock_attacks = [
+        {'attack_id': 1, 'attacker_id': 1, 'technique': 'SQL Injection', 'timestamp': '2025-03-25'},
+        {'attack_id': 2, 'attacker_id': 2, 'technique': 'XSS', 'timestamp': '2025-03-26'}
+    ]
+    
+    # Set up fetchall to return different results for each query
+    mock_cursor.fetchall.side_effect = [mock_attackers, mock_attacks]
     
     # Mock the example UA queries result
     mock_examples = {'ua1': 'example1', 'ua2': 'example2'}
@@ -126,8 +133,11 @@ def test_debug_attackers(mock_example_ua_queries, mock_get_db_connection, client
     # Make the request
     response = client.get('/api/debug/attackers')
     
-    # Verify the correct query was executed
-    mock_cursor.execute.assert_called_with("SELECT * FROM Attacker ORDER BY last_seen DESC")
+    # Verify both queries were executed in the correct order
+    mock_cursor.execute.assert_has_calls([
+        call("SELECT * FROM Attacker ORDER BY last_seen DESC"),
+        call("SELECT * FROM Attack ORDER BY timestamp DESC")
+    ])
     
     # Check status code
     assert response.status_code == 200
@@ -137,6 +147,7 @@ def test_debug_attackers(mock_example_ua_queries, mock_get_db_connection, client
     assert json_data['count'] == 2
     assert json_data['attackers'] == mock_attackers
     assert json_data['examples'] == mock_examples
+    assert json_data['attack_information'] == mock_attacks
 
 @patch('app.get_db_connection')
 def test_debug_attackers_exception(mock_get_db_connection, client):
