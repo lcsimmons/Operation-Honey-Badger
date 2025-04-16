@@ -7,18 +7,18 @@ import os
 import sqlite3
 import json
 import hashlib
+import ipinfo
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
-from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash
+from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash, aggregate_attack_by_type, aggregate_attacker_by_type, attacker_engagement, total_attacker_count
 from psycopg2.extras import DictCursor
 
 
 app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
-CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"]}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "OPTIONS"])
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-
 
 def parse_user_agent(user_agent_string):
     """
@@ -69,6 +69,7 @@ def parse_user_agent(user_agent_string):
             "raw": user_agent_string,
             "error": str(e)
         }
+
 def example_ua_queries():
     conn = get_db_connection()
     db = conn.cursor()
@@ -131,7 +132,12 @@ def extract_attacker_info():
     # Placeholder for geolocation
     #Will need to get a real service/api to get the geolocation based on IP
 
-    geolocation = "Unknown"
+    load_dotenv('.env')
+    geolocation_handler = ipinfo.getHandler(os.environ.get('IP_INFO_ACCESS_TOKEN'))
+
+    geolocation = geolocation_handler.getDetails(ip_address)
+    print(type(geolocation.all))
+    print(geolocation.all)
     
     # Look for IOCs
     ioc_list = []
@@ -158,7 +164,7 @@ def extract_attacker_info():
         "ip_address": ip_address,
         "user_agent": user_agent_data,  # Store the full parsed data as JSON
         "device_fingerprint": device_fingerprint,
-        "geolocation": geolocation,
+        "geolocation": geolocation.all,
         "ioc": ioc,
         # Additional parsed fields for easy querying
         "browser": parsed_ua["browser"],
@@ -201,7 +207,11 @@ def get_attacker_summary(attacker_info):
         # print("JSON", dict(request.get_json()))
         # print("Data", request.data)
         # print(dict(request.get_json()).items())
-        decoded_request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request.get_json()).items()]
+        try:
+            decoded_request_data = [(row[0],base64.b64decode(row[1]).decode('utf-8')) for row in dict(request.get_json()).items()]
+        except:
+            #No need to decode
+            decoded_request_data = dict(request.get_json()).items()
         payload_to_analyze['request_data'] = dict(decoded_request_data)
     
     #get any query arguments or strings 
@@ -241,6 +251,7 @@ def get_attacker_summary(attacker_info):
     }
 
     print(attacker_summary['request_details'])
+    print(type(attacker_summary['request_details']))
     # print(attacker_summary['attacker_info'])
 
     return attacker_summary
@@ -373,7 +384,21 @@ def analyze_payload_2(payload):
         return response.text
     except Exception as e:
         return f"Error: {e}"
+
+def analyze_login(data):
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({"error": "username and password are required"}), 400
+
+    username_encoded = data['username']
+    password_encoded = data['password']
+    username = base64.b64decode(username_encoded).decode('utf-8')
+    password = base64.b64decode(password_encoded).decode('utf-8')
     
+    payload = username + password
+    return jsonify({"login": analyze_payload(payload)})
+
+
+#All the api routes
 # @app.route("/api/login", methods=["OPTIONS"])
 # def preflight_method():
 #     return "",200
@@ -419,8 +444,16 @@ def handleDecoyLogin():
     username_encoded = data['username']
     password_encoded = data['password']
 
-    username = base64.b64decode(username_encoded).decode('utf-8')
-    password = base64.b64decode(password_encoded).decode('utf-8')
+    print(username_encoded)
+    print(password_encoded)
+    try:
+        #Attempt to decode if it was encoded through http request
+        username = base64.b64decode(username_encoded).decode('utf-8')
+        password = base64.b64decode(password_encoded).decode('utf-8')
+    except Exception as e:
+        username = username_encoded
+        password = password_encoded
+        print("Did the except")
 
     # Hash the incoming password before comparison
     hashed_password = hashlib.md5(password.encode()).hexdigest()
@@ -461,23 +494,218 @@ def handleDecoyLogin():
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
 
-def analyze_login(data):
-    if not data or 'username' not in data or 'password' not in data:
-        return jsonify({"error": "username and password are required"}), 400
+#Forum Routes
+@app.route('/api/forum', methods=['GET'])
+def get_forum():
+    request_args = list(request.args.items())
 
-    username_encoded = data['username']
-    password_encoded = data['password']
-    username = base64.b64decode(username_encoded).decode('utf-8')
-    password = base64.b64decode(password_encoded).decode('utf-8')
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
     
-    payload = username + password
-    return jsonify({"login": analyze_payload(payload)})
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select *  from Forum " \
+        "inner join Users as us on Forum.user_id = us.user_id "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/api/forum', methods=['POST'])
+def add_forum():
+    if request.method == "OPTIONS":
+        return "", 200
+    
+    request_data_encoded = request.get_json()
+
+    print(request_data_encoded)
+
+    if ('username' not in request_data_encoded and 'user_id' not in request_data_encoded)  or 'title' not in request_data_encoded or 'description' not in request_data_encoded or 'forum_category' not in request_data_encoded:
+        return jsonify({"error": "Bad request, incorrect body data"}), 400
+
+    #decode all the items if possible
+    try:
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
+    except:
+        request_data = request_data_encoded
+
+    #get user id
+    user_id = ""
+    if not 'user_id' in request_data_encoded:
+        db = get_memory_db()
+        query = "SELECT user_id from Users where username = '" + request_data['username'] + "';" 
+
+        res = db.execute(query).fetchone()
+
+        #not able to find the user
+        if not res:
+            return jsonify({"error": "Bad request, invalid username"}), 400 
+        
+        user_id = res['user_id']
+    else:
+        user_id = request_data['user_id']
+
+
+    print("Add forum post request data:")
+    print(request_data)
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "INSERT INTO Forum (title, description, forum_category, user_id, is_pinned)" \
+            " VALUES " \
+            "( '" + request_data['title'] + "' , '" + request_data['description'] + "', '" + request_data['forum_category'] + "', '" + str(user_id) + "', " + ('1' if request_data['is_pinned'] else '0') + " ) RETURNING *;"
+        
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchone()
+        print(result)
+
+        if result:
+            result = dict(result)
+            
+        return jsonify(result)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/api/forum/comments', methods=['GET'])
+def get_forum_coments():
+    request_args = list(request.args.items())
+
+
+    attacker_info = extract_attacker_info()
+
+    attacker_summary = get_attacker_summary(attacker_info)
+
+    #get the log from the attacker
+    log_attacker_information(attacker_summary)
+    
+    try:
+        #actually get the data from the decoy database
+        db = get_memory_db()
+
+        query = "Select *, fm.title as forum_title from ForumComments " \
+        "inner join Forum as fm on ForumComments.forum_id = fm.forum_id " \
+        "inner join Users as us on ForumComments.user_id = us.user_id "
+        
+        # request_args = list(dict(request.args).items())
+        if len(request_args) != 0:
+            query += "WHERE "
+
+        for i in range(len(request_args)):
+            query += request_args[i][0] + " = " + request_args[i][1]
+            if i != len(request_args) - 1:
+                query += " AND "
+
+        print(query)
+        cur = db.execute(query)
+        result = cur.fetchall()
+
+        res = []
+
+        if result:
+            res = [dict(row) for row in result]
+        return jsonify(res)
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/api/forum/comments', methods=['POST'])
+def add_forum_comment():
+    if request.method == "OPTIONS":
+        return "", 200
+
+    request_data_encoded = request.get_json()
+    print("Encoded comment payload:", request_data_encoded)
+
+    # Validate basic structure
+    if ('username' not in request_data_encoded and 'user_id' not in request_data_encoded) or 'forum_id' not in request_data_encoded or 'comment' not in request_data_encoded:
+        return jsonify({"error": "Bad request, missing required fields"}), 400
+
+    try:
+        request_data = {
+            key: base64.b64decode(value).decode('utf-8')
+            for key, value in request_data_encoded.items()
+        }
+    except Exception as e:
+        print("Base64 decoding error:", e)
+        request_data = request_data_encoded
+
+    user_id = ""
+    if 'user_id' not in request_data:
+        db = get_memory_db()
+        query = f"SELECT user_id FROM Users WHERE username = '{request_data['username']}';"
+        print("Lookup query:", query)
+        res = db.execute(query).fetchone()
+        if not res:
+            return jsonify({"error": "Invalid username"}), 400
+        user_id = res['user_id']
+    else:
+        user_id = request_data['user_id']
+
+    # Log attacker info
+    attacker_info = extract_attacker_info()
+    attacker_summary = get_attacker_summary(attacker_info)
+    log_attacker_information(attacker_summary)
+
+    try:
+        db = get_memory_db()
+        query = (
+            "INSERT INTO ForumComments (forum_id, user_id, comment) "
+            f"VALUES ('{request_data['forum_id']}', '{user_id}', '{request_data['comment']}') RETURNING *;"
+        )
+        print("Insert comment query:", query)
+        cur = db.execute(query)
+        result = cur.fetchone()
+
+        if result:
+            result = dict(result)
+        return jsonify(result)
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
 
 #Admin route functions
 @app.route('/api/admin/reimbursement', methods=['GET'])
 def fake_reimbursements():
-    # request_data = request.get_json()
-
     #if we want to add some error handling
     # employee_name = request.args.get('name', default = "", type = str)
     # amount = request.args.get('amount', default = 0, type = int)
@@ -487,43 +715,6 @@ def fake_reimbursements():
     print(request.args.items())
 
     attacker_info = extract_attacker_info()
-
-    # # if not employee_name or not amount:
-    # #     log_attacker_information(attacker_info)
-    # #     return jsonify({"error": "No name or amount data provided. Invalid Request"}), 400
-    
-    # #send the information to the ai to process
-    # payload_to_analyze = {
-    #     "attacker": attacker_info,
-    #     "employee_name": employee_name,
-    #     "amount": amount
-    # }
-    
-    # # print(payload_to_analyze)
-
-    # gemini_analysis = analyze_payload_2(payload_to_analyze)
-
-    # response_string = str(gemini_analysis).split("\n")
-
-    # gemini_analysis_res = {
-    #     "technique": response_string[0],
-    #     "iocs": response_string[1],
-    #     "description": response_string[2] 
-    # }
-
-    # attacker_info = {
-    #     "attacker" : attacker_info,
-    #     "gemini" : gemini_analysis_res,
-    #     "request_details": {
-    #         "full_url": request.url,
-    #         "path": request.path,
-    #         "query_string": request.query_string,
-    #         "root_path": request.root_path
-
-    #     }
-    # }
-
-    # print(attacker_info['request_details'])
 
     attacker_summary = get_attacker_summary(attacker_info)
 
@@ -688,7 +879,7 @@ def getEmployees():
     
     attacker_info = extract_attacker_info()
     attacker_summary = get_attacker_summary(attacker_info)
-    log_attacker_information(attacker_summary)
+    log_attacker_information(attacker_summary) #logging to postgres
     
     try:
         # Connect to the database
@@ -720,6 +911,188 @@ def getEmployees():
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/api/log/security_misconfiguration', methods=['POST'])
+def logConnection():
+    try:
+        attacker_info = request.get_json()
+
+        #Hardcoded since we are not sending anything to Gemini
+        gemini_analysis_res = {
+            "technique": "Security Misconfiguration",
+            "iocs": "Port 6969",
+            "description": "Port 6969: unauthorized access attempt or scanned"
+        }
+
+        print(attacker_info)
+
+        attacker_summary = {
+            "attacker_info": attacker_info,
+            "gemini": gemini_analysis_res,
+            "request_details": {
+                "full_url": "N/A",
+                "path": "/log/security_misconfiguration",
+                "query_string": "N/A",
+                "root_path": "N/A"
+            }
+        }
+
+        log_result = log_attacker_information(attacker_summary)
+        
+        # Return a success response with status code 200
+        return jsonify({
+            "status": "success",
+            "message": "Attack attempt logged successfully"
+        }), 200
+        
+    except Exception as e:
+        # Return an error response with status code 500
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to log attack: {str(e)}"
+        }), 500
+    
+#API Endpoints for SOC Admin frontend
+@app.route('/api/geolocation/country', methods=['GET'])
+def get_country_activity():
+    try:
+        # Connect to the database - use your PostgreSQL connection 
+        # (You might be using SQLAlchemy or psycopg2)
+        db = get_db_connection()  # Your database connection function
+        cursor = db.cursor()
+        
+        # PostgreSQL-specific query to extract country from JSON
+        query = """
+        SELECT 
+            (geolocation::json->>'country') as country_code,
+            COUNT(*) as activity_count
+        FROM 
+            attacker
+        WHERE 
+            geolocation IS NOT NULL
+        GROUP BY 
+            country_code
+        ORDER BY 
+            activity_count DESC
+        """
+        
+        # Execute the query
+        cursor.execute(query)
+        result = cursor.fetchall()
+        
+        # Convert the result to a dictionary with country code as key and count as value
+        country_data = {}
+        if result:
+            for row in result:
+                country_code = row[0]  # First column is country_code
+                count = row[1]         # Second column is activity_count
+                
+                if country_code:  # Ensure we have a valid country code
+                    country_data[country_code] = count
+        
+        cursor.close()
+        db.close()
+        
+        return jsonify(country_data)
+    
+    except Exception as e:
+        print(f"Database error: {e}")
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+#all the soc-admin functions
+@app.route('/soc-admin/dashboard/attack_type', methods=['GET'])
+@app.route('/soc-admin/dashboard/common_exploits', methods=['GET'])
+def attack_type_report():
+    try:
+        res = aggregate_attack_by_type(category="owasp_technique")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/request_url', methods=['GET'])
+@app.route('/soc-admin/dashboard/pages_targeted', methods=['GET'])
+def attack_request_url_report():
+    try:
+        res = aggregate_attack_by_type(category="request_url")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_ip', methods=['GET'])
+def attacker_ip_report():
+    try:
+        res = aggregate_attacker_by_type(category="ip_address")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_user_agent', methods=['GET'])
+def attacker_user_agent_report():
+    try:
+        res = aggregate_attacker_by_type(category="user_agent")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_device_fingerprint', methods=['GET'])
+def attacker_device_fingerprint_report():
+    try:
+        res = aggregate_attacker_by_type(category="device_fingerprint")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/soc-admin/dashboard/attacker_geolocation', methods=['GET'])
+def attacker_geolocation_report():
+    try:
+        res = aggregate_attacker_by_type(category="geolocation")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_browser', methods=['GET'])
+def attacker_browser_report():
+    try:
+        res = aggregate_attacker_by_type(category="browser")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/soc-admin/dashboard/attacker_os', methods=['GET'])
+def attacker_os_report():
+    try:
+        res = aggregate_attacker_by_type(category="os")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/soc-admin/dashboard/total_attackers', methods=['GET'])
+def total_attacker_report():
+    try:
+        res = total_attacker_count()
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_engagement', methods=['GET'])
+def attacker_engagement_report():
+    attacker_id = request.args.get('attacker_id')
+    try:
+        res = attacker_engagement(attacker_id=attacker_id)
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
 
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
@@ -771,6 +1144,14 @@ def debug_attackers():
 
         if rows:
             attackers = [dict(row) for row  in rows]
+        
+
+        db.execute("SELECT * FROM Attack ORDER BY timestamp DESC")
+
+        rows = db.fetchall()
+
+        if rows:
+            attacks = [dict(row) for row  in rows]
 
         print("Getting to this stage")
         reponse_obj = example_ua_queries()
@@ -778,7 +1159,8 @@ def debug_attackers():
         return jsonify({
             "count": len(attackers),
             "attackers": attackers,
-            "examples": reponse_obj
+            "examples": reponse_obj,
+            "attack_information": attacks
         })
     except Exception as e:
         print(e)
@@ -846,13 +1228,123 @@ def test_generate_json():
     }
 
     attacker_json = generate_attacker_json(attack_command)
-    response = send_log_to_logstash("http://cs412anallam.me", attacker_json)
+    response = send_log_to_logstash("https://cs412anallam.me", attacker_json)
 
     if not response:
         #Not connecting to the elk
         return jsonify({"error" : "Probably having issue connecting to elk"}), 500
     
     return jsonify({"attacker_log": attacker_json}), 200
+
+def validate_security_answers(username, answers):
+    try:
+        db = get_memory_db()
+        # Fetch user_id based on username
+        user = db.execute("SELECT user_id FROM users WHERE username = '" + username + "'")
+
+        user = user.fetchone()
+        
+        if not user:
+            return False, f"User not found. {username}"
+        
+        user_id = user['user_id']
+        
+        # Check the answers to the security questions
+        # for answer in answers:
+        #     question_id = answer.get('question_id')
+        #     answer_text = answer.get('answer')
+
+        for item in answers:
+            question_id = item["question_id"]
+            answer = item["answer"]
+
+        userCheck = db.execute("SELECT * FROM SecurityAnswers WHERE user_id = " + str(user_id) + " AND question_id = " + str(question_id) + " AND answer = '" + answer + "'")
+
+        if not userCheck.fetchone():
+            return False, f"Incorrect answer for question."
+        
+        return True, "Answers validated successfully."
+    except Exception as e:
+        print(e)
+        return False, str(e)
+
+
+@app.route('/api/forgot_password', methods=['POST'])
+def forgot_password():
+    data = request.json
+    username = data.get('username')
+    answers = data.get('answers')
+
+    if not username or not answers:
+        return jsonify({"error": "Username and answers are required."}), 400
+
+    # Validate security answers
+    valid, message = validate_security_answers(username, answers)
+    
+    if not valid:
+        return jsonify({"error": message}), 400
+
+    # Return a message indicating that password reset can proceed
+    return jsonify({"message": "Security questions validated. You can reset your password."}), 200
+
+@app.route('/api/security_questions', methods=['POST'])
+def security_questions():
+    data = request.json
+    username = data.get('username')
+
+    if not username:
+        return jsonify({"error": "Username is required."}), 400
+
+    db = get_memory_db()
+    user = db.execute("SELECT user_id FROM users WHERE username = '" + username + "'")
+    user = user.fetchone()
+
+    if not user:
+            return False, f"User not found. {username}"
+    
+    user_id = user['user_id']
+
+    questionCheck = db.execute(
+    "SELECT sq.question_id, sq.question_text "
+    "FROM SecurityAnswers sa "
+    "JOIN SecurityQuestions sq ON sa.question_id = sq.question_id "
+    "WHERE sa.user_id = " + str(user_id))
+
+    question = questionCheck.fetchone()
+
+    if question:
+        return jsonify({
+        "question_text": question[1],
+        "question_id": question[0]
+        }), 200
+    else:
+        return jsonify({"error": "User not found or invalid user_id."}), 404
+
+@app.route('/api/change_password', methods=['POST'])
+def change_password():
+    data = request.json
+    username = data.get('username')
+    new_password = data.get('newPassword')
+
+    if not username or not new_password:
+        return jsonify({"error": "Username and new password are required."}), 400
+
+    # Fetch the user based on username
+    db = get_memory_db()
+    userCheck = db.execute("SELECT user_id FROM Users WHERE username = '" + username + "'")
+    user = userCheck.fetchone()
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    user_id = user['user_id']
+
+    new_password = hashlib.md5(new_password.encode()).hexdigest()
+    # Update the user's password
+    db.execute("UPDATE Users SET password = '" + new_password + "' WHERE user_id = " + str(user_id))
+    db.commit()
+
+    #"Password successfully changed."
+    return jsonify({"message": True}), 200
 
 #initialize the in memory database
 with app.app_context():

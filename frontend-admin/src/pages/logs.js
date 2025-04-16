@@ -10,6 +10,8 @@ import {
     YAxis,
     Tooltip,
 } from "recharts";
+import { LanguageContext } from '@/context/LanguageContext';
+import { useTextSize } from '@/context/TextSizeContext';
 
 export default function Logs() {
     const [logs, setLogs] = useState([]);
@@ -18,6 +20,53 @@ export default function Logs() {
     const [currentPage, setCurrentPage] = useState(1);
     const logsPerPage = 10;
     const { useOpenDyslexic } = useContext(FontContext);
+    const { language } = useContext(LanguageContext);
+    const { textSize } = useTextSize();
+
+    const [uiText, setUiText] = useState({
+        searchLogs: "Search logs...",
+        filter: "Filter",
+        exportLogs: "Export Logs",
+        chartTitle: "Log Entries Over Time",
+        timestamp: "Timestamp",
+        source: "Source",
+        host: "Host",
+        message: "Message",
+        noLogsFound: "No logs found.",
+        previous: "Previous",
+        next: "Next",
+        pageOf: "Page {current} of {total}",
+      });
+      
+      useEffect(() => {
+        const translateUIText = async () => {
+            if (language === 'en') return;
+
+            const keys = Object.keys(uiText);
+            const values = Object.values(uiText);
+
+            try {
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: values, targetLanguage: language }),
+                });
+
+                const data = await response.json();
+                if (data.translations) {
+                    const translated = {};
+                    keys.forEach((key, idx) => {
+                        translated[key] = data.translations[idx].translatedText;
+                    });
+                    setUiText(translated);
+                }
+            } catch (err) {
+                console.error('Translation error:', err);
+            }
+        };
+
+        translateUIText();
+    }, [language]);
 
     // Fetch log data (Replace with API call)
     useEffect(() => {
@@ -200,41 +249,41 @@ export default function Logs() {
     const indexOfLastLog = currentPage * logsPerPage;
     const indexOfFirstLog = indexOfLastLog - logsPerPage;
     const currentLogs = filteredLogs.slice(indexOfFirstLog, indexOfLastLog);
-    const totalPages = Math.ceil(filteredLogs.length / logsPerPage);
+    const totalPages = Math.ceil(filteredLogs.length / logsPerPage);    
 
     return (
         <div 
         style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
-        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        className={`flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen ${textSize}`}>
+            <title>Logs Search</title>
             <Sidebar />
-
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
+
                 {/* Search & Filter Panel */}
                 <div className="bg-white/40 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
                     <div className="flex items-center w-2/3 bg-gray-100 p-2 rounded-lg">
                         <Search size={20} className="text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search logs..."
+                            placeholder={uiText.searchLogs}
                             className="bg-transparent outline-none ml-2 w-full"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-
                     <div className="flex space-x-4">
                         <button className="flex items-center bg-gray-200 px-3 py-2 rounded-md">
-                            <Filter size={16} className="mr-2" /> Filter
+                            <Filter size={16} className="mr-2" /> {uiText.filter}
                         </button>
                         <button className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md">
-                            <Download size={16} className="mr-2" /> Export Logs
+                            <Download size={16} className="mr-2" /> {uiText.exportLogs}
                         </button>
                     </div>
                 </div>
 
                 {/* Bar Chart - Logs Per Timestamp */}
                 <div className="bg-white/40 p-4 rounded-lg shadow-md mt-6">
-                    <h2 className="text-lg font-bold">Log Entries Over Time</h2>
+                    <h2 className="text-lg font-bold">{uiText.chartTitle}</h2>
                     <ResponsiveContainer width="100%" height={150}>
                         <BarChart data={barChartData}>
                             <XAxis dataKey="time" />
@@ -250,10 +299,10 @@ export default function Logs() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-100/60">
-                                <th className="p-2 border-b">Timestamp</th>
-                                <th className="p-2 border-b">Source</th>
-                                <th className="p-2 border-b">Host</th>
-                                <th className="p-2 border-b">Message</th>
+                                <th className="p-2 border-b">{uiText.timestamp}</th>
+                                <th className="p-2 border-b">{uiText.source}</th>
+                                <th className="p-2 border-b">{uiText.host}</th>
+                                <th className="p-2 border-b">{uiText.message}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -285,15 +334,17 @@ export default function Logs() {
                             onClick={() => setCurrentPage(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
-                            Previous
+                            {uiText.previous}
                         </button>
-                        <span className="px-4 py-2">{`Page ${currentPage} of ${totalPages}`}</span>
-                        <button
+                        <span className="px-4 py-2">
+                            {uiText.pageOf.replace('{current}', currentPage).replace('{total}', totalPages)}
+                        </span>
+                       <button
                             className={`px-4 py-2 mx-1 rounded-md ${currentPage === totalPages ? "bg-gray-300" : "bg-blue-500 text-white"}`}
                             onClick={() => setCurrentPage(currentPage + 1)}
                             disabled={currentPage === totalPages}
                         >
-                            Next
+                            {uiText.next}
                         </button>
                     </div>
                 )}

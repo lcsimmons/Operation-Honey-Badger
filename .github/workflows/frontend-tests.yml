@@ -1,0 +1,60 @@
+name: Frontend Tests
+
+on:
+  pull_request:
+    branches: [ dev ]
+    paths:
+      - 'frontend/**'
+      - 'frontend-admin/**'
+      - '.github/workflows/frontend-tests.yml'
+  push:
+    branches: [ dev ]
+    paths:
+      - 'frontend/**'
+      - 'frontend-admin/**'
+      - '.github/workflows/frontend-tests.yml'
+
+jobs:
+  test-frontend:
+    name: User Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'frontend/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Run tests
+      working-directory: ./frontend
+      run: npm test
+  
+  test-admin-frontend:
+    name: Admin Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'frontend-admin/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./frontend-admin
+      run: npm ci
+      
+    - name: Run tests
+      working-directory: ./frontend-admin
+      run: npm test

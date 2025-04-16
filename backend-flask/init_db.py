@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=env_path)
 def get_db_connection():
     try:
         conn = psycopg2.connect(host='localhost',
-                                database='honeybadger_db_postgres',
+                                database=os.environ['DB_NAME'],
                                 user=os.environ['DB_USERNAME'],
                                 password=os.environ['DB_PASSWORD'],#hardcode for now
                                 connect_timeout=1

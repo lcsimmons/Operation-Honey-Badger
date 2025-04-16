@@ -21,7 +21,7 @@ def get_db_connection():
             
             _psql_db_conn = conn = psycopg2.connect(
                 host='localhost',
-                database='honeybadger_db_postgres',
+                database=os.environ['DB_NAME'],
                 user=os.environ['DB_USERNAME'],
                 password=os.environ['DB_PASSWORD'],
                 connect_timeout=3  # Increased timeout
@@ -63,6 +63,9 @@ def log_attacker_information(attacker_summary):
     attacker_info = attacker_summary['attacker_info']
     gemini = attacker_summary['gemini']
 
+    #make sure the dict is in string format
+    attacker_info['geolocation'] = json.dumps(attacker_info['geolocation'])
+
     attacker_id = update_attacker(attacker_info)
 
     session_id = update_honey_session(attacker_id)
@@ -80,7 +83,7 @@ def log_attacker_information(attacker_summary):
     attacker_json = generate_attacker_json(attack_command)
 
     #send to logstash, can have a response if the connection isn't working
-    send_log_to_logstash("http://localhost:5044", attacker_json)
+    send_log_to_logstash("http://cs412anallam.me", attacker_json)
 
     #close db connection
     conn.commit()
@@ -193,6 +196,7 @@ def update_honey_session(attacker_id):
         # if datetime.now(tzinfo=datetime.timezone.utc) - exists['last_seen'] < 15 : 
         # Update last_seen timestamp
         session_id = exists["session_id"]
+        print("The session id is", str(session_id))
         cur.execute(
             """
             UPDATE Honeypot_Session SET 
@@ -251,6 +255,116 @@ def update_attack_command(attacker_command):
     conn.commit()
     cur.close()
 
+#aggregate functions for the soc admin 
+# -- attack table
+def aggregate_attack_by_type(category="request_url", selection=""):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    curr_categories = ['request_url', 'owasp_technique', 'ioc', 'gemini_response', 'timestamp']
+
+    if category not in curr_categories:
+        raise Exception("Incorrect Column")
+    
+    query_db = "Select {}, count({}) from attack group by {} LIMIT 5".format(category, category, category)
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+# -- attacker table
+def aggregate_attacker_by_type(category="request_url", selection=""):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    curr_categories = ["attacker_id",
+                        "ip_address",
+                        "user_agent" ,
+                        "device_fingerprint",
+                        "geolocation",
+                        "browser",       
+                        "os",                 
+                        "device_type",        
+                        "is_bot",        
+                        "last_seen",
+                        "first_seen"]
+
+    if category not in curr_categories:
+        raise Exception("Incorrect Column")
+    
+    query_db = "Select {}, count({}) from attacker group by {} LIMIT 5".format(category, category, category)
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def total_attacker_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+    
+    query_db = "Select count(*) from attacker;"
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def attacker_engagement(attacker_id=None):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    
+    query_db = """
+
+    SELECT
+        DATE(hs.first_seen) AS day,
+        hs.attacker_id,
+        COUNT(*) AS occurrences
+    FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
+    GROUP BY day, session_id, hs.attacker_id
+    ORDER BY day, session_id, hs.attacker_id LIMIT 10;
+
+    """
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
 def generate_attacker_json(attack_command):
 
     attacker_log = {
@@ -268,7 +382,9 @@ def generate_attacker_json(attack_command):
         "request-url": attack_command.get("request_details", ""),
         "severity-rating": attack_command.get("attacker_info").get("severity_rating", "high"),  # Default to "low" if not provided
         "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
-        "log-id": str(uuid.uuid4())  # Generate a unique log ID
+        "log-id": str(uuid.uuid4()),  # Generate a unique log ID
+        "geolocation" : attack_command.get("attacker_info").get("geolocation"),
+        "port" : "6969" if attack_command.get("gemini").get("technique") == "Security Misconfiguration" else ""
     }
 
     return json.dumps(attacker_log, indent=4)
