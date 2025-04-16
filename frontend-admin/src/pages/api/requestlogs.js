@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     // Execute Elasticsearch query
     const response = await client.search({
       index: 'attacker_logs',
-      size: 2,
+      size: 20,
       query: {
         match_all: {},
       },
