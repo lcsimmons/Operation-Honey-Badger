@@ -3,6 +3,8 @@ import { useContext } from 'react'; import { FontContext } from '../context/Font
 import Sidebar from "../components/sidebar";
 import { Search, HelpCircle, Flame, ShieldAlert, BugPlay } from "lucide-react";
 import { useRouter } from 'next/router';
+import { LanguageContext } from '@/context/LanguageContext';
+import { useTextSize } from '@/context/TextSizeContext';
 
 export default function Reports() {
     // Define all state variables at the top of the component
@@ -30,7 +32,9 @@ export default function Reports() {
     
     const [reportHTML, setReportHTML] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const [currentLanguage, setCurrentLanguage] = useState("en");
+    // const [currentLanguage, setCurrentLanguage] = useState("en");
+    const { language } = useContext(LanguageContext);
+
     const [isTranslating, setIsTranslating] = useState(false);
     const [originalReportHTML, setOriginalReportHTML] = useState("");
     const [translations, setTranslations] = useState({});
@@ -45,7 +49,7 @@ export default function Reports() {
     // Add timeout reference to handle hover delays
     const hoverTimeoutRef = useRef(null);
     // Keeps track of the selected text size, by default it's text-base
-    const [textSize, setTextSize] = useState("text-base");
+    const { textSize } = useTextSize();
 
     const { useOpenDyslexic } = useContext(FontContext);
     
@@ -119,10 +123,10 @@ export default function Reports() {
         }
         
         // Load language setting
-        const savedLanguage = localStorage.getItem('reportLanguage');
-        if (savedLanguage) {
-            setCurrentLanguage(savedLanguage);
-        }
+        // const savedLanguage = localStorage.getItem('reportLanguage');
+        // if (savedLanguage) {
+        //     setCurrentLanguage(savedLanguage);
+        // }
         
         // Load text-to-speech setting - explicitly parse as boolean
         const savedTTS = localStorage.getItem('textToSpeechEnabled');
@@ -180,7 +184,7 @@ export default function Reports() {
 
     // Translate UI text whenever language changes
     useEffect(() => {
-        if (currentLanguage !== 'en') {
+        if (language !== 'en') {
             translateUIText();
         } else {
             // Reset to English
@@ -208,7 +212,7 @@ export default function Reports() {
             setReports([...originalReports]);
             setFilteredReports([...originalReports]);
         }
-    }, [currentLanguage]);
+    }, [language]);
 
     // Function to translate static UI text
     const translateUIText = async () => {
@@ -225,7 +229,7 @@ export default function Reports() {
                 },
                 body: JSON.stringify({
                     text: textsToTranslate,
-                    targetLanguage: currentLanguage
+                    targetLanguage: language
                 })
             });
             
@@ -305,19 +309,19 @@ export default function Reports() {
         setReportHTML(initialReportHTML);
 
         // If a non-English language is selected, translate the initial report
-        if (currentLanguage !== 'en') {
-            translateReport(initialReportHTML, currentLanguage);
+        if (language !== 'en') {
+            translateReport(initialReportHTML, language);
         }
-    }, [currentLanguage, reports]);
+    }, [language, reports]);
 
     // Translate report content when language changes
     useEffect(() => {
-        if (originalReportHTML && currentLanguage !== 'en') {
-            translateReport(originalReportHTML, currentLanguage);
+        if (originalReportHTML && language !== 'en') {
+            translateReport(originalReportHTML, language);
         } else if (originalReportHTML) {
             setReportHTML(originalReportHTML);
         }
-    }, [currentLanguage, originalReportHTML]);
+    }, [language, originalReportHTML]);
 
     // Search Functionality
     useEffect(() => {
@@ -454,8 +458,8 @@ export default function Reports() {
         setOriginalReportHTML(newReportHTML);
         
         // If a non-English language is selected, translate the report
-        if (currentLanguage !== 'en') {
-            translateReport(newReportHTML, currentLanguage);
+        if (language !== 'en') {
+            translateReport(newReportHTML, language);
         } else {
             setReportHTML(newReportHTML);
         }
@@ -494,7 +498,7 @@ export default function Reports() {
                 'vi': 'vi-VN'
             };
             
-            const languageCode = languageMap[currentLanguage] || 'en-US';
+            const languageCode = languageMap[language] || 'en-US';
             
             console.log(`Speaking text: "${text}" in language: ${languageCode}`);
             
@@ -710,24 +714,18 @@ export default function Reports() {
         };
     }, [textToSpeechEnabled, reportHTML]); // Re-run when reportHTML or TTS setting changes
 
-    useEffect(() => {
-    const storedSize = localStorage.getItem('textSize');
-    if (storedSize) {
-        setTextSize(storedSize);
-    }
-    }, []);
-
     return (
         <div 
         style={{ fontFamily: useOpenDyslexic ? "'OpenDyslexic', sans-serif" : "Arial, sans-serif" }} 
-        className="flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen">
+        className={`flex bg-gradient-to-br from-[#91d2ff] to-[#72b4ea] min-h-screen ${textSize}`}>
+            <title>Reports</title>
             {/* Sidebar */}
             <Sidebar />
 
             {/* Main Content */}
             <div className="flex-1 ml-20 text-black transition-all duration-300 p-6">
                 {/* Search Bar */}
-                <div className="bg-white/70 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
+                <div className="bg-white/40 backdrop-blur-lg shadow-md rounded-lg p-4 flex items-center justify-between">
                     <div className="max-w-[800px] flex items-center w-2/3 bg-gray-100 p-2 rounded-lg">
                         <Search size={20} className="text-gray-400" />
                         <input
@@ -738,41 +736,34 @@ export default function Reports() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-
-                    {/* <div className="flex gap-2 mt-4">
-                        <button onClick={() => setTextSize("text-base")} className="px-2 py-1 bg-gray-200 rounded">A-</button>
-                        <button onClick={() => setTextSize("text-xl")} className="px-2 py-1 bg-gray-200 rounded">A</button>
-                        <button onClick={() => setTextSize("text-2xl")} className="px-2 py-1 bg-gray-200 rounded">A+</button>
-                    </div> */}
-
-                    
+                   
                     <HelpCircle size={24} className="cursor-pointer text-gray-500 hover:text-black" />
                 </div>
 
                 {/* Reports Section */}
                 <div className="grid grid-cols-3 gap-6 p-6">
                     {/* Reports List */}
-                    <div className="bg-white p-4 rounded-lg shadow-md col-span-1 max-h-[75vh] overflow-y-auto">
+                    <div className="bg-white/40 p-4 rounded-lg shadow-md col-span-1 max-h-[75vh] overflow-y-auto">
                         <h2 className="text-lg font-bold">{uiText?.recentReports || "Recent Reports"}</h2>
 
                         {filteredReports.length > 0 ? (
                             filteredReports.map((report) => (
                                 <div
                                     key={report.id}
-                                    className="cursor-pointer bg-gray-100 p-3 rounded-md my-2 hover:bg-gray-200 transition-all"
+                                    className="cursor-pointer bg-gray-100/40 p-3 rounded-md my-2 hover:bg-gray-100/60 transition-all"
                                     onClick={() => selectReport(report)}
                                 >
                                     <h3 className="font-semibold">{report.title}</h3>
-                                    <p className="text-sm">{uiText?.incidentId || "Incident ID"}: {report.id}</p>
-                                    <p className="text-sm">{uiText?.time || "Time"}: {report.time}</p>
-                                    <p className={`text-sm font-bold ${
+                                    <p className="">{uiText?.incidentId || "Incident ID"}: {report.id}</p>
+                                    <p className="">{uiText?.time || "Time"}: {report.time}</p>
+                                    <p className={`font-bold ${
                                         report.severity === "High" || 
                                         report.severity === uiText.high ? 
                                         "text-[#B22222]" : "text-orange-500"}`}
                                     >
                                         {uiText?.severity || "Severity"}: {report.severity}
                                     </p>
-                                    <p className="text-sm">{uiText?.status || "Status"}: {report.status}</p>
+                                    <p className="">{uiText?.status || "Status"}: {report.status}</p>
                                 </div>
                             ))
                         ) : (
@@ -781,7 +772,7 @@ export default function Reports() {
                     </div>
 
                     {/* Report Details Panel */}
-                    <div className="bg-white p-6 rounded-lg shadow-md col-span-2">
+                    <div className="bg-white/40 p-6 rounded-lg shadow-md col-span-2">
 
                         {/* Translation Loading Indicator */}
                         {isTranslating && (

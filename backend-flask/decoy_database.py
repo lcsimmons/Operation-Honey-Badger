@@ -38,9 +38,16 @@ def init_decoy_db(connection):
         db.cursor().executescript(f.read())
     db.commit()
 
-    gen_data_path = "../generate-database-data/populate_decoy_memory_db.sql"
+    gen_data_path = "../generate-database-data/populate_decoy_memory_db2.sql"
 
     with app.open_resource(gen_data_path, mode='r') as f:
+        db.cursor().executescript(f.read())
+    db.commit()
+
+    #Forum data
+    forum_data_path = "../generate-database-data/modified_forum.sql"
+
+    with app.open_resource(forum_data_path, mode='r') as f:
         db.cursor().executescript(f.read())
     db.commit()
 

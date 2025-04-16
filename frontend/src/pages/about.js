@@ -1,8 +1,22 @@
 import Sidebar from "../components/sidebar.js";
 import Search from "../components/Search";
-import { ShieldCheck, MapPin, Brain, Landmark, RefreshCcw, BarChart, Squirrel, Bell, Info, Wrench } from "lucide-react";
+import { ShieldCheck, MapPin, Brain, Landmark, RefreshCcw, BarChart, Squirrel, Bell, Info, Wrench, LogOut } from "lucide-react";
+import { useRouter } from "next/router"; 
 
 export default function About() {
+    const router = useRouter(); 
+    const handleLogout = () => {
+        localStorage.removeItem("loggedIn");
+        localStorage.removeItem("username");
+        localStorage.removeItem("avatar");
+      
+        try {
+          router.push("/login");
+        } catch (err) {
+          console.error("Logout redirect failed:", err);
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             {/* Header */}
@@ -23,6 +37,9 @@ export default function About() {
                     </button>
                     <button>
                         <Wrench className="w-5 h-5" />
+                    </button>
+                    <button onClick={handleLogout}>
+                        <LogOut className="w-5 h-5" />
                     </button>
                 </div>
             </div>

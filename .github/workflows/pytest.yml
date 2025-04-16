@@ -13,14 +13,25 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    # No need for explicit Python setup as the Makefile handles it
-    # Need to use working-directory parameter for all subsequent steps
-    - name: Build environment
+    # Backend Flask tests
+    - name: Build backend environment
       working-directory: ./backend-flask
       run: make build
     
-    - name: Run tests
+    - name: Run backend tests
       working-directory: ./backend-flask
+      run: make test
+      env:
+        FLASK_ENV: testing
+        FLASK_TESTING: true
+    
+    # Flask Honeypot tests
+    - name: Build honeypot environment
+      working-directory: ./flask-honeypot
+      run: make build
+    
+    - name: Run honeypot tests
+      working-directory: ./flask-honeypot
       run: make test
       env:
         FLASK_ENV: testing
