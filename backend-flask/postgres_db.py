@@ -255,6 +255,116 @@ def update_attack_command(attacker_command):
     conn.commit()
     cur.close()
 
+#aggregate functions for the soc admin 
+# -- attack table
+def aggregate_attack_by_type(category="request_url", selection=""):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    curr_categories = ['request_url', 'owasp_technique', 'ioc', 'gemini_response', 'timestamp']
+
+    if category not in curr_categories:
+        raise Exception("Incorrect Column")
+    
+    query_db = "Select {}, count({}) from attack group by {} LIMIT 5".format(category, category, category)
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+# -- attacker table
+def aggregate_attacker_by_type(category="request_url", selection=""):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    curr_categories = ["attacker_id",
+                        "ip_address",
+                        "user_agent" ,
+                        "device_fingerprint",
+                        "geolocation",
+                        "browser",       
+                        "os",                 
+                        "device_type",        
+                        "is_bot",        
+                        "last_seen",
+                        "first_seen"]
+
+    if category not in curr_categories:
+        raise Exception("Incorrect Column")
+    
+    query_db = "Select {}, count({}) from attacker group by {} LIMIT 5".format(category, category, category)
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def total_attacker_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+    
+    query_db = "Select count(*) from attacker;"
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def attacker_engagement(attacker_id=None):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    
+    query_db = """
+
+    SELECT
+        DATE(hs.first_seen) AS day,
+        hs.attacker_id,
+        COUNT(*) AS occurrences
+    FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
+    GROUP BY day, session_id, hs.attacker_id
+    ORDER BY day, session_id, hs.attacker_id LIMIT 10;
+
+    """
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
 def generate_attacker_json(attack_command):
 
     attacker_log = {
