@@ -11,7 +11,7 @@ import ipinfo
 from flask_cors import CORS
 from user_agents import parse
 from decoy_database import get_memory_db
-from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash
+from postgres_db import get_db_connection, log_attacker_information, generate_attacker_json, send_log_to_logstash, aggregate_attack_by_type, aggregate_attacker_by_type, attacker_engagement, total_attacker_count
 from psycopg2.extras import DictCursor
 
 
@@ -998,6 +998,101 @@ def get_country_activity():
     except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+#all the soc-admin functions
+@app.route('/soc-admin/dashboard/attack_type', methods=['GET'])
+@app.route('/soc-admin/dashboard/common_exploits', methods=['GET'])
+def attack_type_report():
+    try:
+        res = aggregate_attack_by_type(category="owasp_technique")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/request_url', methods=['GET'])
+@app.route('/soc-admin/dashboard/pages_targeted', methods=['GET'])
+def attack_request_url_report():
+    try:
+        res = aggregate_attack_by_type(category="request_url")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_ip', methods=['GET'])
+def attacker_ip_report():
+    try:
+        res = aggregate_attacker_by_type(category="ip_address")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_user_agent', methods=['GET'])
+def attacker_user_agent_report():
+    try:
+        res = aggregate_attacker_by_type(category="user_agent")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_device_fingerprint', methods=['GET'])
+def attacker_device_fingerprint_report():
+    try:
+        res = aggregate_attacker_by_type(category="device_fingerprint")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/soc-admin/dashboard/attacker_geolocation', methods=['GET'])
+def attacker_geolocation_report():
+    try:
+        res = aggregate_attacker_by_type(category="geolocation")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_browser', methods=['GET'])
+def attacker_browser_report():
+    try:
+        res = aggregate_attacker_by_type(category="browser")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/soc-admin/dashboard/attacker_os', methods=['GET'])
+def attacker_os_report():
+    try:
+        res = aggregate_attacker_by_type(category="os")
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+@app.route('/soc-admin/dashboard/total_attackers', methods=['GET'])
+def total_attacker_report():
+    try:
+        res = total_attacker_count()
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
+@app.route('/soc-admin/dashboard/attacker_engagement', methods=['GET'])
+def attacker_engagement_report():
+    attacker_id = request.args.get('attacker_id')
+    try:
+        res = attacker_engagement(attacker_id=attacker_id)
+        return jsonify(res)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
+
 
 #Testing and debugging
 @app.route('/api/test', methods=['GET'])
