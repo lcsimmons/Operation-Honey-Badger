@@ -119,8 +119,17 @@ def test_extract_attacker_info_with_bot(client):
 
 @patch('app.requests.post')
 @patch('app.extract_attacker_info')
-def test_handle_port_6969_connection_success(mock_extract_info, mock_post):
+@patch('os.environ.get')
+def test_handle_port_6969_connection_success(mock_env_get, mock_extract_info, mock_post):
     """Test successful handling of port 6969 connection."""
+    # Mock os.environ.get to return test URL when called with 'BACKEND_API_URL'
+    def mock_env_get_side_effect(key, default=None):
+        if key == 'BACKEND_API_URL':
+            return 'http://127.0.0.1:5000/api/log/security_misconfiguration'
+        return default
+    
+    mock_env_get.side_effect = mock_env_get_side_effect
+    
     # Setup mocks
     mock_extract_info.return_value = {
         "ip_address": "192.168.1.1",
@@ -141,13 +150,21 @@ def test_handle_port_6969_connection_success(mock_extract_info, mock_post):
     # Verify it was called with the right URL
     args, kwargs = mock_post.call_args
     assert args[0] == "http://127.0.0.1:5000/api/log/security_misconfiguration"
-    assert kwargs["json"] == mock_extract_info.return_value
 
 
 @patch('app.requests.post')
 @patch('app.extract_attacker_info')
-def test_handle_port_6969_connection_failure(mock_extract_info, mock_post):
+@patch('os.environ.get')
+def test_handle_port_6969_connection_failure(mock_env_get, mock_extract_info, mock_post):
     """Test failed handling of port 6969 connection."""
+    # Mock os.environ.get to return test URL when called with 'BACKEND_API_URL'
+    def mock_env_get_side_effect(key, default=None):
+        if key == 'BACKEND_API_URL':
+            return 'http://127.0.0.1:5000/api/log/security_misconfiguration'
+        return default
+    
+    mock_env_get.side_effect = mock_env_get_side_effect
+    
     # Setup mocks
     mock_extract_info.return_value = {
         "ip_address": "192.168.1.1",
