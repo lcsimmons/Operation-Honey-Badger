@@ -1227,7 +1227,7 @@ def test_generate_json():
         }
     }
 
-    attacker_json = generate_attacker_json(attack_command)
+    attacker_json = generate_attacker_json(attack_command, 1)
     response = send_log_to_logstash("https://cs412anallam.me", attacker_json)
 
     if not response:
