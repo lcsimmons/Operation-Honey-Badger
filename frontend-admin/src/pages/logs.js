@@ -31,7 +31,6 @@ export default function Logs() {
         timestamp: "Timestamp",
         attacker_id: "Attacker ID",
         source: "Source",
-        host: "Host",
         message: "Message",
         noLogsFound: "No logs found.",
         previous: "Previous",
@@ -126,11 +125,6 @@ export default function Logs() {
             }
         }
         return log.source || 'system';
-    };
-    
-    const determineHost = (log) => {
-        if (log.host && log.host.ip) return `${log.host.ip}`;   
-        return log.host || 'unknown-host';
     };
     
     const determineMessage = (log) => {
@@ -238,7 +232,6 @@ export default function Logs() {
                                 <th className="p-2 border-b">{uiText.timestamp}</th>
                                 <th className="p-2 border-b">{uiText.attacker_id}</th>
                                 <th className="p-2 border-b">{uiText.source}</th>
-                                <th className="p-2 border-b">{uiText.host}</th>
                                 <th className="p-2 border-b">{uiText.message}</th>
                             </tr>
                         </thead>
@@ -249,7 +242,6 @@ export default function Logs() {
                                         <td className="p-2">{new Date(log.timestamp).toLocaleString()}</td>
                                         <td className="p-2">{log.attacker_id}</td>
                                         <td className="p-2">{log.source}</td>
-                                        <td className="p-2">{log.host}</td>
                                         <td className="p-2">{log.message}</td>
                                     </tr>
                                 ))
