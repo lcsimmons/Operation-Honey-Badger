@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^9.0.0",
     "@google-cloud/text-to-speech": "^6.0.1",
     "@google-cloud/translate": "^9.0.1",
     "@tailwindcss/oxide": "^4.1.3",

@@ -80,7 +80,7 @@ def log_attacker_information(attacker_summary):
     update_attack_command(attack_command)
 
     #generate the json for the log
-    attacker_json = generate_attacker_json(attack_command)
+    attacker_json = generate_attacker_json(attack_command, attacker_id)
 
     #send to logstash, can have a response if the connection isn't working
     # send_log_to_logstash("http://cs412anallam.me", attacker_json)
@@ -361,7 +361,7 @@ def attacker_engagement(attacker_id=None):
     cur.close()
     return res
 
-def generate_attacker_json(attack_command):
+def generate_attacker_json(attack_command, attacker_id):
 
     attacker_log = {
         "ip": attack_command.get("attacker_info").get("ip_address"),
@@ -380,7 +380,8 @@ def generate_attacker_json(attack_command):
         "incident-response-id": str(uuid.uuid4()),  # Generate a unique incident ID
         "log-id": str(uuid.uuid4()),  # Generate a unique log ID
         "geolocation" : attack_command.get("attacker_info").get("geolocation"),
-        "port" : "6969" if attack_command.get("gemini").get("technique") == "Security Misconfiguration" else ""
+        "port" : "6969" if attack_command.get("gemini").get("technique") == "Security Misconfiguration" else "",
+        "attacker-id" : attacker_id
     }
 
     return json.dumps(attacker_log, indent=4)
