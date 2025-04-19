@@ -83,7 +83,7 @@ def log_attacker_information(attacker_summary):
     attacker_json = generate_attacker_json(attack_command, attacker_id)
 
     #send to logstash, can have a response if the connection isn't working
-    send_log_to_logstash("http://cs412anallam.me", attacker_json)
+    # send_log_to_logstash("http://cs412anallam.me", attacker_json)
 
     #close db connection
     conn.commit()
@@ -203,9 +203,7 @@ def update_honey_session(attacker_id):
                 last_seen = CURRENT_TIMESTAMP
             WHERE session_id = %s;
             """,
-            (
-                str(session_id)
-            )
+            (str(session_id), ) #funny, apparently had to make it into a tuple explicitly by adding the comma XD
         )
     else:
         cur.execute(
@@ -214,9 +212,7 @@ def update_honey_session(attacker_id):
             (attacker_id) 
             VALUES (%s) RETURNING session_id;
             """,
-            (
-                str(attacker_id)
-            )
+            str(attacker_id) #or I guess if it's a singular thing then just not have it as a tuple at all
         )
 
         session_id = cur.fetchone()
