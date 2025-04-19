@@ -7,7 +7,7 @@ import WorldMap from "../components/WorldMap";
 import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useTextSize } from '@/context/TextSizeContext';
-import { getCommonExploits } from './api/apiHelper';
+import { getCommonExploits, getAttackerIP, getAttackerOS } from './api/apiHelper';
 
 const pieData = [
   { name: "Item 1", value: 20 },
@@ -128,8 +128,8 @@ export default function Dashboard() {
       className: "row-span-2 bg-white/40 p-4 rounded-lg shadow-md"
     },
     {
-      name: "Attack Types & Attacker Inputs", 
-      render: <AttackTypesAndAttackerInputs/>,
+      name: "Attacker IPs & Attacker OS",
+      render: <AttackerIPsAndAttackerOS />,
       className: "col-span-2 row-span-2 bg-white/40 p-6 rounded-lg shadow-md"
     },
     {
@@ -325,82 +325,197 @@ const BarCharts = () => (
   </div>
 );
 
-{/* Attack Types & Attacker Inputs */ }
-const AttackTypesAndAttackerInputs = () => (
-  <div>
+const AttackerIPsAndAttackerOS = () => {
+  const [ipData, setIpData] = useState([]);
+  const [osData, setOsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const ipRaw = await getAttackerIP();
+      const osRaw = await getAttackerOS();
+
+      if (ipRaw && Array.isArray(ipRaw)) {
+        setIpData(ipRaw.map(entry => ({
+          name: entry.ip_address,
+          value: entry.count,
+        })));
+      }
+
+      if (osRaw && Array.isArray(osRaw)) {
+        setOsData(osRaw.map(entry => ({
+          name: entry.os,
+          value: entry.count,
+        })));
+      }
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  return (
     <div className="flex justify-between gap-6 h-full">
-      {/* Attack Types */}
+      {/* Attacker IPs */}
       <div className="flex flex-col items-center w-1/2 h-full">
-        <h3 className="text-3xl font-bold mb-4">Attack Types</h3>
-        <ResponsiveContainer width="100%" height={220}>
-          <PieChart>
-            <Pie
-              data={attackTypeData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={3}
-              dataKey="value"
-            >
-              {attackTypeData.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+        <h3 className="text-3xl font-bold mb-4">Attacker IPs</h3>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={ipData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {ipData.map((_, index) => (
+                    <Cell key={`cell-ip-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+              {ipData.map((entry, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span>{entry.name}</span>
+                </div>
               ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-        {/* Custom Legend */}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
-          {attackTypeData.map((entry, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
-              />
-              <span>{entry.name}</span>
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
 
-      {/* Attacker Inputs */}
+      {/* Attacker OS */}
       <div className="flex flex-col items-center w-1/2 h-full">
-        <h3 className="text-3xl font-bold mb-4">Attacker Inputs</h3>
-        <ResponsiveContainer width="100%" height={220}>
-          <PieChart>
-            <Pie
-              data={attackerInputsData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={3}
-              dataKey="value"
-            >
-              {attackerInputsData.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+        <h3 className="text-3xl font-bold mb-4">Attacker OS</h3>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={osData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {osData.map((_, index) => (
+                    <Cell key={`cell-os-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+              {osData.map((entry, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span>{entry.name}</span>
+                </div>
               ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-        {/* Custom Legend */}
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
-          {attackerInputsData.map((entry, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
-              />
-              <span>{entry.name}</span>
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </div>
-  </div>
-);
+  );
+};
+
+{/* Attack Types & Attacker Inputs */ }
+// const AttackTypesAndAttackerInputs = () => (
+//   <div>
+//     <div className="flex justify-between gap-6 h-full">
+//       {/* Attack Types */}
+//       <div className="flex flex-col items-center w-1/2 h-full">
+//         <h3 className="text-3xl font-bold mb-4">Attack Types</h3>
+//         <ResponsiveContainer width="100%" height={220}>
+//           <PieChart>
+//             <Pie
+//               data={attackTypeData}
+//               cx="50%"
+//               cy="50%"
+//               innerRadius={60}
+//               outerRadius={100}
+//               paddingAngle={3}
+//               dataKey="value"
+//             >
+//               {attackTypeData.map((_, index) => (
+//                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+//               ))}
+//             </Pie>
+//             <Tooltip />
+//           </PieChart>
+//         </ResponsiveContainer>
+//         {/* Custom Legend */}
+//         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
+//           {attackTypeData.map((entry, index) => (
+//             <div key={index} className="flex items-center space-x-2">
+//               <div
+//                 className="w-3 h-3 rounded-full"
+//                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
+//               />
+//               <span>{entry.name}</span>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* Attacker Inputs */}
+//       <div className="flex flex-col items-center w-1/2 h-full">
+//         <h3 className="text-3xl font-bold mb-4">Attacker Inputs</h3>
+//         <ResponsiveContainer width="100%" height={220}>
+//           <PieChart>
+//             <Pie
+//               data={attackerInputsData}
+//               cx="50%"
+//               cy="50%"
+//               innerRadius={60}
+//               outerRadius={100}
+//               paddingAngle={3}
+//               dataKey="value"
+//             >
+//               {attackerInputsData.map((_, index) => (
+//                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+//               ))}
+//             </Pie>
+//             <Tooltip />
+//           </PieChart>
+//         </ResponsiveContainer>
+//         {/* Custom Legend */}
+//         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
+//           {attackerInputsData.map((entry, index) => (
+//             <div key={index} className="flex items-center space-x-2">
+//               <div
+//                 className="w-3 h-3 rounded-full"
+//                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
+//               />
+//               <span>{entry.name}</span>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   </div>
+// );
 
 {/* Another thing */ }
 const LOL = () => (
