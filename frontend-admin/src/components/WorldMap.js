@@ -38,6 +38,7 @@ const WorldMap = () => {
   const [worldGeoData, setWorldGeoData] = useState(null);
   const [tooltip, setTooltip] = useState({ visible: false, content: "", x: 0, y: 0 });
   const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const mapRef = useRef(null);
 
   useEffect(() => {
@@ -54,17 +55,21 @@ const WorldMap = () => {
     fetchGeoData();
   }, []);
 
+  const fetchCountryData = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/geolocation/country`);
+      const data = await res.json();
+      setCountryData(data);
+    } catch (err) {
+      console.error("API error, using fallback", err);
+      setCountryData({ US: 2, CN: 1, RU: 1, FR: 1, GB: 1, JP: 1 });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCountryData = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/geolocation/country`);
-        const data = await res.json();
-        setCountryData(data);
-      } catch (err) {
-        console.error("API error, using fallback", err);
-        setCountryData({ US: 2, CN: 1, RU: 1, FR: 1, GB: 1, JP: 1 });
-      }
-    };
     fetchCountryData();
   }, []);
 
@@ -114,7 +119,22 @@ const WorldMap = () => {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <h2 className="text-lg font-bold mb-2">Attacker Geolocation</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-lg font-bold">Attacker Geolocation</h2>
+        <button 
+          onClick={fetchCountryData} 
+          disabled={isRefreshing}
+          className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1 px-2 rounded flex items-center transition-colors"
+        >
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          {isRefreshing && (
+            <svg className="animate-spin ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          )}
+        </button>
+      </div>
 
       <div
         ref={mapRef}
@@ -140,7 +160,7 @@ const WorldMap = () => {
           </div>
         )}
 
-        <div className="absolute top-4 left-4 bg-white/90 p-2 rounded shadow text-xs border border-gray-300">
+        <div className="absolute top-4 left-4 bg-white/90 p-2 rounded shadow text-xs border border-black">
           <div className="font-bold mb-1">Top 5 Countries:</div>
           <ul className="list-disc list-inside">
             {topCountries.map((entry, idx) => (

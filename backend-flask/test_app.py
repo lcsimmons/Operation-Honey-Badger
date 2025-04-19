@@ -16,29 +16,29 @@ def client():
 # Common mocks used by multiple tests
 @pytest.fixture
 def mock_attacker_info():
-    with patch('app.extract_attacker_info') as mock:
+    with patch('honeypot_endpoints.extract_attacker_info') as mock:
         mock.return_value = {"ip_address": "127.0.0.1", "user_agent": "Test Agent"}
         yield mock
 
 @pytest.fixture
 def mock_attacker_summary():
-    with patch('app.get_attacker_summary') as mock:
+    with patch('honeypot_endpoints.get_attacker_summary') as mock:
         mock.return_value = {"attacker_info": {"ip": "127.0.0.1"}, "gemini": {"technique": "Test"}}
         yield mock
 
 @pytest.fixture
 def mock_log_attacker():
-    with patch('app.log_attacker_information') as mock:
+    with patch('honeypot_endpoints.log_attacker_information') as mock:
         yield mock
 
 @pytest.fixture
 def mock_memory_db():
-    with patch('app.get_memory_db') as mock:
+    with patch('honeypot_endpoints.get_memory_db') as mock:
         yield mock
 
 @pytest.fixture(autouse=True)
 def mock_gemini():
-    with patch('app.init_gemini') as mock_init:
+    with patch('gemini.init_gemini') as mock_init:
         mock_client = MagicMock()
         mock_init.return_value = mock_client
         yield mock_client
