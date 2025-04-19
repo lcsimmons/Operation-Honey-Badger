@@ -20,7 +20,7 @@ export const getAttackerIP = async () => {
       console.error("Error fetching attacker IP data:", err);
       return null;
     }
-  };
+};
 
 export const getAttackerOS = async () => {
     try {
@@ -31,3 +31,36 @@ export const getAttackerOS = async () => {
         return null;
     }
 };
+
+export const getPagesTargeted = async () => {
+    try {
+      const res = await axios.get(`${apiHost}/soc-admin/dashboard/pages_targeted`);
+      return res.data;
+    } catch (err) {
+      console.error("Error fetching pages targeted data:", err);
+      return null;
+    }
+};
+
+export const getBrowsersUsed = async () => {
+    try {
+      const res = await axios.get(`${apiHost}/soc-admin/dashboard/attacker_browser`);
+      return res.data;
+    } catch (err) {
+      console.error("Error fetching browsers used data:", err);
+      return null;
+    }
+};
+  
+export const getEngagementTime = async (attackerId = null) => {
+    const param = attackerId ? `?attacker_id=${attackerId}` : "";
+    try {
+      const res = await axios.get(`${apiHost}/soc-admin/dashboard/attacker_engagement${param}`);
+      return res.data;
+    } catch (err) {
+      console.error("Error fetching engagement time:", err);
+      return null;
+    }
+};
+  
+

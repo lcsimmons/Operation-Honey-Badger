@@ -17,8 +17,7 @@ from psycopg2.extras import DictCursor
 
 app = Flask(__name__)
 # Configure CORS properly - allow all origins for all routes
-CORS(app, resources={r"/api/*": {"origins": "*"},
-    r"/soc-admin/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "OPTIONS"])
+CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "OPTIONS"])
 # cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 #import from other files

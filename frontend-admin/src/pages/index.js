@@ -7,7 +7,7 @@ import WorldMap from "../components/WorldMap";
 import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useTextSize } from '@/context/TextSizeContext';
-import { getCommonExploits, getAttackerIP, getAttackerOS } from './api/apiHelper';
+import { getCommonExploits, getAttackerIP, getAttackerOS, getPagesTargeted, getBrowsersUsed, getEngagementTime } from './api/apiHelper';
 
 const pieData = [
   { name: "Item 1", value: 20 },
@@ -280,50 +280,141 @@ const RecentReportsAndReportSeverity = () => (
 );
 
 
-{/* Bar Charts */ }
-const BarCharts = () => (
-  <div>
-    <h2 className=" font-bold mb-2">Engagement Time</h2>
-    <ResponsiveContainer width="100%" height={150}>
-      <BarChart data={engagementTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="value" fill={COLORS[0]} />
-      </BarChart>
-    </ResponsiveContainer>
+// {/* Bar Charts */ }
+const BarCharts = () => {
+  const [engagementData, setEngagementData] = useState([]);
+  const [pagesData, setPagesData] = useState([]);
+  const [browserData, setBrowserData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    <h2 className=" font-bold mt-6 mb-2">Common Exploits Used</h2>
-    <ResponsiveContainer width="100%" height={180}>
-      <BarChart data={commonExploitsData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
-        <XAxis
-          dataKey="name"
-          interval={0}
-          angle={-25}
-          textAnchor="end"
-        />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="value" fill={COLORS[1]} />
-      </BarChart>
-    </ResponsiveContainer>
+  useEffect(() => {
+    const fetchCharts = async () => {
+      const [engagement, pages, browsers] = await Promise.all([
+        getEngagementTime(), 
+        getPagesTargeted(),
+        getBrowsersUsed()
+      ]);
 
-    <h2 className=" font-bold mt-6 mb-2">Detected Attacker Intent</h2>
-    <ResponsiveContainer width="100%" height={180}>
-      <BarChart data={attackerIntentData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
-        <XAxis
-          dataKey="name"
-          interval={0}
-          angle={-25}
-          textAnchor="end"
-        />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="value" fill={COLORS[2]} />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-);
+      if (engagement && Array.isArray(engagement)) {
+        const aggregationMap = new Map();
+        engagement.forEach(entry => {
+          const day = new Date(entry.day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const prev = aggregationMap.get(day) || 0;
+          aggregationMap.set(day, prev + entry.occurrences);
+        });
+        const aggregatedData = Array.from(aggregationMap.entries()).map(([name, value]) => ({ name, value }));
+        setEngagementData(aggregatedData);
+      }
+
+      if (pages && Array.isArray(pages)) {
+        setPagesData(pages.map(entry => ({
+          name: entry.request_url,
+          value: entry.count,
+        })));
+      }
+
+      if (browsers && Array.isArray(browsers)) {
+        setBrowserData(browsers.map(entry => ({
+          name: entry.browser,
+          value: entry.count,
+        })));
+      }
+
+      setLoading(false);
+    };
+
+    fetchCharts();
+  }, []);
+
+  return (
+    <div>
+      <h2 className=" font-bold mb-2">Attacker Engagement</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={150}>
+          <BarChart data={engagementData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill={COLORS[0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+
+      <h2 className=" font-bold mt-6 mb-2">Pages Targeted</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={pagesData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
+            <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill={COLORS[1]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+
+      <h2 className=" font-bold mt-6 mb-2">Browsers Used</h2>
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={browserData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
+            <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill={COLORS[2]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  );
+};
+// const BarCharts = () => (
+//   <div>
+//     <h2 className=" font-bold mb-2">Engagement Time</h2>
+//     <ResponsiveContainer width="100%" height={150}>
+//       <BarChart data={engagementTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
+//         <XAxis dataKey="name" />
+//         <YAxis />
+//         <Tooltip />
+//         <Bar dataKey="value" fill={COLORS[0]} />
+//       </BarChart>
+//     </ResponsiveContainer>
+
+//     <h2 className=" font-bold mt-6 mb-2">Common Exploits Used</h2>
+//     <ResponsiveContainer width="100%" height={180}>
+//       <BarChart data={commonExploitsData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
+//         <XAxis
+//           dataKey="name"
+//           interval={0}
+//           angle={-25}
+//           textAnchor="end"
+//         />
+//         <YAxis />
+//         <Tooltip />
+//         <Bar dataKey="value" fill={COLORS[1]} />
+//       </BarChart>
+//     </ResponsiveContainer>
+
+//     <h2 className=" font-bold mt-6 mb-2">Detected Attacker Intent</h2>
+//     <ResponsiveContainer width="100%" height={180}>
+//       <BarChart data={attackerIntentData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
+//         <XAxis
+//           dataKey="name"
+//           interval={0}
+//           angle={-25}
+//           textAnchor="end"
+//         />
+//         <YAxis />
+//         <Tooltip />
+//         <Bar dataKey="value" fill={COLORS[2]} />
+//       </BarChart>
+//     </ResponsiveContainer>
+//   </div>
+// );
 
 const AttackerIPsAndAttackerOS = () => {
   const [ipData, setIpData] = useState([]);
