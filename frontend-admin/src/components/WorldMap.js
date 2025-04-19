@@ -140,7 +140,7 @@ const WorldMap = () => {
           </div>
         )}
 
-        <div className="absolute top-4 left-4 bg-white/90 p-2 rounded shadow text-xs border border-gray-300">
+        <div className="absolute top-4 left-4 bg-white/90 p-2 rounded shadow text-xs border border-black">
           <div className="font-bold mb-1">Top 5 Countries:</div>
           <ul className="list-disc list-inside">
             {topCountries.map((entry, idx) => (
