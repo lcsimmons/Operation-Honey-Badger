@@ -397,8 +397,8 @@ def send_log_to_logstash(elk_url, attacker_json):
         "Content-Type": "application/json"
     }
     try:
-        response = requests.post(url, headers=headers, data=attacker_json)
-        return response
+        response = requests.post(url, headers=headers, data=attacker_json, timeout=3)
+        return respons
     except Exception as e: 
         print(e)
         return None
