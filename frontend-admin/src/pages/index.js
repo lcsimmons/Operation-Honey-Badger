@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useContext } from 'react'; 
 import { FontContext } from '../context/FontContext';
 import Sidebar from "../components/sidebar";
@@ -7,6 +7,7 @@ import WorldMap from "../components/WorldMap";
 import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useTextSize } from '@/context/TextSizeContext';
+import { getCommonExploits } from './api/apiHelper';
 
 const pieData = [
   { name: "Item 1", value: 20 },
@@ -204,42 +205,65 @@ export default function Dashboard() {
     </div>
   );
 }
+const CommonExploits = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-const CommonExploits = () => (
-  <div>
-    <h2 className="font-bold">Common Exploits</h2>
-    <ResponsiveContainer width="100%" height={220}>
-      <PieChart>
-        <Pie
-          data={commonExploitsData}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={100}
-          paddingAngle={3}
-          dataKey="value"
-        >
-          {commonExploitsData.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-    {/* Custom Legend */}
-    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
-      {commonExploitsData.map((entry, index) => (
-        <div key={index} className="flex items-center space-x-2">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: COLORS[index % COLORS.length] }}
-          />
-          <span>{entry.name}</span>
-        </div>
-      ))}
+  useEffect(() => {
+    const fetchCommonExploits = async () => {
+      const res = await getCommonExploits();
+      if (res && res.status === 200) {
+        const formatted = res.data.map(entry => ({
+          name: entry.owasp_technique,
+          value: entry.count
+        }));
+        setData(formatted);
+      } else {
+        console.error("Failed to fetch common exploits:", res);
+      }
+      setLoading(false);
+    };
+
+    fetchCommonExploits();
+  }, []);
+
+  if (loading) return <p className="text-center">Loading chart...</p>;
+
+  return (
+    <div>
+      <h2 className="font-bold">Common Exploits</h2>
+      <ResponsiveContainer width="100%" height={220}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={100}
+            paddingAngle={3}
+            dataKey="value"
+          >
+            {data.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+        {data.map((entry, index) => (
+          <div key={index} className="flex items-center space-x-2">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: COLORS[index % COLORS.length] }}
+            />
+            <span>{entry.name}</span>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 {/* Recent Reports & Report Severity */ }
 const RecentReportsAndReportSeverity = () => (
