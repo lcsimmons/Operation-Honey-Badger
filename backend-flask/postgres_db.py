@@ -83,7 +83,7 @@ def log_attacker_information(attacker_summary):
     attacker_json = generate_attacker_json(attack_command, attacker_id)
 
     #send to logstash, can have a response if the connection isn't working
-    # send_log_to_logstash("http://cs412anallam.me", attacker_json)
+    send_log_to_logstash("http://cs412anallam.me", attacker_json)
 
     #close db connection
     conn.commit()
@@ -161,7 +161,7 @@ def update_honey_session(attacker_id):
     # Check if this attacker has been seen before
     cur.execute(
         "SELECT * FROM Honeypot_Session where attacker_id = %s ORDER  BY last_seen DESC NULLS LAST LIMIT 1",
-        str(attacker_id)
+        (str(attacker_id), )
     )
 
     exists = cur.fetchone()
@@ -212,7 +212,7 @@ def update_honey_session(attacker_id):
             (attacker_id) 
             VALUES (%s) RETURNING session_id;
             """,
-            str(attacker_id) #or I guess if it's a singular thing then just not have it as a tuple at all
+            (str(attacker_id), ) #or I guess if it's a singular thing then just not have it as a tuple at all
         )
 
         session_id = cur.fetchone()
@@ -394,7 +394,7 @@ def send_log_to_logstash(elk_url, attacker_json):
     }
     try:
         response = requests.post(url, headers=headers, data=attacker_json, timeout=3)
-        return respons
+        return response
     except Exception as e: 
         print(e)
         return None
