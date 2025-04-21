@@ -24,6 +24,7 @@ describe('Search Component', () => {
     
     const searchInput = screen.getByPlaceholderText('Search for posts...');
     expect(searchInput).toBeInTheDocument();
+    expect(searchInput).toHaveClass('p-2', 'rounded-md', 'text-black');
     expect(searchInput).toHaveValue('');
   });
 
@@ -105,7 +106,57 @@ describe('Search Component', () => {
     // Should not throw an error when allPosts is null
     fireEvent.change(searchInput, { target: { value: 'test' } });
     
-    // setFilteredPosts should still be called, but with empty array
+    // setFilteredPosts should still be called
     expect(mockSetFilteredPosts).toHaveBeenCalled();
+  });
+
+  test('empty array handled correctly', () => {
+    render(
+      <Search 
+        allPosts={[]} 
+        setFilteredPosts={mockSetFilteredPosts} 
+      />
+    );
+    
+    const searchInput = screen.getByPlaceholderText('Search for posts...');
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+    
+    // Should return empty array
+    expect(mockSetFilteredPosts).toHaveBeenCalledWith([]);
+  });
+
+  test('handles case insensitive search', () => {
+    render(
+      <Search 
+        allPosts={mockAllPosts} 
+        setFilteredPosts={mockSetFilteredPosts} 
+      />
+    );
+    
+    const searchInput = screen.getByPlaceholderText('Search for posts...');
+    
+    // Test with uppercase search term
+    fireEvent.change(searchInput, { target: { value: 'HR' } });
+    
+    // Should find the posts with HR in lowercase
+    expect(mockSetFilteredPosts).toHaveBeenCalledWith([mockAllPosts[2]]);
+  });
+
+  test('searching with terms that appear in different posts', () => {
+    render(
+      <Search 
+        allPosts={mockAllPosts} 
+        setFilteredPosts={mockSetFilteredPosts} 
+      />
+    );
+    
+    const searchInput = screen.getByPlaceholderText('Search for posts...');
+    
+    // Search that would match parts of both terms but not across fields
+    // The search term "test" would match "testing" in post[0]
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+    
+    // Check that matching posts are found
+    expect(mockSetFilteredPosts).toHaveBeenCalledWith([mockAllPosts[0]]);
   });
 });
