@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiHost = process.env.NEXT_PUBLIC_API_HOST || "http://127.0.0.1:5000";
+const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000";
 
 export const getCommonExploits = async () => {
     try {
