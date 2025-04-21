@@ -82,7 +82,7 @@ export default function Logs() {
                     timestamp: log['@timestamp'] || log['current-interaction'] || new Date().toISOString(),
                     attacker_id: log['attacker-id'] || log.attacker_id,
                     source: determineSource(log),
-                    host: determineHost(log),
+                    //host: determineHost(log),
                     message: determineMessage(log)
                 };
             });
