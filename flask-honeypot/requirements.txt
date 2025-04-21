@@ -5,3 +5,4 @@ ipinfo==4.4.3
 user-agents==2.2.0
 gunicorn
 pytest
+requests>=2.28.0

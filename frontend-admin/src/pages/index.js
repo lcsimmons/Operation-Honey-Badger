@@ -136,16 +136,6 @@ export default function Dashboard() {
       name: "Attacker Geolocation",
       render: <WorldMap />,
       className: "col-span-3 row-span-2 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
-    },
-    {
-      name: "MITRE Attack", 
-      render: <AttackMatrix/>,
-      className: "col-span-3 row-span-3 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
-    },
-    {
-      name: "LOL", 
-      render: <LOL/>,
-      className: "col-span-3 row-span-3 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
     }
   ];
 

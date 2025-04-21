@@ -43,7 +43,7 @@ const Sidebar = () => {
           <SidebarLink href="/" icon={<Home size={24} />} text="Dashboard" expanded={expanded} onClick={handleClick} />
           <SidebarLink href="/logs" icon={<List size={24} />} text="Logs" expanded={expanded} onClick={handleClick} />
           <SidebarLink href="/reports" icon={<Clipboard size={24} />} text="Reports" expanded={expanded} onClick={handleClick} />
-          <SidebarLink href="/alerts" icon={<AlertTriangle size={24} />} text="Alerts" expanded={expanded} onClick={handleClick} />
+          {/* <SidebarLink href="/alerts" icon={<AlertTriangle size={24} />} text="Alerts" expanded={expanded} onClick={handleClick} /> */}
           <SidebarLink href="/settings" icon={<Settings size={24} />} text="Settings" expanded={expanded} onClick={handleClick} />
         </nav>
 
