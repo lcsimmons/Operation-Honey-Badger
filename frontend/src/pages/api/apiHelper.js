@@ -25,6 +25,57 @@ export const loginUser = async (body) => {
     }
 }
 
+export const getSecurityQuestions = async (username) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+
+    const url =  host + '/api/security_questions';
+
+    try{
+        const res = await axios.post(url, { 
+            username
+        });
+        return res;
+    }catch(err){
+        console.log(err);
+        throw err;
+    }
+}
+
+export const validateForgotPassword = async (username, questionId, securityAnswer) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+
+    const url =  host + '/api/forgot_password';
+
+    try{
+        const res = await axios.post(url, {
+            username,
+            answers: [{ question_id: questionId, answer: securityAnswer }],
+        });
+        return res;
+    }catch(err){
+        console.log(err);
+        throw err;
+    }
+
+}
+
+export const processChangePassword = async (username, newPassword) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+
+    const url =  host + '/api/change_password';
+
+    try{
+        const res = await axios.post(url, {
+            username,
+            newPassword,
+        });
+        return res;
+    }catch(err){
+        console.log(err);
+        throw err;
+    }
+}
+
 export const getForumComments = async (queryParams=null) => {
     //host should be something like https://cs412abhinavnallam:5000
     //follow this string to make the queryParams https://www.geeksforgeeks.org/how-to-create-query-parameters-in-javascript/
@@ -179,7 +230,22 @@ export const getCorporateProjects = async (queryParams) => {
         console.log(err);
         return err.response
     }
-} 
+}
+
+export const getSecurityLogs = async () => {
+    const host = apiHost || "http://127.0.0.1:5000";
+
+    const url =  host + '/api/admin/security_logs';
+
+    try{
+        const res = await axios.get(url);
+        return res;
+    }catch(err){
+        console.log(err);
+        throw err;
+    }
+
+}
 
 export const apiValidateSecurityAnswer = async ({ username, questionId, securityAnswer }) => {
     const host = apiHost || "http://127.0.0.1:5000";
@@ -192,7 +258,8 @@ export const apiValidateSecurityAnswer = async ({ username, questionId, security
         });
         return res;
     } catch (err) {
-        return err.response;
+        console.log(err)
+        throw err;
     }
 };
 
@@ -207,7 +274,8 @@ export const apiSubmitNewPassword = async ({ username, newPassword }) => {
         });
         return res;
     } catch (err) {
-        return err.response;
+        console.log(err)
+        throw err;
     }
 };
 
@@ -219,7 +287,8 @@ export const apiFetchSecurityQuestion = async (username) => {
       const res = await axios.post(url, { username });
       return res;
     } catch (err) {
-      return err.response;
+        console.log(err);
+        throw err;
     }
   };
   

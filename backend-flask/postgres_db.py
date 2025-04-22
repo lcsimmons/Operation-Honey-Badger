@@ -160,7 +160,7 @@ def update_honey_session(attacker_id):
 
     # Check if this attacker has been seen before
     cur.execute(
-        "SELECT * FROM Honeypot_Session where attacker_id = %s ORDER  BY last_seen DESC NULLS LAST LIMIT 1",
+        "SELECT * FROM Honeypot_Session where attacker_id = %s ORDER BY last_seen DESC NULLS LAST LIMIT 1",
         (str(attacker_id), )
     )
 
@@ -212,7 +212,7 @@ def update_honey_session(attacker_id):
             (attacker_id) 
             VALUES (%s) RETURNING session_id;
             """,
-            (str(attacker_id), ) #or I guess if it's a singular thing then just not have it as a tuple at all
+            (str(attacker_id), )#nvm it actually does need to be a tuple lol
         )
 
         session_id = cur.fetchone()
