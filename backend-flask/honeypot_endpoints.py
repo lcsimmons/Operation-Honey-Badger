@@ -832,7 +832,7 @@ def register_honeypot_routes(app):
             print(f"SQLite error: {e}")
             return jsonify({"error": f"Database error: {str(e)}"}), 500
     
-    @app.route('/api/admin/security', methods=['GET'])
+    @app.route('/api/admin/security_logs', methods=['GET'])
     def fake_security_logs():
         # request_args = list(request.args.items())
 
