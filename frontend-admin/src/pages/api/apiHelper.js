@@ -3,13 +3,22 @@ import axios from 'axios';
 const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000";
 
 export const getCommonExploits = async () => {
-    try {
-        const res = await axios.get(`${apiHost}/soc-admin/dashboard/common_exploits`);
-        return res;
-    } catch (err) {
-        console.log("Error fetching common exploits:", err);
-        return err.response;
-    }
+  try {
+      const res = await axios.get(`${apiHost}/soc-admin/dashboard/common_exploits`);
+      
+      // Filter out "No Attack Vector" entries if res.data exists
+      if (res && res.data) {
+          res.data = res.data.filter(item => 
+              item.owasp_technique !== "No Attack Vector" && 
+              item.owasp_technique !== "No attack vector"
+          );
+      }
+      
+      return res;
+  } catch (err) {
+      console.log("Error fetching common exploits:", err);
+      return err.response;
+  }
 };
 
 export const getAttackerIP = async () => {
