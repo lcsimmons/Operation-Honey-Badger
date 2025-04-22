@@ -258,7 +258,8 @@ export const apiValidateSecurityAnswer = async ({ username, questionId, security
         });
         return res;
     } catch (err) {
-        return err.response;
+        console.log(err)
+        throw err;
     }
 };
 
@@ -273,7 +274,8 @@ export const apiSubmitNewPassword = async ({ username, newPassword }) => {
         });
         return res;
     } catch (err) {
-        return err.response;
+        console.log(err)
+        throw err;
     }
 };
 
@@ -285,7 +287,8 @@ export const apiFetchSecurityQuestion = async (username) => {
       const res = await axios.post(url, { username });
       return res;
     } catch (err) {
-      return err.response;
+        console.log(err);
+        throw err;
     }
   };
   
