@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { getExpenses, loginUser, getSecurityQuestions, validateForgotPassword, processChangePassword } from "./api/apiHelper";
+import { getExpenses, loginUser, apiFetchSecurityQuestion, apiSubmitNewPassword, apiValidateSecurityAnswer } from "./api/apiHelper";
 import axios from "axios";
 
 export default function Login() {
@@ -85,7 +85,7 @@ export default function Login() {
 
   const fetchSecurityQuestion = async () => {
     try {
-      const res = await getSecurityQuestions(username);
+      const res = await apiFetchSecurityQuestion(username);
 
       if (res.data && Object.keys(res.data).length > 0) {
         setSecurityQuestion(res.data.question_text);
@@ -104,7 +104,7 @@ export default function Login() {
 
   const validateSecurityAnswer = async () => {
     try {
-      const res = await validateForgotPassword(username, questionId, securityAnswer);
+      const res = await apiValidateSecurityAnswer({ username, questionId, securityAnswer });
 
       if (res.data.message?.includes("validated")) {
         setShowPasswordReset(true);
@@ -120,7 +120,7 @@ export default function Login() {
 
   const submitNewPassword = async () => {
     try {
-      const res = await processChangePassword(username, newPassword);
+      const res = await apiSubmitNewPassword({ username, newPassword });
 
       if (res.data.message) {
         setResetMessage("Password changed successfully. You may now log in.");

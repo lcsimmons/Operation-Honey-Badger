@@ -83,7 +83,7 @@ def log_attacker_information(attacker_summary):
     attacker_json = generate_attacker_json(attack_command, attacker_id)
 
     #send to logstash, can have a response if the connection isn't working
-    # send_log_to_logstash("http://cs412anallam.me", attacker_json)
+    send_log_to_logstash("http://cs412anallam.me", attacker_json)
 
     #close db connection
     conn.commit()
@@ -393,7 +393,7 @@ def send_log_to_logstash(elk_url, attacker_json):
         "Content-Type": "application/json"
     }
     try:
-        response = requests.post(url, headers=headers, data=attacker_json)
+        response = requests.post(url, headers=headers, data=attacker_json, timeout=3)
         return response
     except Exception as e: 
         print(e)

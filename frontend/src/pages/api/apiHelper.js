@@ -246,3 +246,46 @@ export const getSecurityLogs = async () => {
     }
 
 }
+
+export const apiValidateSecurityAnswer = async ({ username, questionId, securityAnswer }) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+    const url = `${host}/api/forgot_password`;
+
+    try {
+        const res = await axios.post(url, {
+            username,
+            answers: [{ question_id: questionId, answer: securityAnswer }],
+        });
+        return res;
+    } catch (err) {
+        return err.response;
+    }
+};
+
+export const apiSubmitNewPassword = async ({ username, newPassword }) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+    const url = `${host}/api/change_password`;
+
+    try {
+        const res = await axios.post(url, {
+            username,
+            newPassword,
+        });
+        return res;
+    } catch (err) {
+        return err.response;
+    }
+};
+
+export const apiFetchSecurityQuestion = async (username) => {
+    const host = apiHost || "http://127.0.0.1:5000";
+    const url = `${host}/api/security_questions`;
+  
+    try {
+      const res = await axios.post(url, { username });
+      return res;
+    } catch (err) {
+      return err.response;
+    }
+  };
+  

@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ThreadedReplies from '../components/ThreadedReplies';
+import ThreadedReplies from '../ThreadedReplies';
 
 // Mock the API helper
-jest.mock('../pages/api/apiHelper', () => ({
+jest.mock('../../pages/api/apiHelper', () => ({
   createForumComment: jest.fn(),
 }));
 
@@ -113,9 +113,21 @@ describe('ThreadedReplies Component', () => {
     expect(mockProps.setPosts).not.toHaveBeenCalled();
   });
 
+  test('detects SQL injection attempts', async () => {
+    render(<ThreadedReplies {...mockProps} />);
+    
+    const textarea = screen.getByPlaceholderText('Write a reply...');
+    fireEvent.change(textarea, { target: { value: "robert'; DROP TABLE users; --" } });
+    
+    const submitButton = screen.getByRole('button', { name: 'Reply' });
+    fireEvent.click(submitButton);
+    
+    expect(mockProps.setPosts).not.toHaveBeenCalled();
+  });
+
   test('submits valid replies and updates the posts state', async () => {
     // Get reference to the mocked function
-    const { createForumComment } = require('../pages/api/apiHelper');
+    const { createForumComment } = require('../../pages/api/apiHelper');
     
     // Mock successful API response
     createForumComment.mockResolvedValue({
@@ -152,7 +164,7 @@ describe('ThreadedReplies Component', () => {
 
   test('handles API error gracefully', async () => {
     // Get reference to the mocked function
-    const { createForumComment } = require('../pages/api/apiHelper');
+    const { createForumComment } = require('../../pages/api/apiHelper');
     
     // Mock API error
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -176,7 +188,7 @@ describe('ThreadedReplies Component', () => {
 
   test('handles non-200 API response', async () => {
     // Get reference to the mocked function
-    const { createForumComment } = require('../pages/api/apiHelper');
+    const { createForumComment } = require('../../pages/api/apiHelper');
     
     // Mock failed API response
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -215,7 +227,7 @@ describe('ThreadedReplies Component', () => {
 
   test('encodes sensitive data with base64 before submission', async () => {
     // Get reference to the mocked function
-    const { createForumComment } = require('../pages/api/apiHelper');
+    const { createForumComment } = require('../../pages/api/apiHelper');
     
     createForumComment.mockResolvedValue({
       status: 200,
@@ -240,5 +252,19 @@ describe('ThreadedReplies Component', () => {
         comment: expect.stringContaining('base64encoded-')
       });
     });
+  });
+
+  test('uses default avatar when localStorage avatar is not set', () => {
+    // Temporarily modify the localStorage mock
+    const originalGetItem = localStorageMock.getItem;
+    localStorageMock.getItem = jest.fn(key => key === 'avatar' ? null : store[key]);
+    
+    render(<ThreadedReplies {...mockProps} />);
+    
+    // Verify default avatar is used in component logic
+    expect(localStorageMock.getItem).toHaveBeenCalledWith('avatar');
+    
+    // Restore original implementation
+    localStorageMock.getItem = originalGetItem;
   });
 });

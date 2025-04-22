@@ -4,17 +4,17 @@ import { Book, Laptop2, Plane, CreditCard, ShieldCheck, Phone, HelpCircle, Ban, 
 import { useRouter } from "next/router";
 
 export default function Resources() {
-  const router = useRouter(); 
+  const router = useRouter();
   const handleLogout = () => {
-      localStorage.removeItem("loggedIn");
-      localStorage.removeItem("username");
-      localStorage.removeItem("avatar");
-    
-      try {
-        router.push("/login");
-      } catch (err) {
-        console.error("Logout redirect failed:", err);
-      }
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("avatar");
+
+    try {
+      router.push("/login");
+    } catch (err) {
+      console.error("Logout redirect failed:", err);
+    }
   };
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -72,24 +72,15 @@ export default function Resources() {
               <li className="flex items-start space-x-4">
                 <Book className="w-8 h-8 text-blue-600 flex-shrink-0" />
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">Employee Handbook</p>
-                  <p className="text-gray-600">Last updated… probably recently. Contains legally binding rules you will definitely follow.</p>
+                  <a href="/employee-handbook.pdf" target="_blank" rel="noopener noreferrer">
+                    <p className="text-lg font-semibold text-blue-700 hover:underline">Employee Handbook</p>
+                  </a>
+                  <p className="text-gray-600">
+                    Last updated… probably recently. Contains legally binding rules you will definitely follow.
+                  </p>
                 </div>
               </li>
-              <li className="flex items-start space-x-4">
-                <Laptop2 className="w-8 h-8 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="text-lg font-semibold text-gray-800">IT Support Portal</p>
-                  <p className="text-gray-600">Service requests typically disappear into the void within 3-5 business days.</p>
-                </div>
-              </li>              
-              <li className="flex items-start space-x-4">
-                <CreditCard className="w-8 h-8 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="text-lg font-semibold text-gray-800">Expense Reimbursement</p>
-                  <p className="text-gray-600">Receipts required. Just don’t ask where the reimbursement funds come from.</p>
-                </div>
-              </li>
+
             </ul>
           </div>
 
@@ -100,22 +91,36 @@ export default function Resources() {
               <li className="flex items-start space-x-4">
                 <ShieldCheck className="w-8 h-8 text-green-600 flex-shrink-0" />
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">Security Guidelines</p>
-                  <p className="text-gray-600">Includes critical rules like "Don't let strangers in" and "Change your password when threatened."</p>
+                  <a href="/security-guidelines.pdf" target="_blank" rel="noopener noreferrer">
+                    <p className="text-lg font-semibold text-green-700 hover:underline">Security Guidelines</p>
+                  </a>
+                  <p className="text-gray-600">
+                    Includes critical rules like "Don't let strangers in" and "Change your password when threatened."
+                  </p>
                 </div>
               </li>
+
               <li className="flex items-start space-x-4">
                 <Ban className="w-8 h-8 text-green-600 flex-shrink-0" />
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">Incident Handling</p>
-                  <p className="text-gray-600">If a security breach occurs, refer to our Deny Everything™ protocol.</p>
+                  <a href="/incident-handling.pdf" target="_blank" rel="noopener noreferrer">
+                    <p className="text-lg font-semibold text-green-700 hover:underline">Incident Handling</p>
+                  </a>
+                  <p className="text-gray-600">
+                    If a security breach occurs, refer to our Deny Everything™ protocol.
+                  </p>
                 </div>
               </li>
+
               <li className="flex items-start space-x-4">
                 <Phone className="w-8 h-8 text-green-600 flex-shrink-0" />
                 <div>
-                  <p className="text-lg font-semibold text-gray-800">Emergency Contacts</p>
-                  <p className="text-gray-600">All emergency calls are redirected to Greg, our IT guy. Good luck.</p>
+                  <a href="/emergency-contacts.pdf" target="_blank" rel="noopener noreferrer">
+                    <p className="text-lg font-semibold text-green-700 hover:underline">Emergency Contacts</p>
+                  </a>
+                  <p className="text-gray-600">
+                    All emergency calls are redirected to Greg, our IT guy. Good luck.
+                  </p>
                 </div>
               </li>
             </ul>
