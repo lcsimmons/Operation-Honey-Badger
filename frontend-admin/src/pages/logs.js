@@ -87,8 +87,10 @@ export default function Logs() {
                 };
             });
             
-            setLogs(transformedLogs);
-            setFilteredLogs(transformedLogs);
+            const sortedLogs = transformedLogs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            setLogs(sortedLogs);
+            setFilteredLogs(sortedLogs);
         } catch (error) {
             console.error('Error fetching logs:', error);
             setLogs(mockLogs);

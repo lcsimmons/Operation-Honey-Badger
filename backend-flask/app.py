@@ -310,134 +310,134 @@ def test_generate_json():
     
     return jsonify({"attacker_log": attacker_json}), 200
 
-# @app.route('/api/generate_narrative_report', methods=['GET'])
-# def generate_narrative_report():
-#     attacker_id = request.args.get("attacker_id")
-#     start_date = request.args.get("start_date")
-#     end_date = request.args.get("end_date")
+@app.route('/api/generate_narrative_report', methods=['GET'])
+def generate_narrative_report():
+    attacker_id = request.args.get("attacker_id")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
 
-#     if not attacker_id:
-#         return jsonify({"error": "attacker_id is required"}), 400
+    if not attacker_id:
+        return jsonify({"error": "attacker_id is required"}), 400
 
-#     try:
-#         conn = get_db_connection()
-#         cur = conn.cursor()
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
 
-#         query = """
-#             SELECT a.gemini_response
-#             FROM attack a
-#             JOIN honeypot_session s ON a.session_id = s.session_id
-#             WHERE s.attacker_id = %s
-#         """
-#         params = [attacker_id]
+        query = """
+            SELECT a.gemini_response
+            FROM attack a
+            JOIN honeypot_session s ON a.session_id = s.session_id
+            WHERE s.attacker_id = %s
+        """
+        params = [attacker_id]
 
-#         if start_date and end_date:
-#             query += " AND a.timestamp BETWEEN %s AND %s"
-#             params.extend([start_date, end_date])
+        if start_date and end_date:
+            query += " AND a.timestamp BETWEEN %s AND %s"
+            params.extend([start_date, end_date])
 
-#         query += " ORDER BY a.timestamp"
+        query += " ORDER BY a.timestamp"
 
-#         cur.execute(query, params)
-#         responses = [row[0] for row in cur.fetchall() if row[0]]
-#         cur.close()
-#         conn.close()
+        cur.execute(query, params)
+        responses = [row[0] for row in cur.fetchall() if row[0]]
+        cur.close()
+        conn.close()
 
-#         if not responses:
-#             return jsonify({"error": "No Gemini responses found for this attacker"}), 404
+        if not responses:
+            return jsonify({"error": "No Gemini responses found for this attacker"}), 404
 
-#         # Format responses into a single narrative prompt
-#         joined_responses = "\n".join(responses)
+        # Format responses into a single narrative prompt
+        joined_responses = "\n".join(responses)
 
-#         prompt = (
-#             f"""You are a threat intelligence analyst. Review the following AI-assessed attack interactions and craft a coherent narrative summary.
+        prompt = (
+            f"""You are a threat intelligence analyst. Review the following AI-assessed attack interactions and craft a coherent narrative summary.
 
-# Each entry represents Gemini's previous analysis of a specific attacker action or payload.
+Each entry represents Gemini's previous analysis of a specific attacker action or payload.
 
-# Focus your narrative on behavioral trends, attack techniques, and potential objectives. Avoid repeating every detail; summarize meaningfully.
+Focus your narrative on behavioral trends, attack techniques, and potential objectives. Avoid repeating every detail; summarize meaningfully.
 
-# Entries:
-# {joined_responses}
+Entries:
+{joined_responses}
 
-# Narrative Summary:"""
-#         )
+Narrative Summary:"""
+        )
         
-#         response = gemini_client.models.generate_content(
-#             model="gemini-1.5-flash",
-#             contents=prompt
-#         )
+        response = gemini_client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
 
-#         # Store in soc_dashboard
-#         conn = get_db_connection()
-#         cur = conn.cursor()
+        # Store in soc_dashboard
+        conn = get_db_connection()
+        cur = conn.cursor()
 
-#         # Get the most recent session_id for this attacker
-#         cur.execute("""
-#             SELECT s.session_id
-#             FROM honeypot_session s
-#             WHERE s.attacker_id = %s
-#             ORDER BY s.last_seen DESC
-#             LIMIT 1
-#         """, (attacker_id,))
-#         session_result = cur.fetchone()
+        # Get the most recent session_id for this attacker
+        cur.execute("""
+            SELECT s.session_id
+            FROM honeypot_session s
+            WHERE s.attacker_id = %s
+            ORDER BY s.last_seen DESC
+            LIMIT 1
+        """, (attacker_id,))
+        session_result = cur.fetchone()
 
-#         if not session_result:
-#             return jsonify({"error": "No session found for this attacker"}), 404
+        if not session_result:
+            return jsonify({"error": "No session found for this attacker"}), 404
 
-#         session_id = session_result[0]
+        session_id = session_result[0]
 
-#         # Insert the report into soc_dashboard
-#         cur.execute("""
-#             INSERT INTO soc_dashboard (session_id, severity, summary, affected_components, report)
-#             VALUES (%s, %s, %s, %s, %s)
-#         """, (
-#             session_id,
-#             1,  # Placeholder severity
-#             response.text,
-#             'N/A',  # Placeholder for affected components
-#             response.text  # Using same text for now
-#         ))
+        # Insert the report into soc_dashboard
+        cur.execute("""
+            INSERT INTO soc_dashboard (session_id, severity, summary, affected_components, report)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            session_id,
+            1,  # Placeholder severity
+            response.text,
+            'N/A',  # Placeholder for affected components
+            response.text  # Using same text for now
+        ))
 
-#         conn.commit()
-#         cur.close()
-#         conn.close()
+        conn.commit()
+        cur.close()
+        conn.close()
 
-#         return jsonify({
-#             "attacker_id": attacker_id,
-#             "session_id": session_id,
-#             "narrative_summary": gemini_output.text
-#         })
+        return jsonify({
+            "attacker_id": attacker_id,
+            "session_id": session_id,
+            "narrative_summary": response.text
+        })
 
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
         
 
-# # Joins soc_dashboard with honeypot_session to access report metadata and attacker_id
-# # Retrieves the most recent reports with timestamps
-# # Returns data formatted for frontend use        
-# @app.route('/api/reports', methods=['GET'])
-# def get_reports():
-#     try:
-#         conn = get_db_connection()
-#         print(f"[DEBUG] DB Connection: {conn}") # DEBUG
-#         cur = conn.cursor(cursor_factory=DictCursor)
+# Joins soc_dashboard with honeypot_session to access report metadata and attacker_id
+# Retrieves the most recent reports with timestamps
+# Returns data formatted for frontend use        
+@app.route('/api/reports', methods=['GET'])
+def get_reports():
+    try:
+        conn = get_db_connection()
+        print(f"[DEBUG] DB Connection: {conn}") # DEBUG
+        cur = conn.cursor(cursor_factory=DictCursor)
 
-#         cur.execute("""
-#             SELECT s.session_id, s.attacker_id, d.report_id, d.summary, d.severity, d.created_at
-#             FROM soc_dashboard d
-#             JOIN honeypot_session s ON s.session_id = d.session_id
-#             ORDER BY d.created_at DESC
-#         """)
+        cur.execute("""
+            SELECT s.session_id, s.attacker_id, d.report_id, d.summary, d.severity, d.created_at
+            FROM soc_dashboard d
+            JOIN honeypot_session s ON s.session_id = d.session_id
+            ORDER BY d.created_at DESC
+        """)
 
-#         rows = cur.fetchall()
-#         cur.close()
-#         conn.close()
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
 
-#         reports = [dict(row) for row in rows]
+        reports = [dict(row) for row in rows]
 
-#         return jsonify({ "reports": reports })
+        return jsonify({ "reports": reports })
 
-#     except Exception as e:
-#         return jsonify({ "error": str(e) }), 500
+    except Exception as e:
+        return jsonify({ "error": str(e) }), 500
 
 #initialize the in memory database
 with app.app_context():
