@@ -57,8 +57,8 @@ export default function Reports() {
 	// Fetching reports for Reports Page
 	const fetchReportsFromBackend = async () => {
 	  try {
-		// const res = await fetch('/api/reports');
-		const res = await fetch('http://localhost:5000/api/reports'); // set for local testing
+		const res = await fetch('/api/reports');
+		// const res = await fetch('http://localhost:5000/api/reports'); // set for local testing
 		const data = await res.json();
 
 		if (data.reports && Array.isArray(data.reports)) {
@@ -805,8 +805,8 @@ export default function Reports() {
                                         setReportHTML("");  // Clear previous content
 
                                         try {
-                                            // const res = await fetch("/api/generate_narrative_report?attacker_id=" + attackerIdInput);
-											const res = await fetch("http://localhost:5000/api/generate_narrative_report?attacker_id=" + attackerIdInput); // changed for local testing
+                                            const res = await fetch("/api/generate_narrative_report?attacker_id=" + attackerIdInput);
+											// const res = await fetch("http://localhost:5000/api/generate_narrative_report?attacker_id=" + attackerIdInput); // changed for local testing
                                             const data = await res.json();
 
                                             if (res.ok) {
