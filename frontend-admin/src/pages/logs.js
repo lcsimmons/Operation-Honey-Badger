@@ -158,9 +158,16 @@ export default function Logs() {
     return `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 
-    const barChartData = Object.keys(logsByTimestamp).map((key) => ({
-        time: adjustTimeForDisplay(key),
-        count: logsByTimestamp[key],
+    const barChartData = Object.keys(logsByTimestamp)
+    .sort((a, b) => {
+    // Convert HH:MM back to minutes for comparison
+    const [ah, am] = a.split(":").map(Number);
+    const [bh, bm] = b.split(":").map(Number);
+    return (ah * 60 + am) - (bh * 60 + bm);
+    })
+    .map((key) => ({
+    time: adjustTimeForDisplay(key),
+    count: logsByTimestamp[key],
     }));
 
     // Search Functionality
@@ -216,7 +223,7 @@ export default function Logs() {
                     <h2 className="text-lg font-bold">{uiText.chartTitle}</h2>
                     <ResponsiveContainer width="100%" height={150}>
                         <BarChart data={barChartData}>
-                            <XAxis dataKey="time" />
+                            <XAxis dataKey="time"/>
                             <YAxis />
                             <Tooltip />
                             <Bar dataKey="count" fill="#0088FE" />
