@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import Sidebar from "../components/sidebar";
 import ThreadedReplies from "../components/ThreadedReplies";
 import EmojiReactions from "../components/EmojiReactions";
-import FileUpload from "../components/FileUpload";
 import ReportButton from "../components/ReportButton";
 import PinnedPosts from "../components/PinnedPosts";
 import Search from "../components/Search";
@@ -114,8 +113,6 @@ export default function Forum() {
     }
   }, [category]);
 
-  const [uploadedFile, setUploadedFile] = useState(null);
-
   const base64Encode = (str) => {
     return btoa(new TextEncoder().encode(str).reduce((data, byte) => data + String.fromCharCode(byte), ""));
   };
@@ -146,7 +143,6 @@ export default function Forum() {
 
         setPosts([newPost, ...posts]);
         setCommentText("");
-        setUploadedFile(null);
       } else {
         console.error("Failed to create post");
       }
@@ -243,7 +239,6 @@ export default function Forum() {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
             />
-            <FileUpload setUploadedFile={setUploadedFile} />
             <button
               onClick={handlePostSubmit}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
@@ -272,23 +267,6 @@ export default function Forum() {
 
                   <h3 className="text-lg text-black font-bold mt-2">{post.title}</h3>
                   <p className="text-gray-900 mt-1">{post.description}</p>
-
-                  {post.file && (
-                    <div className="mt-2">
-                      {[".jpg", ".jpeg", ".png", ".gif"].some((ext) => post.file.includes(ext)) ? (
-                        <img src={post.file} alt="Uploaded" className="w-full max-w-xs rounded-md mt-2" />
-                      ) : (
-                        <a
-                          href={post.file}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500"
-                        >
-                          📂 View Attachment
-                        </a>
-                      )}
-                    </div>
-                  )}
 
                   {/* <EmojiReactions postId={post.forum_id} posts={posts} setPosts={setPosts} /> */}
                   <div className="mt-2 flex items-center space-x-2 text-sm text-gray-700 cursor-pointer hover:text-blue-600"
