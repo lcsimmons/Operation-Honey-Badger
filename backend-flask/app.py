@@ -1,6 +1,6 @@
 import base64
 from flask import Flask, jsonify, request, g
-import google.generativeai as genai
+import google as genai
 from dotenv import load_dotenv
 load_dotenv(".env") # Load .env variables at startup
 from unittest.mock import MagicMock
@@ -25,11 +25,13 @@ CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET"
 from honeypot_endpoints import register_honeypot_routes
 from soc_admin import register_soc_admin_routes
 
-from gemini import analyze_payload
+from gemini import analyze_payload, init_gemini
 
 # Register routes
 register_honeypot_routes(app)
 register_soc_admin_routes(app)
+
+gemini_client = init_gemini()
 
 def temp_payload_analysis(ioc_list, request):
     # Check request data for suspicious patterns
@@ -358,9 +360,11 @@ Entries:
 
 Narrative Summary:"""
         )
-
-        model = gemini_client.GenerativeModel('gemini-1.5-flash')
-        gemini_output = model.generate_content(prompt)
+        
+        response = gemini_client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
 
         # Store in soc_dashboard
         conn = get_db_connection()
@@ -388,9 +392,9 @@ Narrative Summary:"""
         """, (
             session_id,
             1,  # Placeholder severity
-            gemini_output.text,
+            response.text,
             'N/A',  # Placeholder for affected components
-            gemini_output.text  # Using same text for now
+            response.text  # Using same text for now
         ))
 
         conn.commit()
@@ -400,7 +404,7 @@ Narrative Summary:"""
         return jsonify({
             "attacker_id": attacker_id,
             "session_id": session_id,
-            "narrative_summary": gemini_output.text
+            "narrative_summary": response.text
         })
 
     except Exception as e:
