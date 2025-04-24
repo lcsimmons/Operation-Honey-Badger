@@ -340,11 +340,10 @@ def attacker_engagement(attacker_id=None):
 
     SELECT
         DATE(hs.first_seen) AS day,
-        hs.attacker_id,
         COUNT(*) AS occurrences
     FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
-    GROUP BY day, session_id, hs.attacker_id
-    ORDER BY day, session_id, hs.attacker_id LIMIT 10;
+    GROUP BY day
+    ORDER BY day DESC LIMIT 5;
 
     """
     cur.execute(
