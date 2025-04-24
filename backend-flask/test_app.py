@@ -747,7 +747,7 @@ def test_attack_type_report(mock_aggregate_attack, client):
     assert response.status_code == 200
     assert response.get_json() == expected_data
 
-@patch('soc_admin.attacker_engagement')
+@patch('soc_admin.total_attacker_engagement')
 def test_attacker_engagement_report(mock_attacker_engagement, client):
     """Test the attacker engagement report with attacker_id."""
     # Set up mock data
@@ -758,7 +758,7 @@ def test_attacker_engagement_report(mock_attacker_engagement, client):
     mock_attacker_engagement.return_value = expected_data
     
     # Test with attacker_id parameter
-    response = client.get('/soc-admin/dashboard/attacker_engagement?attacker_id=1')
+    response = client.get('/soc-admin/dashboard/total_attacker_engagement?attacker_id=1')
     
     # Check response
     assert response.status_code == 200
