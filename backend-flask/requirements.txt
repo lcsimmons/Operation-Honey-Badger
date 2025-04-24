@@ -12,3 +12,4 @@ geocoder
 gunicorn
 python-dotenv
 ipinfo
+google-generativeai

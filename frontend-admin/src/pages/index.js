@@ -130,7 +130,7 @@ export default function Dashboard() {
     {
       name: "Attacker IPs & Attacker OS",
       render: <AttackerIPsAndAttackerOS />,
-      className: "col-span-2 row-span-2 bg-white/40 p-6 rounded-lg shadow-md"
+      className: "col-span-2 row-span-1 bg-white/40 p-6 rounded-lg shadow-md"
     },
     {
       name: "Attacker Geolocation",
@@ -158,7 +158,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="flex-1 text-black ml-20 transition-all duration-300">
         {/* TopBar */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg m-4">
+        <div className="flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-4 mx-4 mb-0">
           <h1 className="font-semibold">
             Operation Honey Badger: <span className="font-bold">Admin Dashboard</span>
           </h1>
@@ -175,8 +175,6 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Help Icon */}
-          <HelpCircle size={24} className="cursor-pointer text-gray-500 hover:text-black" />
         </div>
 
         {/* Dashboard Content */}
@@ -261,10 +259,6 @@ const RecentReportsAndReportSeverity = () => (
     <div className="flex flex-col items-center">
       <h2 className=" font-bold">Recent Reports</h2>
       <p className="text-8xl text-black mt-2">8</p>
-    </div>
-    <div className="flex flex-col items-center mt-6">
-      <h2 className=" font-bold">Report Severity</h2>
-      <p className="text-8xl text-red-600 mt-2">High</p>
     </div>
   </div>
 );
@@ -437,22 +431,22 @@ const AttackerIPsAndAttackerOS = () => {
   }, []);
 
   return (
-    <div className="flex justify-between gap-6 h-full">
+    <div className="flex justify-between gap-6">
       {/* Attacker IPs */}
-      <div className="flex flex-col items-center w-1/2 h-full">
-        <h3 className="text-3xl font-bold mb-4">Attacker IPs</h3>
+      <div className="flex flex-col w-1/2">
+        <h2 className="font-bold text-left">Attacker IP</h2>
         {loading ? (
           <p>Loading...</p>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
                   data={ipData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
-                  outerRadius={100}
+                  outerRadius={90}
                   paddingAngle={3}
                   dataKey="value"
                 >
@@ -463,7 +457,7 @@ const AttackerIPsAndAttackerOS = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1">
               {ipData.map((entry, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <div
@@ -479,20 +473,20 @@ const AttackerIPsAndAttackerOS = () => {
       </div>
 
       {/* Attacker OS */}
-      <div className="flex flex-col items-center w-1/2 h-full">
-        <h3 className="text-3xl font-bold mb-4">Attacker OS</h3>
+      <div className="flex flex-col w-1/2">
+        <h2 className="font-bold text-left">Attacker OS</h2>
         {loading ? (
           <p>Loading...</p>
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={180}>
               <PieChart>
                 <Pie
                   data={osData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
-                  outerRadius={100}
+                  outerRadius={90}
                   paddingAngle={3}
                   dataKey="value"
                 >
@@ -503,7 +497,7 @@ const AttackerIPsAndAttackerOS = () => {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1">
               {osData.map((entry, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <div
