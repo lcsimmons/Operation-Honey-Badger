@@ -175,8 +175,6 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Help Icon */}
-          <HelpCircle size={24} className="cursor-pointer text-gray-500 hover:text-black" />
         </div>
 
         {/* Dashboard Content */}
@@ -261,10 +259,6 @@ const RecentReportsAndReportSeverity = () => (
     <div className="flex flex-col items-center">
       <h2 className=" font-bold">Recent Reports</h2>
       <p className="text-8xl text-black mt-2">8</p>
-    </div>
-    <div className="flex flex-col items-center mt-6">
-      <h2 className=" font-bold">Report Severity</h2>
-      <p className="text-8xl text-red-600 mt-2">High</p>
     </div>
   </div>
 );
