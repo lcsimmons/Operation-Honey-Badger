@@ -208,14 +208,6 @@ export default function Logs() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="flex space-x-4">
-                        <button className="flex items-center bg-gray-200 px-3 py-2 rounded-md">
-                            <Filter size={16} className="mr-2" /> {uiText.filter}
-                        </button>
-                        <button className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md">
-                            <Download size={16} className="mr-2" /> {uiText.exportLogs}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Bar Chart - Logs Per Timestamp */}
