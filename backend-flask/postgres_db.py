@@ -334,7 +334,7 @@ def total_attacker_count():
 def attacker_engagement(attacker_id=None):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
-    
+    query_wrap = "SELECT * from ({}) ORDER BY day ASC;"
     query_db = """
 
     SELECT
@@ -348,15 +348,18 @@ def attacker_engagement(attacker_id=None):
     params = ()
 
     if attacker_id:
-        query_db += " WHERE  hs.attacker_id = %s "
+        query_db += " WHERE hs.attacker_id = %s "
         params = (attacker_id,)
 
     query_db += """
         GROUP BY day, hs.attacker_id
         ORDER BY day DESC, hs.attacker_id LIMIT 5;
     """
+
+    query_wrap.format(query_db)
+
     cur.execute(
-        query_db,
+        query_wrap,
         params
     )
 
@@ -374,6 +377,7 @@ def total_attacker_engagement(attacker_id=None):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
 
+    # query_wrap = "SELECT * from ({}) ORDER BY day ASC;".format(query_db)
     
     query_db = """
 
@@ -392,11 +396,16 @@ def total_attacker_engagement(attacker_id=None):
     
     query_db += """
         GROUP BY day
-        ORDER BY day DESC LIMIT 5;
+        ORDER BY day DESC LIMIT 5
     """
 
+    # query_wrap.format(query_db)
+    query_wrap = "SELECT * from ({}) ORDER BY day ASC;".format(query_db)
+
+    print(query_wrap)
+
     cur.execute(
-        query_db,
+        query_wrap,
         params
     )
 
@@ -404,6 +413,31 @@ def total_attacker_engagement(attacker_id=None):
 
     if res:
         res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def total_report_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+    query_db = """
+
+    SELECT
+        COUNT(*)
+    FROM soc_dashboard;
+
+    """
+
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchone()
+
+    if res:
+        res = dict(res)
 
     print(res)
     conn.commit()
