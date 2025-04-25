@@ -87,8 +87,10 @@ export default function Logs() {
                 };
             });
             
-            setLogs(transformedLogs);
-            setFilteredLogs(transformedLogs);
+            const sortedLogs = transformedLogs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            setLogs(sortedLogs);
+            setFilteredLogs(sortedLogs);
         } catch (error) {
             console.error('Error fetching logs:', error);
             setLogs(mockLogs);
@@ -158,9 +160,16 @@ export default function Logs() {
     return `${String(adjustedHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 
-    const barChartData = Object.keys(logsByTimestamp).map((key) => ({
-        time: adjustTimeForDisplay(key),
-        count: logsByTimestamp[key],
+    const barChartData = Object.keys(logsByTimestamp)
+    .sort((a, b) => {
+    // Convert HH:MM back to minutes for comparison
+    const [ah, am] = a.split(":").map(Number);
+    const [bh, bm] = b.split(":").map(Number);
+    return (ah * 60 + am) - (bh * 60 + bm);
+    })
+    .map((key) => ({
+    time: adjustTimeForDisplay(key),
+    count: logsByTimestamp[key],
     }));
 
     // Search Functionality
@@ -201,14 +210,6 @@ export default function Logs() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="flex space-x-4">
-                        <button className="flex items-center bg-gray-200 px-3 py-2 rounded-md">
-                            <Filter size={16} className="mr-2" /> {uiText.filter}
-                        </button>
-                        <button className="flex items-center bg-blue-500 text-white px-3 py-2 rounded-md">
-                            <Download size={16} className="mr-2" /> {uiText.exportLogs}
-                        </button>
-                    </div>
                 </div>
 
                 {/* Bar Chart - Logs Per Timestamp */}
@@ -216,7 +217,7 @@ export default function Logs() {
                     <h2 className="text-lg font-bold">{uiText.chartTitle}</h2>
                     <ResponsiveContainer width="100%" height={150}>
                         <BarChart data={barChartData}>
-                            <XAxis dataKey="time" />
+                            <XAxis dataKey="time"/>
                             <YAxis />
                             <Tooltip />
                             <Bar dataKey="count" fill="#0088FE" />
