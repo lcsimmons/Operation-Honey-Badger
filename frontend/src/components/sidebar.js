@@ -12,7 +12,7 @@ export default function Sidebar({ selectedCategory }) {
         <ul className="space-y-3">
           <li>
             <Link
-              href="/forum"
+               href={{ pathname: "/forum", query: { category: "All" } }}
               className={`flex items-center gap-3 px-4 py-2 rounded-md font-medium transition duration-200 ${selectedCategory === "All" ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-200"
                 }`}
             >

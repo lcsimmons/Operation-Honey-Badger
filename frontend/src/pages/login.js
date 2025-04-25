@@ -67,6 +67,8 @@ export default function Login() {
         router.push("/forum");
       } else {
         setError("Invalid username or password. Please try again.");
+        await sleep(3000);
+        setError("");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
@@ -83,6 +85,8 @@ export default function Login() {
 
   const [questionId, setQuestionId] = useState(null);
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const fetchSecurityQuestion = async () => {
     try {
       const res = await apiFetchSecurityQuestion(username);
@@ -96,7 +100,9 @@ export default function Login() {
         setResetError("No security questions found for this username.");
       }
     } catch {
-      setResetError("Error retrieving security question.");
+      setResetError("Error: Username not found.");
+      await sleep(3000);
+      setResetError("");
     }
     
   };
@@ -105,7 +111,7 @@ export default function Login() {
   const validateSecurityAnswer = async () => {
     try {
       const res = await apiValidateSecurityAnswer({ username, questionId, securityAnswer });
-
+      setResetError("");
       if (res.data.message?.includes("validated")) {
         setShowPasswordReset(true);
         setResetError("");
