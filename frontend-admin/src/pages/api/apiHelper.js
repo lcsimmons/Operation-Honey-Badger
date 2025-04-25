@@ -64,12 +64,23 @@ export const getBrowsersUsed = async () => {
 export const getEngagementTime = async (attackerId = null) => {
     const param = attackerId ? `?attacker_id=${attackerId}` : "";
     try {
-      const res = await axios.get(`${apiHost}/soc-admin/dashboard/attacker_engagement${param}`);
+      const res = await axios.get(`${apiHost}/soc-admin/dashboard/total_attacker_engagement${param}`);
       return res.data;
     } catch (err) {
       console.error("Error fetching engagement time:", err);
       return null;
     }
+};
+
+export const getEngagementTimeByAttacker = async (attackerId = null) => {
+  const param = attackerId ? `?attacker_id=${attackerId}` : "";
+  try {
+    const res = await axios.get(`${apiHost}/soc-admin/dashboard/attacker_engagement${param}`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching engagement time:", err);
+    return null;
+  }
 };
   
 
