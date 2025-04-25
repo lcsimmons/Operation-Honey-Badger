@@ -729,7 +729,7 @@ export default function Reports() {
                     </div> */}
 
 
-                    <HelpCircle size={24} className="cursor-pointer text-gray-500 hover:text-black" />
+                   
                 </div>
 
                 {/* Reports Section */}

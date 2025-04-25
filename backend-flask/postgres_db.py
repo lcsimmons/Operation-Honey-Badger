@@ -338,7 +338,6 @@ def total_attacker_count():
 def attacker_engagement(attacker_id=None):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
-
     
     query_db = """
 
@@ -347,12 +346,62 @@ def attacker_engagement(attacker_id=None):
         hs.attacker_id,
         COUNT(*) AS occurrences
     FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
-    GROUP BY day, session_id, hs.attacker_id
-    ORDER BY day, session_id, hs.attacker_id LIMIT 10;
 
     """
+
+    params = ()
+
+    if attacker_id:
+        query_db += " WHERE  hs.attacker_id = %s "
+        params = (attacker_id,)
+
+    query_db += """
+        GROUP BY day, hs.attacker_id
+        ORDER BY day DESC, hs.attacker_id LIMIT 5;
+    """
     cur.execute(
-        query_db
+        query_db,
+        params
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def total_attacker_engagement(attacker_id=None):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    
+    query_db = """
+
+    SELECT
+        DATE(hs.first_seen) AS day,
+        COUNT(*) AS occurrences
+    FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
+
+    """
+
+    params = ()
+
+    if attacker_id:
+        query_db += "WHERE  hs.attacker_id = %s "
+        params = (attacker_id,)
+    
+    query_db += """
+        GROUP BY day
+        ORDER BY day DESC LIMIT 5;
+    """
+
+    cur.execute(
+        query_db,
+        params
     )
 
     res = cur.fetchall()
