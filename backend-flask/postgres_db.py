@@ -297,7 +297,11 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
     if category not in curr_categories:
         raise Exception("Incorrect Column")
     
-    query_db = "Select {}, count({}) from attacker group by {} LIMIT 5".format(category, category, category)
+    if category != "os":
+        query_db = "Select {}, count({}) from attacker group by {} LIMIT 5".format(category, category, category)
+    else:
+        query_db = '''Select {}, count({}) from attacker where {} not in ('Other', 'Unknown') group by {} order by count({}) desc
+        LIMIT 5;'''.format(category, category, category)
     cur.execute(
         query_db
     )
