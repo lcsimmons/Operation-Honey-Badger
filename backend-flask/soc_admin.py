@@ -1,7 +1,7 @@
 
 # from __main__ import app
 from flask import jsonify, request
-from postgres_db import get_db_connection, aggregate_attack_by_type, aggregate_attacker_by_type, total_attacker_engagement, attacker_engagement, total_attacker_count
+from postgres_db import get_db_connection, aggregate_attack_by_type, aggregate_attacker_by_type, total_attacker_engagement, attacker_engagement, total_attacker_count, total_report_count
 
 #API Endpoints for SOC Admin frontend
 def register_soc_admin_routes(app):
@@ -154,3 +154,11 @@ def register_soc_admin_routes(app):
         except Exception as e:
             print(e)
             return jsonify({"error": f"Database error: {str(e)}"}), 500
+    @app.route('/soc-admin/dashboard/total_reports_generated', methods=['GET'])
+    def total_reports_generated():
+        try:
+            res = total_report_count()
+            return jsonify(res)
+        except Exception as e:
+            print(e)
+    

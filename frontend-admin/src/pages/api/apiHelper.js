@@ -81,5 +81,15 @@ export const getEngagementTimeByAttacker = async (attackerId = null) => {
     return null;
   }
 };
+
+export const getTotalReportsGenerated = async () => {
+  try {
+    const res = await axios.get(`${apiHost}/soc-admin/dashboard/total_reports_generated`);
+    return res;
+  } catch (err) {
+    console.error("Error fetching total reports count:", err);
+    return null;
+  }
+};
   
 
