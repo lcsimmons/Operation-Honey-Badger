@@ -332,17 +332,27 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
         query_db = """
             SELECT {0}, COUNT({0}) as count
             FROM attacker
-            WHERE {0} IS NOT NULL AND {0} NOT IN ('127.0.0.1', 'localhost')
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('127.0.0.1', 'localhost', 'Other, 'Unknown', 'unknown')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    elif category == "os":
+        # Include Other & Unknown for OS
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL
             GROUP BY {0}
             ORDER BY COUNT({0}) DESC
             LIMIT 5
         """.format(category)
     else:
-        # Standard query with ordering by count and null check
+        # Standard query with ordering by count and null/unkown/other check
         query_db = """
             SELECT {0}, COUNT({0}) as count
             FROM attacker
-            WHERE {0} IS NOT NULL
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('Other', 'other', 'Unknown', 'unknown')
             GROUP BY {0}
             ORDER BY COUNT({0}) DESC
             LIMIT 5
