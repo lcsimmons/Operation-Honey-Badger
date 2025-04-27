@@ -332,7 +332,7 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
         query_db = """
             SELECT {0}, COUNT({0}) as count
             FROM attacker
-            WHERE {0} IS NOT NULL AND {0} NOT IN ('127.0.0.1', 'localhost', 'Other, 'Unknown', 'unknown')
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('127.0.0.1', 'localhost', 'Other', 'Unknown', 'unknown')
             GROUP BY {0}
             ORDER BY COUNT({0}) DESC
             LIMIT 5
