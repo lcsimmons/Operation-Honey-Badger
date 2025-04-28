@@ -253,19 +253,46 @@ def update_attack_command(attacker_command):
 
 #aggregate functions for the soc admin 
 # -- attack table
-def aggregate_attack_by_type(category="request_url", selection=""):
+def aggregate_attack_by_type(category="owasp_technique"):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    curr_categories = ['request_url', 'owasp_technique', 'ioc', 'gemini_response', 'timestamp']
+    curr_categories = ["attack_id", 
+                       "session_id", 
+                       "request_url", 
+                       "interaction_type", 
+                       "owasp_technique", 
+                       "ioc", 
+                       "gemini_response", 
+                       "timestamp"]
 
     if category not in curr_categories:
         raise Exception("Incorrect Column")
     
-    query_db = "Select {}, count({}) from attack group by {} LIMIT 5".format(category, category, category)
-    cur.execute(
-        query_db
-    )
+    # Customize query based on category
+    if category == "owasp_technique":
+        # Exclude "No Attack Vector" and "No attack Vector"
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attack
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('No Attack Vector', 'No attack vector')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    else:
+        # Standard query with ordering by count and null check
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attack
+            WHERE {0} IS NOT NULL
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    
+    # Execute the query
+    cur.execute(query_db)
 
     res = cur.fetchall()
 
@@ -283,28 +310,56 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
     cur = conn.cursor(cursor_factory=DictCursor)
 
     curr_categories = ["attacker_id",
-                        "ip_address",
-                        "user_agent" ,
-                        "device_fingerprint",
-                        "geolocation",
-                        "browser",       
-                        "os",                 
-                        "device_type",        
-                        "is_bot",        
-                        "last_seen",
-                        "first_seen"]
+                       "ip_address",
+                       "user_agent",
+                       "device_fingerprint",
+                       "geolocation",
+                       "browser",
+                       "os",
+                       "device_type",
+                       "is_bot",
+                       "last_seen",
+                       "first_seen",
+                       "owasp_technique",
+                       "request_url"]
 
     if category not in curr_categories:
         raise Exception("Incorrect Column")
-    
-    if category != "os":
-        query_db = "Select {}, count({}) from attacker group by {} LIMIT 5".format(category, category, category)
+
+    # Customize query based on category
+    if category == "ip_address":
+        # Exclude localhost and 127.0.0.1
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('127.0.0.1', 'localhost', 'Other', 'Unknown', 'unknown')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    elif category == "os":
+        # Include Other & Unknown for OS
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
     else:
-        query_db = '''Select {}, count({}) from attacker where {} not in ('Other', 'Unknown') group by {} order by count({}) desc
-        LIMIT 5;'''.format(category, category, category)
-    cur.execute(
-        query_db
-    )
+        # Standard query with ordering by count and null/unkown/other check
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('Other', 'other', 'Unknown', 'unknown')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+
+    # Execute the query
+    cur.execute(query_db)
 
     res = cur.fetchall()
 
@@ -315,6 +370,7 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
     conn.commit()
     cur.close()
     return res
+
 
 def total_attacker_count():
     conn = get_db_connection()

@@ -341,13 +341,16 @@ const BarCharts = () => {
           <BarChart data={engagementData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [`${value}`, 'Total Sessions']}
+              labelFormatter={(label) => label}
+            />
             <Bar dataKey="value" fill={COLORS[0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
 
-      <h2 className=" font-bold mt-6 mb-2">Pages Targeted</h2>
+      <h2 className=" font-bold mt-4 mb-2">Endpoints Targeted</h2>
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -355,7 +358,10 @@ const BarCharts = () => {
           <BarChart data={pagesData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
             <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [`${value}`, 'Count']}
+              labelFormatter={(label) => label}
+            />
             <Bar dataKey="value" fill={COLORS[1]} />
           </BarChart>
         </ResponsiveContainer>
@@ -369,7 +375,10 @@ const BarCharts = () => {
           <BarChart data={browserData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
             <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [`${value}`, 'Count']}
+              labelFormatter={(label) => label}
+            />
             <Bar dataKey="value" fill={COLORS[2]} />
           </BarChart>
         </ResponsiveContainer>
