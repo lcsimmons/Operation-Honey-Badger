@@ -34,7 +34,7 @@ export default function Settings() {
 
   useEffect(() => {
     const translateUIText = async () => {
-      if (language === 'en') return;
+      //if (language === 'en') return;
       const keys = Object.keys(uiText);
       const values = Object.values(uiText);
 
