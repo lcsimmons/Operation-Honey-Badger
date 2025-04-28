@@ -7,7 +7,7 @@ import WorldMap from "../components/WorldMap";
 import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useTextSize } from '@/context/TextSizeContext';
-import { getCommonExploits, getAttackerIP, getAttackerOS, getPagesTargeted, getBrowsersUsed, getEngagementTime } from './api/apiHelper';
+import { getCommonExploits, getAttackerIP, getAttackerOS, getPagesTargeted, getBrowsersUsed, getEngagementTime, getTotalReportsGenerated } from './api/apiHelper';
 
 const pieData = [
   { name: "Item 1", value: 20 },
@@ -254,14 +254,35 @@ const CommonExploits = () => {
 };
 
 {/* Recent Reports & Report Severity */ }
-const RecentReportsAndReportSeverity = () => (
-  <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col justify-between h-full">
-    <div className="flex flex-col items-center">
-      <h2 className=" font-bold">Recent Reports</h2>
-      <p className="text-8xl text-black mt-2">8</p>
+const RecentReportsAndReportSeverity = () => {
+  const [loading, setLoading] = useState(true);
+  const [recentReport, setRecentReport] = useState(0);
+
+  useEffect(() => {
+    const fetchRecentReportsCount = async () => {
+      const res = await getTotalReportsGenerated();
+      if (res && res.status === 200) {
+        const count = res.data.count;
+        setRecentReport(count);
+      } else {
+        console.error("Failed to fetch recent reports count:", res);
+      }
+      setLoading(false);
+    };
+
+    fetchRecentReportsCount();
+  }, []);
+
+  return (
+    <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col justify-between h-full">
+      <div className="flex flex-col items-center">
+        <h2 className=" font-bold">Recent Reports</h2>
+        {loading && ( <p className="text-center">Loading number of reports generated...</p>)}
+        {!loading && (<p className="text-8xl text-black mt-2">{recentReport}</p>)}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 
 // {/* Bar Charts */ }
@@ -320,13 +341,16 @@ const BarCharts = () => {
           <BarChart data={engagementData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [`${value}`, 'Total Sessions']}
+              labelFormatter={(label) => label}
+            />
             <Bar dataKey="value" fill={COLORS[0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
 
-      <h2 className=" font-bold mt-6 mb-2">Pages Targeted</h2>
+      <h2 className=" font-bold mt-4 mb-2">Endpoints Targeted</h2>
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -334,7 +358,10 @@ const BarCharts = () => {
           <BarChart data={pagesData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
             <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [`${value}`, 'Count']}
+              labelFormatter={(label) => label}
+            />
             <Bar dataKey="value" fill={COLORS[1]} />
           </BarChart>
         </ResponsiveContainer>
@@ -348,7 +375,10 @@ const BarCharts = () => {
           <BarChart data={browserData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
             <XAxis dataKey="name" interval={0} angle={-25} textAnchor="end" />
             <YAxis />
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [`${value}`, 'Count']}
+              labelFormatter={(label) => label}
+            />
             <Bar dataKey="value" fill={COLORS[2]} />
           </BarChart>
         </ResponsiveContainer>

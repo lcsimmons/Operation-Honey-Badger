@@ -17,8 +17,8 @@ countries.forEach((country) => {
 
 const COLOR_SCALE = [
   { min: 0, max: 0, color: "#EAEAEA" },
-  { min: 1, max: 5, color: "#4CAF50" },
-  { min: 6, max: 10, color: "#FFEB3B" },
+  { min: 1, max: 2, color: "#4CAF50" },
+  { min: 3, max: 10, color: "#FFEB3B" },
   { min: 11, max: 20, color: "#FF9800" },
   { min: 21, max: Infinity, color: "#FF5722" },
 ];
@@ -124,7 +124,7 @@ const WorldMap = () => {
         <button 
           onClick={fetchCountryData} 
           disabled={isRefreshing}
-          className="bg-purple-600 hover:bg-purple-700 text-white text-sm py-1 px-2 rounded flex items-center transition-colors"
+          className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-2 rounded flex items-center transition-colors"
         >
           {isRefreshing ? 'Refreshing...' : 'Refresh'}
           {isRefreshing && (
