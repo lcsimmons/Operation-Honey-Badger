@@ -173,7 +173,7 @@ export default function Forum() {
 
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
-    const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
+    const sqlPattern = /(--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
 
     setAlertMessage("");
 

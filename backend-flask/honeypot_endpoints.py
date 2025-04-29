@@ -509,7 +509,7 @@ def register_honeypot_routes(app):
 
             query = "INSERT INTO Forum (title, description, forum_category, user_id, is_pinned)" \
                 " VALUES " \
-                "( '" + request_data['title'] + "' , '" + request_data['description'] + "', '" + request_data['forum_category'] + "', '" + str(user_id) + "', " + ('1' if request_data['is_pinned'] else '0') + " ) RETURNING *;"
+                "( '" + request_data['title'] + "' , '" + request_data['description'].replace("'", "''") + "', '" + request_data['forum_category'] + "', '" + str(user_id) + "', " + ('1' if request_data['is_pinned'] else '0') + " ) RETURNING *;"
             
             print(query)
             cur = db.execute(query)

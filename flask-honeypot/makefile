@@ -61,3 +61,12 @@ test:
 	fi
 	@echo "Running tests..."
 	$(PYTHON_VENV) -m pytest -v
+
+# Run a single test - usage: make test-single TEST=test_name
+test-single:
+	@if [ ! -d "$(VENV_NAME)" ]; then \
+		echo "Virtual environment not found. Run 'make build' first."; \
+		exit 1; \
+	fi
+	@echo "Running single test: $(TEST)"
+	$(PYTHON_VENV) -m pytest -v -k "$(TEST)"
