@@ -160,7 +160,7 @@ def update_honey_session(attacker_id):
 
     # Check if this attacker has been seen before
     cur.execute(
-        "SELECT * FROM Honeypot_Session where attacker_id = %s ORDER  BY last_seen DESC NULLS LAST LIMIT 1",
+        "SELECT * FROM Honeypot_Session where attacker_id = %s ORDER BY last_seen DESC NULLS LAST LIMIT 1",
         (str(attacker_id), )
     )
 
@@ -212,7 +212,7 @@ def update_honey_session(attacker_id):
             (attacker_id) 
             VALUES (%s) RETURNING session_id;
             """,
-            (str(attacker_id), ) #or I guess if it's a singular thing then just not have it as a tuple at all
+            (str(attacker_id), )#nvm it actually does need to be a tuple lol
         )
 
         session_id = cur.fetchone()
@@ -253,19 +253,46 @@ def update_attack_command(attacker_command):
 
 #aggregate functions for the soc admin 
 # -- attack table
-def aggregate_attack_by_type(category="request_url", selection=""):
+def aggregate_attack_by_type(category="owasp_technique"):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    curr_categories = ['request_url', 'owasp_technique', 'ioc', 'gemini_response', 'timestamp']
+    curr_categories = ["attack_id", 
+                       "session_id", 
+                       "request_url", 
+                       "interaction_type", 
+                       "owasp_technique", 
+                       "ioc", 
+                       "gemini_response", 
+                       "timestamp"]
 
     if category not in curr_categories:
         raise Exception("Incorrect Column")
     
-    query_db = "Select {}, count({}) from attack group by {} LIMIT 5".format(category, category, category)
-    cur.execute(
-        query_db
-    )
+    # Customize query based on category
+    if category == "owasp_technique":
+        # Exclude "No Attack Vector" and "No attack Vector"
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attack
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('No Attack Vector', 'No attack vector')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    else:
+        # Standard query with ordering by count and null check
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attack
+            WHERE {0} IS NOT NULL
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    
+    # Execute the query
+    cur.execute(query_db)
 
     res = cur.fetchall()
 
@@ -283,24 +310,56 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
     cur = conn.cursor(cursor_factory=DictCursor)
 
     curr_categories = ["attacker_id",
-                        "ip_address",
-                        "user_agent" ,
-                        "device_fingerprint",
-                        "geolocation",
-                        "browser",       
-                        "os",                 
-                        "device_type",        
-                        "is_bot",        
-                        "last_seen",
-                        "first_seen"]
+                       "ip_address",
+                       "user_agent",
+                       "device_fingerprint",
+                       "geolocation",
+                       "browser",
+                       "os",
+                       "device_type",
+                       "is_bot",
+                       "last_seen",
+                       "first_seen",
+                       "owasp_technique",
+                       "request_url"]
 
     if category not in curr_categories:
         raise Exception("Incorrect Column")
-    
-    query_db = "Select {}, count({}) from attacker group by {} LIMIT 5".format(category, category, category)
-    cur.execute(
-        query_db
-    )
+
+    # Customize query based on category
+    if category == "ip_address":
+        # Exclude localhost and 127.0.0.1
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('127.0.0.1', 'localhost', 'Other', 'Unknown', 'unknown')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    elif category == "os":
+        # Include Other & Unknown for OS
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+    else:
+        # Standard query with ordering by count and null/unkown/other check
+        query_db = """
+            SELECT {0}, COUNT({0}) as count
+            FROM attacker
+            WHERE {0} IS NOT NULL AND {0} NOT IN ('Other', 'other', 'Unknown', 'unknown')
+            GROUP BY {0}
+            ORDER BY COUNT({0}) DESC
+            LIMIT 5
+        """.format(category)
+
+    # Execute the query
+    cur.execute(query_db)
 
     res = cur.fetchall()
 
@@ -311,6 +370,7 @@ def aggregate_attacker_by_type(category="request_url", selection=""):
     conn.commit()
     cur.close()
     return res
+
 
 def total_attacker_count():
     conn = get_db_connection()
@@ -334,8 +394,7 @@ def total_attacker_count():
 def attacker_engagement(attacker_id=None):
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=DictCursor)
-
-    
+    query_wrap = "SELECT * from ({}) ORDER BY day ASC;"
     query_db = """
 
     SELECT
@@ -343,18 +402,102 @@ def attacker_engagement(attacker_id=None):
         hs.attacker_id,
         COUNT(*) AS occurrences
     FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
-    GROUP BY day, session_id, hs.attacker_id
-    ORDER BY day, session_id, hs.attacker_id LIMIT 10;
 
     """
+
+    params = ()
+
+    if attacker_id:
+        query_db += " WHERE hs.attacker_id = %s "
+        params = (attacker_id,)
+
+    query_db += """
+        GROUP BY day, hs.attacker_id
+        ORDER BY day DESC, hs.attacker_id LIMIT 5;
+    """
+
+    query_wrap.format(query_db)
+
     cur.execute(
-        query_db
+        query_wrap,
+        params
     )
 
     res = cur.fetchall()
 
     if res:
         res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def total_attacker_engagement(attacker_id=None):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    # query_wrap = "SELECT * from ({}) ORDER BY day ASC;".format(query_db)
+    
+    query_db = """
+
+    SELECT
+        DATE(hs.first_seen) AS day,
+        COUNT(*) AS occurrences
+    FROM attacker inner join honeypot_session hs on attacker.attacker_id = hs.attacker_id
+
+    """
+
+    params = ()
+
+    if attacker_id:
+        query_db += "WHERE  hs.attacker_id = %s "
+        params = (attacker_id,)
+    
+    query_db += """
+        GROUP BY day
+        ORDER BY day DESC LIMIT 5
+    """
+
+    # query_wrap.format(query_db)
+    query_wrap = "SELECT * from ({}) ORDER BY day ASC;".format(query_db)
+
+    print(query_wrap)
+
+    cur.execute(
+        query_wrap,
+        params
+    )
+
+    res = cur.fetchall()
+
+    if res:
+        res = [dict(row) for row in res]
+
+    print(res)
+    conn.commit()
+    cur.close()
+    return res
+
+def total_report_count():
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=DictCursor)
+    query_db = """
+
+    SELECT
+        COUNT(*)
+    FROM soc_dashboard;
+
+    """
+
+    cur.execute(
+        query_db
+    )
+
+    res = cur.fetchone()
+
+    if res:
+        res = dict(res)
 
     print(res)
     conn.commit()

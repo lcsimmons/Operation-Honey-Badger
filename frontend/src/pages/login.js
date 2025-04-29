@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { getExpenses, loginUser } from "./api/apiHelper";
+import { getExpenses, loginUser, apiFetchSecurityQuestion, apiSubmitNewPassword, apiValidateSecurityAnswer } from "./api/apiHelper";
 import axios from "axios";
 
 export default function Login() {
@@ -23,7 +23,7 @@ export default function Login() {
   // XSS and SQL Injection Detection
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
-    const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
+    const sqlPattern = /(--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
     
     // Reset alert before setting a new one
     setAlertMessage("");
@@ -67,6 +67,8 @@ export default function Login() {
         router.push("/forum");
       } else {
         setError("Invalid username or password. Please try again.");
+        await sleep(3000);
+        setError("");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
@@ -83,11 +85,11 @@ export default function Login() {
 
   const [questionId, setQuestionId] = useState(null);
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const fetchSecurityQuestion = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/security_questions", { 
-        username
-      });
+      const res = await apiFetchSecurityQuestion(username);
 
       if (res.data && Object.keys(res.data).length > 0) {
         setSecurityQuestion(res.data.question_text);
@@ -98,7 +100,9 @@ export default function Login() {
         setResetError("No security questions found for this username.");
       }
     } catch {
-      setResetError("Error retrieving security question.");
+      setResetError("Error: Username not found.");
+      await sleep(3000);
+      setResetError("");
     }
     
   };
@@ -106,11 +110,8 @@ export default function Login() {
 
   const validateSecurityAnswer = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/forgot_password", {
-        username,
-        answers: [{ question_id: questionId, answer: securityAnswer }],
-      });
-
+      const res = await apiValidateSecurityAnswer({ username, questionId, securityAnswer });
+      setResetError("");
       if (res.data.message?.includes("validated")) {
         setShowPasswordReset(true);
         setResetError("");
@@ -125,10 +126,8 @@ export default function Login() {
 
   const submitNewPassword = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/change_password", {
-        username,
-        newPassword,
-      });
+      const res = await apiSubmitNewPassword({ username, newPassword });
+
       if (res.data.message) {
         setResetMessage("Password changed successfully. You may now log in.");
         setShowForgotPassword(false);

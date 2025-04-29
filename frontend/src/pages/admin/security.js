@@ -1,6 +1,17 @@
 import { Shield } from "lucide-react";
+import { getSecurityLogs } from "../api/apiHelper";
+import { useEffect, useState } from "react";
 
 export default function SecurityPage() {
+  const [securitLogs, setSecurityLogs] = useState([]);
+
+  useEffect(() => {
+    getSecurityLogs().then(res => {
+      if (res?.data) setSecurityLogs(res.data);
+    });
+  }, []);
+
+  
   return (
     <div className="min-h-screen bg-white p-10 text-gray-900">
       <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">

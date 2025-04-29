@@ -23,21 +23,8 @@ export default function About() {
             <div className="bg-gradient-to-r from-gray-900 to-blue-900 p-4 text-white flex items-center">
                 <div className="flex items-center flex-1 gap-x-10">
                     <h1 className="text-xl font-bold flex-shrink-0">Co.</h1>
-                    <div className="max-w-lg w-full">
-                        <Search />
-                    </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <button className="relative">
-                        <Bell className="w-5 h-5" />
-                        <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <button>
-                        <Info className="w-5 h-5" />
-                    </button>
-                    <button>
-                        <Wrench className="w-5 h-5" />
-                    </button>
                     <button onClick={handleLogout}>
                         <LogOut className="w-5 h-5" />
                     </button>

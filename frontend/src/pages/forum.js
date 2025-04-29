@@ -173,7 +173,7 @@ export default function Forum() {
 
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
-    const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
+    const sqlPattern = /(--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
 
     setAlertMessage("");
 
@@ -199,23 +199,10 @@ export default function Forum() {
         {/* Left: Logo & Search Bar */}
         <div className="flex items-center flex-1 gap-x-10">
           <h1 className="text-xl font-bold flex-shrink-0">Co.</h1>
-          <div className="max-w-lg w-full">
-            <Search allPosts={[]} setFilteredPosts={() => { }} />
-          </div>
         </div>
 
         {/* Right: Notification & Settings Icons */}
         <div className="flex items-center space-x-4">
-          <button className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-          <button>
-            <Info className="w-5 h-5" />
-          </button>
-          <button>
-            <Wrench className="w-5 h-5" />
-          </button>
           <button onClick={handleLogout}>
             <LogOut className="w-5 h-5" />
           </button>

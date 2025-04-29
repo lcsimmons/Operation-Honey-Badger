@@ -9,7 +9,7 @@ import ipinfo
 from user_agents import parse
 from dotenv import load_dotenv
 from decoy_database import get_memory_db
-from postgres_db import log_attacker_information
+from postgres_db import log_attacker_information, query_db
 from gemini import analyze_payload_2
 
 def parse_user_agent(user_agent_string):
@@ -146,7 +146,7 @@ def temp_payload_analysis(ioc_list, request):
 
     print("Current IOC list:", ioc_list)
 
-def get_attacker_summary(attacker_info):
+def get_attacker_summary(attacker_info, gemini_summary=None):
     #send the information to the ai to process
     payload_to_analyze = {
         "attacker_info": attacker_info,
@@ -176,9 +176,12 @@ def get_attacker_summary(attacker_info):
     payload_to_analyze['query_params'] = request.query_string
 
     #get response from gemini
-    gemini_analysis = analyze_payload_2(payload_to_analyze)
+    if not gemini_summary:
+        gemini_analysis = analyze_payload_2(payload_to_analyze)
 
-    print(gemini_analysis)
+        print(gemini_analysis)
+    else:
+        gemini_analysis = []
 
 
     response_string = str(gemini_analysis).split("\n")
@@ -190,12 +193,14 @@ def get_attacker_summary(attacker_info):
             arr.append(row)
     
     response_string = arr
-
-    gemini_analysis_res = {
-        "technique": response_string[0],
-        "iocs": response_string[1],
-        "description": response_string[2] 
-    }
+    if not gemini_summary:
+        gemini_analysis_res = {
+            "technique": response_string[0],
+            "iocs": response_string[1],
+            "description": response_string[2] 
+        }
+    else:
+        gemini_analysis_res = gemini_summary
 
     attacker_summary = {
         "attacker_info" : attacker_info,
@@ -504,7 +509,7 @@ def register_honeypot_routes(app):
 
             query = "INSERT INTO Forum (title, description, forum_category, user_id, is_pinned)" \
                 " VALUES " \
-                "( '" + request_data['title'] + "' , '" + request_data['description'] + "', '" + request_data['forum_category'] + "', '" + str(user_id) + "', " + ('1' if request_data['is_pinned'] else '0') + " ) RETURNING *;"
+                "( '" + request_data['title'] + "' , '" + request_data['description'].replace("'", "''") + "', '" + request_data['forum_category'] + "', '" + str(user_id) + "', " + ('1' if request_data['is_pinned'] else '0') + " ) RETURNING *;"
             
             print(query)
             cur = db.execute(query)
@@ -825,4 +830,43 @@ def register_honeypot_routes(app):
         
         except sqlite3.Error as e:
             print(f"SQLite error: {e}")
+            return jsonify({"error": f"Database error: {str(e)}"}), 500
+    
+    @app.route('/api/admin/security_logs', methods=['GET'])
+    def fake_security_logs():
+        # request_args = list(request.args.items())
+
+        # print(dict(request.args))
+        # print(dict(request.args).items())
+
+        attacker_info = extract_attacker_info()
+
+        gemini_summary = {
+            "technique": "Security Logging and Monitoring Failures",
+            "iocs": "[security logs]",
+            "description": "Access to the 'portions' of the security log" 
+
+        }
+        attacker_summary = get_attacker_summary(attacker_info, gemini_summary)
+
+        #get the log from the attacker
+        log_attacker_information(attacker_summary)
+        
+        try:
+            #actually get the data from the actual database but specify the columns
+
+            query = "SELECT atk.ip_address, attack.request_url, atk.user_agent, atk.browser, attack.interaction_type, attack.timestamp  " \
+            "FROM Attacker as atk " \
+            "inner join honeypot_session as hs on hs.attacker_id = atk.attacker_id " \
+            "inner join attack on hs.session_id = attack.session_id;"
+
+            result = query_db(query)
+
+            res = []
+
+            if result:
+                res = [dict(row) for row in result]
+            return jsonify(res)
+        except sqlite3.Error as e:
+            print(f"SQL error: {e}")
             return jsonify({"error": f"Database error: {str(e)}"}), 500
