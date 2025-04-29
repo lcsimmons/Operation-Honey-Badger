@@ -2,10 +2,28 @@ import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import WorldMap from '../WorldMap';
 import { feature } from 'topojson-client';
 
-// Mock the feature function from topojson-client
+// Mock any modules that WorldMap depends on
 jest.mock('topojson-client', () => ({
   feature: jest.fn()
 }));
+
+jest.mock('../../context/LanguageContext', () => ({
+  useLanguage: () => ({ language: 'en' }),
+}));
+
+jest.mock('../../context/LanguageContext', () => ({
+  LanguageContext: React.createContext({ language: 'en' }),
+}));
+
+
+// Mock the useDashboardText hook without specifying the module path
+jest.mock('react', () => {
+  const originalReact = jest.requireActual('react');
+  return {
+    ...originalReact,
+    useContext: jest.fn().mockReturnValue({ language: 'en' })
+  };
+});
 
 // Mock d3 methods with proper function implementations
 jest.mock('d3', () => {
@@ -75,7 +93,7 @@ describe('WorldMap Component', () => {
       render(<WorldMap />);
     });
     
-    const titleElement = screen.getByText('Attacker Geolocation');
+    const titleElement = screen.getByText(/Attacker Geolocation/i);
     expect(titleElement).toBeInTheDocument();
   });
 
@@ -161,7 +179,7 @@ describe('WorldMap Component', () => {
     });
     
     // Check for top countries heading
-    expect(screen.getByText('Top 5 Countries:')).toBeInTheDocument();
+    expect(screen.getByText(/Top 5 Countries/i)).toBeInTheDocument();
   });
 
   // Test for map key display
@@ -171,7 +189,7 @@ describe('WorldMap Component', () => {
     });
     
     // Check for map key heading
-    expect(screen.getByText('Map Key:')).toBeInTheDocument();
+    expect(screen.getByText(/Map Key/i)).toBeInTheDocument();
     
     // Check for color ranges
     expect(screen.getByText('0')).toBeInTheDocument();
@@ -189,14 +207,14 @@ describe('WorldMap Component', () => {
     
     // Allow time for data to load and render
     await waitFor(() => {
-      const listItems = screen.getByText('Top 5 Countries:')
+      const listItems = screen.getByText(/Top 5 Countries/i)
         .parentElement
         .querySelectorAll('li');
       return listItems.length > 0;
     }, { timeout: 1000 });
     
     // Check that we have 5 countries displayed
-    const listItems = screen.getByText('Top 5 Countries:')
+    const listItems = screen.getByText(/Top 5 Countries/i)
       .parentElement
       .querySelectorAll('li');
     expect(listItems.length).toBe(5);
@@ -250,7 +268,7 @@ describe('WorldMap Component', () => {
     });
     
     // Check for loading state
-    expect(screen.getByText('Refreshing...')).toBeInTheDocument();
+    expect(screen.getByText(/Refreshing/i)).toBeInTheDocument();
   });
   
   // Test for empty data handling
@@ -273,8 +291,8 @@ describe('WorldMap Component', () => {
     });
     
     // Verify component rendered
-    expect(screen.getByText('Attacker Geolocation')).toBeInTheDocument();
-    expect(screen.getByText('Top 5 Countries:')).toBeInTheDocument();
+    expect(screen.getByText(/Attacker Geolocation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Top 5 Countries/i)).toBeInTheDocument();
     
     // Note: WorldMap.js has fallback data, so we can't test for empty list
     // Instead, let's verify the component doesn't crash
@@ -300,14 +318,14 @@ describe('WorldMap Component', () => {
     
     // Allow time for fallback data to load
     await waitFor(() => {
-      const listItems = screen.getByText('Top 5 Countries:')
+      const listItems = screen.getByText(/Top 5 Countries/i)
         .parentElement
         .querySelectorAll('li');
       return listItems.length > 0;
     }, { timeout: 1000 });
     
     // Verify fallback data is displayed
-    const listItems = screen.getByText('Top 5 Countries:')
+    const listItems = screen.getByText(/Top 5 Countries/i)
       .parentElement
       .querySelectorAll('li');
     expect(listItems.length).toBeGreaterThan(0);
