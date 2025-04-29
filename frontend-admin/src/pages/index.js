@@ -8,72 +8,7 @@ import { Search, HelpCircle } from "lucide-react";
 import { PieChart, Legend, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { useTextSize } from '@/context/TextSizeContext';
 import { getCommonExploits, getAttackerIP, getAttackerOS, getPagesTargeted, getBrowsersUsed, getEngagementTime, getTotalReportsGenerated } from './api/apiHelper';
-
-const pieData = [
-  { name: "Item 1", value: 20 },
-  { name: "Item 2", value: 20 },
-  { name: "Item 3", value: 20 },
-  { name: "Item 4", value: 20 },
-  { name: "Item 5", value: 20 },
-];
-
-const attackerIntentData = [
-  { name: "Recon", value: 34 },
-  { name: "Credential Access", value: 27 },
-  { name: "Privilege Escalation", value: 19 },
-  { name: "Persistence", value: 13 },
-  { name: "Lateral Movement", value: 7 },
-];
-
-
-const commonExploitsData = [
-  { name: "Remote Code Exec", value: 80 },
-  { name: "SQL Injection", value: 65 },
-  { name: "Cross-Site Scripting", value: 50 },
-  { name: "Buffer Overflow", value: 35 },
-  { name: "Privilege Escalation", value: 20 },
-];
-
-const attackerInputsData = [
-  { name: "SQL Injection", value: 40 },
-  { name: "XSS Payload", value: 30 },
-  { name: "Command Injection", value: 15 },
-  { name: "Directory Traversal", value: 10 },
-  { name: "Encoded Script Tags", value: 5 },
-];
-
-const attackTypeData = [
-  { name: "Phishing", value: 30 },
-  { name: "Malware", value: 25 },
-  { name: "Brute Force", value: 20 },
-  { name: "Insider Threat", value: 15 },
-  { name: "Ransomware", value: 10 },
-];
-
-const engagementTimeData = [
-  { name: "Mar 16", value: 22 },
-  { name: "Mar 17", value: 18 },
-  { name: "Mar 18", value: 35 },
-  { name: "Mar 19", value: 40 },
-  { name: "Mar 20", value: 25 },
-];
-
-const attackFrequencyByHour = [
-  { hour: "00:00", attacks: 4 },
-  { hour: "04:00", attacks: 9 },
-  { hour: "08:00", attacks: 5 },
-  { hour: "12:00", attacks: 7 },
-  { hour: "16:00", attacks: 6 },
-  { hour: "20:00", attacks: 13 },
-];
-
-
-const barData = [
-  { name: "Metric 1", value: 80 },
-  { name: "Metric 2", value: 60 },
-  { name: "Metric 3", value: 40 },
-  { name: "Metric 4", value: 20 },
-];
+import { useDashboardText } from '../components/translate';
 
 const COLORS = [
   "#E69F00", // orange
@@ -84,20 +19,6 @@ const COLORS = [
   "#D55E00", // vermillion
   "#CC79A7", // reddish purple
 ];
-
-
-// Placeholder tactic frequencies
-const tacticFrequencies = {
-  "Initial Access": { techniques: 9, frequency: 5 },
-  "Execution": { techniques: 10, frequency: 15 },
-  "Persistence": { techniques: 18, frequency: 10 },
-  "Privilege Escalation": { techniques: 12, frequency: 8 },
-  "Defense Evasion": { techniques: 37, frequency: 20 },
-  "Credential Access": { techniques: 14, frequency: 12 },
-  "Discovery": { techniques: 25, frequency: 18 },
-  "Lateral Movement": { techniques: 9, frequency: 6 },
-  "Collection": { techniques: 17, frequency: 9 },
-};
 
 // Function to get colorblind-friendly color based on frequency
 const getColor = (frequency) => {
@@ -110,31 +31,32 @@ const getColor = (frequency) => {
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const { useOpenDyslexic } = useContext(FontContext);
+  const uiText = useDashboardText();
 
   const components = [
     {
       name: "Common Exploits",
-      render: <CommonExploits />,
+      render: <CommonExploits uiText={uiText}/>,
       className: "bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
     },
     {
       name: "Recent Reports & Report Severity",
-      render: <RecentReportsAndReportSeverity />,
+      render: <RecentReportsAndReportSeverity uiText={uiText}/>,
       className: "grid gap-6"
     },
     {
       name: "Bar Charts",
-      render: <BarCharts />,
+      render: <BarCharts uiText={uiText}/>,
       className: "row-span-2 bg-white/40 p-4 rounded-lg shadow-md"
     },
     {
       name: "Attacker IPs & Attacker OS",
-      render: <AttackerIPsAndAttackerOS />,
+      render: <AttackerIPsAndAttackerOS uiText={uiText}/>,
       className: "col-span-2 row-span-1 bg-white/40 p-6 rounded-lg shadow-md"
     },
     {
       name: "Attacker Geolocation",
-      render: <WorldMap />,
+      render: <WorldMap uiText={uiText}/>,
       className: "col-span-3 row-span-2 bg-white/40 p-4 rounded-lg shadow-md flex flex-col"
     }
   ];
@@ -160,7 +82,7 @@ export default function Dashboard() {
         {/* TopBar */}
         <div className="flex items-center justify-between px-6 py-4 bg-white/40 backdrop-blur-lg shadow-md rounded-lg mt-4 mx-4 mb-0">
           <h1 className="font-semibold">
-            Operation Honey Badger: <span className="font-bold">Admin Dashboard</span>
+            {uiText.heading} <span className="font-bold">{uiText.subheading}</span>
           </h1>
 
           {/* Search Bar */}
@@ -168,13 +90,12 @@ export default function Dashboard() {
             <Search size={20} className="text-gray-400" />
             <input
               type="text"
-              placeholder="Search Dashboard..."
+              placeholder={uiText.searchPlaceholder}
               className="bg-transparent outline-none ml-2 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
         </div>
 
         {/* Dashboard Content */}
@@ -193,7 +114,7 @@ export default function Dashboard() {
     </div>
   );
 }
-const CommonExploits = () => {
+const CommonExploits = ({ uiText }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -219,7 +140,7 @@ const CommonExploits = () => {
 
   return (
     <div>
-      <h2 className="font-bold">Common Exploits</h2>
+      <h2 className="font-bold">{uiText.commonExploitsTitle}</h2>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie
@@ -254,7 +175,7 @@ const CommonExploits = () => {
 };
 
 {/* Recent Reports & Report Severity */ }
-const RecentReportsAndReportSeverity = () => {
+const RecentReportsAndReportSeverity = ({uiText}) => {
   const [loading, setLoading] = useState(true);
   const [recentReport, setRecentReport] = useState(0);
 
@@ -276,8 +197,8 @@ const RecentReportsAndReportSeverity = () => {
   return (
     <div className="bg-white/40 p-4 rounded-lg shadow-md flex flex-col justify-between h-full">
       <div className="flex flex-col items-center">
-        <h2 className=" font-bold">Recent Reports</h2>
-        {loading && ( <p className="text-center">Loading number of reports generated...</p>)}
+        <h2 className=" font-bold">{uiText.recentReports}</h2>
+        {loading && ( <p className="text-center">{uiText.reportsLoading}</p>)}
         {!loading && (<p className="text-8xl text-black mt-2">{recentReport}</p>)}
       </div>
     </div>
@@ -286,7 +207,7 @@ const RecentReportsAndReportSeverity = () => {
 
 
 // {/* Bar Charts */ }
-const BarCharts = () => {
+const BarCharts = ({uiText}) => {
   const [engagementData, setEngagementData] = useState([]);
   const [pagesData, setPagesData] = useState([]);
   const [browserData, setBrowserData] = useState([]);
@@ -333,7 +254,7 @@ const BarCharts = () => {
 
   return (
     <div>
-      <h2 className=" font-bold mb-2">Attacker Engagement</h2>
+      <h2 className=" font-bold mb-2">{uiText.attackerEngagement}</h2>
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -350,7 +271,7 @@ const BarCharts = () => {
         </ResponsiveContainer>
       )}
 
-      <h2 className=" font-bold mt-4 mb-2">Endpoints Targeted</h2>
+      <h2 className=" font-bold mt-4 mb-2">{uiText.endpointsTargeted}</h2>
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -367,7 +288,7 @@ const BarCharts = () => {
         </ResponsiveContainer>
       )}
 
-      <h2 className=" font-bold mt-6 mb-2">Browsers Used</h2>
+      <h2 className=" font-bold mt-6 mb-2">{uiText.browsersUsed}</h2>
       {loading ? (
         <p>Loading...</p>
       ) : (
@@ -386,51 +307,8 @@ const BarCharts = () => {
     </div>
   );
 };
-// const BarCharts = () => (
-//   <div>
-//     <h2 className=" font-bold mb-2">Engagement Time</h2>
-//     <ResponsiveContainer width="100%" height={150}>
-//       <BarChart data={engagementTimeData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
-//         <XAxis dataKey="name" />
-//         <YAxis />
-//         <Tooltip />
-//         <Bar dataKey="value" fill={COLORS[0]} />
-//       </BarChart>
-//     </ResponsiveContainer>
 
-//     <h2 className=" font-bold mt-6 mb-2">Common Exploits Used</h2>
-//     <ResponsiveContainer width="100%" height={180}>
-//       <BarChart data={commonExploitsData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
-//         <XAxis
-//           dataKey="name"
-//           interval={0}
-//           angle={-25}
-//           textAnchor="end"
-//         />
-//         <YAxis />
-//         <Tooltip />
-//         <Bar dataKey="value" fill={COLORS[1]} />
-//       </BarChart>
-//     </ResponsiveContainer>
-
-//     <h2 className=" font-bold mt-6 mb-2">Detected Attacker Intent</h2>
-//     <ResponsiveContainer width="100%" height={180}>
-//       <BarChart data={attackerIntentData} margin={{ top: 5, right: 10, left: 0, bottom: 50 }}>
-//         <XAxis
-//           dataKey="name"
-//           interval={0}
-//           angle={-25}
-//           textAnchor="end"
-//         />
-//         <YAxis />
-//         <Tooltip />
-//         <Bar dataKey="value" fill={COLORS[2]} />
-//       </BarChart>
-//     </ResponsiveContainer>
-//   </div>
-// );
-
-const AttackerIPsAndAttackerOS = () => {
+const AttackerIPsAndAttackerOS = ({uiText}) => {
   const [ipData, setIpData] = useState([]);
   const [osData, setOsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -464,7 +342,7 @@ const AttackerIPsAndAttackerOS = () => {
     <div className="flex justify-between gap-6">
       {/* Attacker IPs */}
       <div className="flex flex-col w-1/2">
-        <h2 className="font-bold text-left">Attacker IP</h2>
+        <h2 className="font-bold text-left">{uiText.attackerIP}</h2>
         {loading ? (
           <p>Loading...</p>
         ) : (
@@ -504,7 +382,7 @@ const AttackerIPsAndAttackerOS = () => {
 
       {/* Attacker OS */}
       <div className="flex flex-col w-1/2">
-        <h2 className="font-bold text-left">Attacker OS</h2>
+        <h2 className="font-bold text-left">{uiText.attackerOS}</h2>
         {loading ? (
           <p>Loading...</p>
         ) : (
@@ -544,98 +422,3 @@ const AttackerIPsAndAttackerOS = () => {
     </div>
   );
 };
-
-{/* Attack Types & Attacker Inputs */ }
-// const AttackTypesAndAttackerInputs = () => (
-//   <div>
-//     <div className="flex justify-between gap-6 h-full">
-//       {/* Attack Types */}
-//       <div className="flex flex-col items-center w-1/2 h-full">
-//         <h3 className="text-3xl font-bold mb-4">Attack Types</h3>
-//         <ResponsiveContainer width="100%" height={220}>
-//           <PieChart>
-//             <Pie
-//               data={attackTypeData}
-//               cx="50%"
-//               cy="50%"
-//               innerRadius={60}
-//               outerRadius={100}
-//               paddingAngle={3}
-//               dataKey="value"
-//             >
-//               {attackTypeData.map((_, index) => (
-//                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-//               ))}
-//             </Pie>
-//             <Tooltip />
-//           </PieChart>
-//         </ResponsiveContainer>
-//         {/* Custom Legend */}
-//         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
-//           {attackTypeData.map((entry, index) => (
-//             <div key={index} className="flex items-center space-x-2">
-//               <div
-//                 className="w-3 h-3 rounded-full"
-//                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
-//               />
-//               <span>{entry.name}</span>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* Attacker Inputs */}
-//       <div className="flex flex-col items-center w-1/2 h-full">
-//         <h3 className="text-3xl font-bold mb-4">Attacker Inputs</h3>
-//         <ResponsiveContainer width="100%" height={220}>
-//           <PieChart>
-//             <Pie
-//               data={attackerInputsData}
-//               cx="50%"
-//               cy="50%"
-//               innerRadius={60}
-//               outerRadius={100}
-//               paddingAngle={3}
-//               dataKey="value"
-//             >
-//               {attackerInputsData.map((_, index) => (
-//                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-//               ))}
-//             </Pie>
-//             <Tooltip />
-//           </PieChart>
-//         </ResponsiveContainer>
-//         {/* Custom Legend */}
-//         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-3 ">
-//           {attackerInputsData.map((entry, index) => (
-//             <div key={index} className="flex items-center space-x-2">
-//               <div
-//                 className="w-3 h-3 rounded-full"
-//                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
-//               />
-//               <span>{entry.name}</span>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   </div>
-// );
-
-{/* Another thing */ }
-const LOL = () => (
-  <div>
-    <div>
-      <h2 className=" font-bold">LOL</h2>
-      <ResponsiveContainer width="100%" height={180}>
-        <PieChart>
-          <Pie data={pieData} cx="50%" cy="50%" outerRadius={60} fill="#8884d8" dataKey="value">
-            {pieData.map((_, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);

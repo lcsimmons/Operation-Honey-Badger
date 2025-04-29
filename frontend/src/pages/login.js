@@ -23,7 +23,7 @@ export default function Login() {
   // XSS and SQL Injection Detection
   const detectInjection = (input) => {
     const xssPattern = /(<script.*?>.*?<\/script>|<svg.*?on\w+=.*?>|javascript:|<iframe.*?>)/gi;
-    const sqlPattern = /('|--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
+    const sqlPattern = /(--|;|--|\b(OR|SELECT|DROP|UNION|INSERT|DELETE|UPDATE)\b)/gi;
     
     // Reset alert before setting a new one
     setAlertMessage("");

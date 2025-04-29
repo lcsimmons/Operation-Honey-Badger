@@ -87,7 +87,7 @@ export default function Logs() {
                 };
             });
             
-            const sortedLogs = transformedLogs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const sortedLogs = transformedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             setLogs(sortedLogs);
             setFilteredLogs(sortedLogs);
