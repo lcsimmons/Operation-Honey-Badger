@@ -1,3 +1,4 @@
+import React from 'react';
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import WorldMap from '../WorldMap';
 import { feature } from 'topojson-client';
