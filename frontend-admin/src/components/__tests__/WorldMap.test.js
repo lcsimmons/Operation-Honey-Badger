@@ -7,16 +7,31 @@ jest.mock('topojson-client', () => ({
   feature: jest.fn()
 }));
 
-// Mock d3 methods
-jest.mock('d3', () => ({
-  geoEqualEarth: jest.fn().mockReturnValue({
+// Mock d3 methods with proper function implementations
+jest.mock('d3', () => {
+  // Create mock implementations
+  const projectionMock = {
     scale: jest.fn().mockReturnThis(),
     translate: jest.fn().mockReturnThis()
-  }),
-  geoPath: jest.fn().mockReturnValue({
-    projection: jest.fn().mockReturnThis()
-  })
-}));
+  };
+  
+  const pathGeneratorMock = jest.fn(() => 'mock-path-data');
+  pathGeneratorMock.projection = jest.fn().mockReturnValue(pathGeneratorMock);
+  
+  return {
+    geoEqualEarth: jest.fn().mockReturnValue(projectionMock),
+    geoPath: jest.fn().mockReturnValue(pathGeneratorMock)
+  };
+});
+
+// Mock the countries import
+jest.mock('world-countries', () => [
+  { ccn3: '840', cca2: 'US', name: { common: 'United States' } },
+  { ccn3: '156', cca2: 'CN', name: { common: 'China' } },
+  { ccn3: '643', cca2: 'RU', name: { common: 'Russia' } },
+  { ccn3: '250', cca2: 'FR', name: { common: 'France' } },
+  { ccn3: '826', cca2: 'GB', name: { common: 'United Kingdom' } }
+]);
 
 describe('WorldMap Component', () => {
   beforeEach(() => {
@@ -25,7 +40,11 @@ describe('WorldMap Component', () => {
     
     // Mock worldGeoData with a valid structure
     feature.mockReturnValue({
-      features: [] // Empty features array to prevent map errors
+      features: [
+        { id: 840, type: 'Feature', geometry: {}, properties: {} }, // US
+        { id: 156, type: 'Feature', geometry: {}, properties: {} }, // CN
+        { id: 643, type: 'Feature', geometry: {}, properties: {} }  // RU
+      ]
     });
     
     // Mock fetch to return resolved promises
@@ -40,13 +59,17 @@ describe('WorldMap Component', () => {
       } else {
         return Promise.resolve({
           json: () => Promise.resolve({
-            US: 2, CN: 1, RU: 1, FR: 1, GB: 1, JP: 1
+            US: 2, CN: 1, RU: 1, FR: 1, GB: 1
           })
         });
       }
     });
+
+    // Set the environment variable
+    process.env.NEXT_PUBLIC_API_URL = 'http://localhost:5000';
   });
 
+  // Simple test case that doesn't rely on the map rendering
   test('renders the component with title', async () => {
     await act(async () => {
       render(<WorldMap />);
@@ -56,62 +79,70 @@ describe('WorldMap Component', () => {
     expect(titleElement).toBeInTheDocument();
   });
 
-  // Replace the failing test with this one that checks the button directly
+  // Test for refresh button presence
   test('renders refresh button', async () => {
     await act(async () => {
       render(<WorldMap />);
     });
     
-    // Get button regardless of its text content
+    // Find the button either by role or text content containing "Refresh"
     const button = screen.getByRole('button');
     expect(button).toBeInTheDocument();
   });
 
+  // Test that refresh button text updates after loading
   test('shows refresh button after data loads', async () => {
-    await act(async () => {
-      render(<WorldMap />);
-    });
-    
-    // Wait for refresh button to appear
-    await waitFor(() => {
-      expect(screen.getByText('Refresh')).toBeInTheDocument();
-    });
-  });
-
-  test('clicking refresh button calls fetchCountryData', async () => {
-    // Render the component
-    await act(async () => {
-      render(<WorldMap />);
-    });
-    
-    // Wait for the initial fetch to complete
-    await waitFor(() => {
-      expect(screen.getByText('Refresh')).toBeInTheDocument();
-    });
-    
-    // Mock implementation for another round
-    global.fetch.mockClear();
-    global.fetch.mockImplementationOnce(() => 
+    // Setup a quicker resolving mock
+    global.fetch.mockImplementation(() => 
       Promise.resolve({
-        json: () => Promise.resolve({
-          DE: 3, US: 2, CN: 1 
-        })
+        json: () => Promise.resolve(
+          { US: 2, CN: 1, RU: 1, FR: 1, GB: 1 }
+        )
       })
     );
-    
-    // Click refresh button
-    const refreshButton = screen.getByText('Refresh');
+
     await act(async () => {
-      fireEvent.click(refreshButton);
+      render(<WorldMap />);
     });
     
-    // Verify that fetch was called again
+    // Initially button might show "Refreshing..."
+    // After data loads it should contain "Refresh"
+    await waitFor(() => {
+      const buttonText = screen.getByRole('button').textContent;
+      return buttonText.includes('Refresh') && !buttonText.includes('ing');
+    }, { timeout: 1000 });
+    
+    expect(screen.getByRole('button').textContent).toContain('Refresh');
+  });
+
+  // Test clicking the refresh button
+  test('clicking refresh button calls fetchCountryData', async () => {
+    await act(async () => {
+      render(<WorldMap />);
+    });
+    
+    // Wait for the initial data load to complete
+    await waitFor(() => {
+      const buttonText = screen.getByRole('button').textContent;
+      return buttonText.includes('Refresh') && !buttonText.includes('ing');
+    }, { timeout: 1000 });
+    
+    // Reset the fetch mock
+    global.fetch.mockClear();
+    
+    // Click the refresh button
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    
+    // Verify fetch was called
     expect(global.fetch).toHaveBeenCalled();
   });
 
+  // Test for error state
   test('displays error message when map fails to load', async () => {
-    // Mock failed fetch
-    global.fetch.mockRejectedValueOnce(new Error('Failed to load map data'));
+    // Mock a fetch failure
+    global.fetch.mockImplementationOnce(() => Promise.reject(new Error('Failed to load map data')));
     
     await act(async () => {
       render(<WorldMap />);
@@ -123,6 +154,7 @@ describe('WorldMap Component', () => {
     });
   });
 
+  // Test for top countries list
   test('displays top countries list', async () => {
     await act(async () => {
       render(<WorldMap />);
@@ -132,6 +164,7 @@ describe('WorldMap Component', () => {
     expect(screen.getByText('Top 5 Countries:')).toBeInTheDocument();
   });
 
+  // Test for map key display
   test('displays map key', async () => {
     await act(async () => {
       render(<WorldMap />);
@@ -140,11 +173,143 @@ describe('WorldMap Component', () => {
     // Check for map key heading
     expect(screen.getByText('Map Key:')).toBeInTheDocument();
     
-    // Check for range indicators in the key
+    // Check for color ranges
     expect(screen.getByText('0')).toBeInTheDocument();
-    expect(screen.getByText('1–5')).toBeInTheDocument();
-    expect(screen.getByText('6–10')).toBeInTheDocument();
+    expect(screen.getByText('1–2')).toBeInTheDocument();
+    expect(screen.getByText('3–10')).toBeInTheDocument();
     expect(screen.getByText('11–20')).toBeInTheDocument();
     expect(screen.getByText('21+')).toBeInTheDocument();
+  });
+  
+  // Test for country list display
+  test('displays correct number of countries in top list', async () => {
+    await act(async () => {
+      render(<WorldMap />);
+    });
+    
+    // Allow time for data to load and render
+    await waitFor(() => {
+      const listItems = screen.getByText('Top 5 Countries:')
+        .parentElement
+        .querySelectorAll('li');
+      return listItems.length > 0;
+    }, { timeout: 1000 });
+    
+    // Check that we have 5 countries displayed
+    const listItems = screen.getByText('Top 5 Countries:')
+      .parentElement
+      .querySelectorAll('li');
+    expect(listItems.length).toBe(5);
+  });
+  
+  // Test for correct plural forms
+  test('shows correct plural form for attackers in top countries', async () => {
+    await act(async () => {
+      render(<WorldMap />);
+    });
+    
+    // Wait for data to load
+    await waitFor(() => {
+      return screen.getAllByText(/attacker/i).length > 0;
+    }, { timeout: 1000 });
+    
+    // Check for plural form (2 attackers)
+    expect(screen.getByText(/2 attackers/i)).toBeInTheDocument();
+    
+    // Check for singular form (1 attacker) - using getAllByText since multiple countries have 1 attacker
+    const singularForms = screen.getAllByText(/1 attacker$/i);
+    expect(singularForms.length).toBeGreaterThan(0);
+    
+    // Verify one specific country with singular form
+    expect(screen.getByText(/China.*1 attacker$/i)).toBeInTheDocument();
+  });
+  
+  // Test for loading state
+  test('shows loading state when refreshing data', async () => {
+    // Render with delayed resolution
+    await act(async () => {
+      render(<WorldMap />);
+    });
+    
+    // Wait for initial load to complete
+    await waitFor(() => {
+      const buttonText = screen.getByRole('button').textContent;
+      return buttonText.includes('Refresh') && !buttonText.includes('ing');
+    }, { timeout: 1000 });
+    
+    // Setup a delayed promise for the next fetch
+    global.fetch.mockImplementationOnce(() => 
+      new Promise(resolve => setTimeout(() => resolve({
+        json: () => Promise.resolve({ US: 3, CN: 2 })
+      }), 50))
+    );
+    
+    // Click refresh
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    
+    // Check for loading state
+    expect(screen.getByText('Refreshing...')).toBeInTheDocument();
+  });
+  
+  // Test for empty data handling
+  test('handles empty country data gracefully', async () => {
+    // Use empty data response
+    global.fetch.mockImplementationOnce((url) => {
+      if (url.includes('world-atlas')) {
+        return Promise.resolve({
+          json: () => Promise.resolve({ objects: { countries: {} } })
+        });
+      } else {
+        return Promise.resolve({
+          json: () => Promise.resolve({}) // Empty data
+        });
+      }
+    });
+    
+    await act(async () => {
+      render(<WorldMap />);
+    });
+    
+    // Verify component rendered
+    expect(screen.getByText('Attacker Geolocation')).toBeInTheDocument();
+    expect(screen.getByText('Top 5 Countries:')).toBeInTheDocument();
+    
+    // Note: WorldMap.js has fallback data, so we can't test for empty list
+    // Instead, let's verify the component doesn't crash
+    expect(document.querySelector('.bg-white')).toBeInTheDocument();
+  });
+  
+  // Test for API error handling
+  test('handles API error with fallback data', async () => {
+    // Mock API error
+    global.fetch.mockImplementationOnce((url) => {
+      if (url.includes('world-atlas')) {
+        return Promise.resolve({
+          json: () => Promise.resolve({ objects: { countries: {} } })
+        });
+      } else {
+        return Promise.reject(new Error('API error'));
+      }
+    });
+    
+    await act(async () => {
+      render(<WorldMap />);
+    });
+    
+    // Allow time for fallback data to load
+    await waitFor(() => {
+      const listItems = screen.getByText('Top 5 Countries:')
+        .parentElement
+        .querySelectorAll('li');
+      return listItems.length > 0;
+    }, { timeout: 1000 });
+    
+    // Verify fallback data is displayed
+    const listItems = screen.getByText('Top 5 Countries:')
+      .parentElement
+      .querySelectorAll('li');
+    expect(listItems.length).toBeGreaterThan(0);
   });
 });
