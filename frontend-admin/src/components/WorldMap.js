@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { feature } from "topojson-client";
 import { AlertCircle } from "lucide-react";
 import countries from "world-countries";
+import { useDashboardText } from '../components/translate';
 
 // Map numeric country ID to ISO A2 and ISO A2 to country name
 const numericToA2 = {};
@@ -40,6 +41,7 @@ const WorldMap = () => {
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const mapRef = useRef(null);
+  const uiText = useDashboardText();
 
   useEffect(() => {
     const fetchGeoData = async () => {
@@ -120,13 +122,13 @@ const WorldMap = () => {
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-bold">Attacker Geolocation</h2>
+        <h2 className="text-lg font-bold">{uiText.attackerGeo}</h2>
         <button 
           onClick={fetchCountryData} 
           disabled={isRefreshing}
           className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-2 rounded flex items-center transition-colors"
         >
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          {isRefreshing ? uiText.refreshLoading : uiText.refresh}
           {isRefreshing && (
             <svg className="animate-spin ml-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -161,7 +163,7 @@ const WorldMap = () => {
         )}
 
         <div className="absolute top-4 left-4 bg-white/90 p-2 rounded shadow text-xs border border-black">
-          <div className="font-bold mb-1">Top 5 Countries:</div>
+          <div className="font-bold mb-1">{uiText.countries}</div>
           <ul className="list-disc list-inside">
             {topCountries.map((entry, idx) => (
               <li key={idx}>
