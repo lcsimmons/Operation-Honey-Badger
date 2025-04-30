@@ -1,21 +1,134 @@
 # Operation-Honey-Badger
- 
+
+**An AI-Powered Dynamic Honeypot for Web Application Threat Intelligence**
+
+---
+
+## Overview
+
+Operation-Honey-Badger is a dynamic honeypot system designed to attract, monitor, and analyze attacker behavior. It uses Flask, PostgreSQL, and Google Gemini to capture attacker interactions, analyze tactics, and automatically generate attacker profile reports for SOC teams.
+
+---
+
 ## Installation Instructions
 
-Project Honey Badger is a sophisticated honeypot system designed to attract, monitor, and analyze potential cyber threats. Before beginning installation, ensure your system meets the following requirements: Python 3, Node.js and npm, Make utility, and optionally Docker for database initialization. A minimum of 10GB storage space and internet connection for API functionality are also recommended.
+Ensure the following are installed:
+- Python 3.10+
+- Node.js + npm
+- Docker (for optional DB container)
+- `make`
 
-The installation process utilizes a comprehensive script that automates most of the setup. Begin by cloning the repository to your local machine and navigating to the root directory. Open a terminal window, navigate to the repository's root directory, and run:
-
-
+To install:
+```bash
 chmod +x install.sh
 ./install.sh
+```
 
-During installation, the script checks for required software components including Python, Node.js, npm, and make. If any components are missing, the script will notify you and exit. You'll need to install these prerequisites before attempting installation again.
+This script:
+- Verifies dependencies
+- Loads `.env` configurations
+- Builds all backend/frontend services
+- Offers to initialize a PostgreSQL container with sample schema
 
-The script also verifies the existence and completeness of environment files across all components. These files contain critical configuration variables such as API keys, database credentials, and connection URLs. If any required environment files are missing or incomplete, the script will provide specific guidance on which files need attention and what variables need to be added.
+> **Note**: For production deployment, update `.env` URLs and configure components as system services or use Docker Compose/Kubernetes.
 
-After verification, the script builds all backend components (backend-flask, flask-honeypot, and llm-testing) and installs dependencies for frontend components (frontend and frontend-admin). The terminal will display real-time progress with color-coded success and error messages to help troubleshoot any issues that arise.
+---
 
-Finally, the script offers the option to initialize a PostgreSQL database in a Docker container. This step is optional but recommended for a complete setup. If you choose to initialize the database, ensure Docker is installed and running on your system.
+## Project Structure
 
-Deployment Note: The installation process described above is intended for local testing and development environments. For production deployment, the system can be hosted on cloud services such as AWS, Azure, or Google Cloud Platform. When deploying to production environments, ensure all URLs in the .env files are updated to reflect your production endpoints. Additionally, components should be configured to run as system services with appropriate startup scripts rather than using development commands like ``make run'' or ``npm run dev''. Consider using containerization solutions like Docker Compose or Kubernetes for orchestrating the various components in production.
+```
+Operation-Honey-Badger/
+├── backend-flask/
+│   ├── app.py                # Flask API with Gemini integration
+│   ├── postgres_db.py        # PostgreSQL logging logic
+│   ├── decoy_database.py     # In-memory SQLite decoy DB
+│   └── ...
+├── frontend/
+├── frontend-admin/
+├── docker-compose.yml
+├── install.sh
+└── .env                     # Sensitive keys (excluded from repo)
+```
+
+---
+
+## Running the System
+
+To run locally:
+```bash
+# Backend
+cd backend-flask
+flask run
+
+# Frontend
+cd frontend
+npm install && npm run dev
+
+# Admin Dashboard
+cd frontend-admin
+npm install && npm run dev
+```
+
+---
+
+## API Specification
+
+### Key Endpoints
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/login` | POST | Simulates login page, logs attacker payload |
+| `/api/admin/reimbursement` | GET | Decoy reimbursement DB |
+| `/api/admin/employees` | GET | Decoy employee directory |
+| `/api/generate_narrative_report` | GET | Generates Gemini narrative report for given `attacker_id` |
+
+---
+
+## AI Integration
+
+Google Gemini is used to:
+- Analyze attacker payloads
+- Detect OWASP Top-10 techniques
+- Generate SOC-friendly attacker summaries
+
+Responses are stored in the `soc_dashboard` PostgreSQL table.
+
+---
+
+## Design Highlights
+
+- Modular Flask backend with memory + persistent DB
+- Gemini-powered real-time attack analysis
+- SOC Dashboard for viewing attacker reports
+- Accessibility-first UI (TTS, font-size, translations)
+
+---
+
+## Contribution Guide
+
+### How to Contribute
+
+1. Clone the repo
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add feature'`
+4. Push and create a PR
+
+### Coding Standards
+
+- Use descriptive commit messages
+- Write docstrings for new functions
+- Frontend: Follow TailwindCSS and React hooks conventions
+- Backend: Use Flask RESTful patterns and `@app.route`
+
+---
+
+## Authors
+
+- Abhinav Nallam
+- Adrien Shipou
+- Connor Fergus
+- Geoff Bosenbark
+- Lane Simmons
+- Quinn Gleadell
+
+---
